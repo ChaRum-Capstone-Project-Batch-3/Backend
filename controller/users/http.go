@@ -52,7 +52,9 @@ func (userCtrl *UserController) UserRegister(c echo.Context) error {
 	})
 }
 
-// Read
+/*
+Read
+*/
 
 func (userCtrl *UserController) Login(c echo.Context) error {
 	userInput := request.Login{}
@@ -82,6 +84,10 @@ func (userCtrl *UserController) Login(c echo.Context) error {
 	})
 }
 
-// Update
+/*
+Update
+*/
 
-// Delete
+/*
+Delete
+*/
