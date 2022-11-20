@@ -36,8 +36,8 @@ paths:
                   type: string
                   example: secretpassword
       responses:
-        '200':
-          description: OK
+        '201':
+          description: Created
           content:
             application/json:
               schema:
@@ -130,22 +130,22 @@ components:
       type: object
       properties:
         id:
-          example: "6379fe8dad33ec4251700ded"
+          example: 6379fe8dad33ec4251700ded
         email:
           type: string
-          example: "user@charum.com"
+          example: user@charum.com
         userName:
           type: string
-          example: "charum-user"
+          example: charum-user
         displayName:
           type: string
-          example: "charum user"
+          example: charum user
         password:
           type: string
-          example: "secretpassword"
+          example: secretpassword
         isActive:
           type: boolean
           example: true
         role:
           type: string
-          example: "user"
+          example: user
