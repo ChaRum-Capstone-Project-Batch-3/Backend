@@ -1,1 +1,8 @@
+# environment
 .env
+
+# live reload
+tmp
+
+# testing
+*cover
