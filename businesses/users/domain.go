@@ -18,8 +18,10 @@ type Repository interface {
 	// Create
 	Create(domain *Domain) (Domain, error)
 	// Read
+	GetUserByID(id primitive.ObjectID) (Domain, error)
 	GetUserByEmail(email string) (Domain, error)
 	GetUserByUsername(username string) (Domain, error)
+	GetUsersWithSortAndOrder(skip int, limit int, sort string, order int) ([]Domain, int, error)
 	// Update
 	// Delete
 }
@@ -29,6 +31,7 @@ type UseCase interface {
 	UserRegister(domain *Domain) (Domain, string, error)
 	// Read
 	Login(domain *Domain) (string, error)
+	GetUsersWithSortAndOrder(page int, limit int, sort string, order string) ([]Domain, int, error)
 	// Update
 	// Delete
 }

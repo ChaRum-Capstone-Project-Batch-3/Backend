@@ -39,4 +39,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 			"message": "Hello Admin!",
 		})
 	}, adminMiddleware.Check)
+
+	admin := apiV1.Group("/admin")
+	admin.GET("/user/:page", cl.UserController.GetAllUser, adminMiddleware.Check)
 }

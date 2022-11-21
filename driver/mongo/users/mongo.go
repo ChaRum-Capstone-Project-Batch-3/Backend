@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type userRepository struct {
@@ -82,6 +83,37 @@ func (ur *userRepository) GetUserByUsername(username string) (users.Domain, erro
 	}).Decode(&result)
 
 	return result.ToDomain(), err
+}
+
+func (ur *userRepository) GetUsersWithSortAndOrder(skip int, limit int, sort string, order int) ([]users.Domain, int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	skip64 := int64(skip)
+	limit64 := int64(limit)
+
+	var result []Model
+
+	cursor, err := ur.collection.Find(ctx, bson.M{}, &options.FindOptions{
+		Skip:  &skip64,
+		Limit: &limit64,
+		Sort:  bson.M{sort: order},
+	})
+	if err != nil {
+		return []users.Domain{}, 0, err
+	}
+
+	// count total data in collection
+	totalData, err := ur.collection.CountDocuments(ctx, bson.M{})
+	if err != nil {
+		return []users.Domain{}, 0, err
+	}
+
+	if err = cursor.All(ctx, &result); err != nil {
+		return []users.Domain{}, 0, err
+	}
+
+	return ToArrayDomain(result), int(totalData), nil
 }
 
 /*

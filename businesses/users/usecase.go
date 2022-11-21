@@ -3,6 +3,7 @@ package users
 import (
 	"charum/util"
 	"errors"
+	"math"
 	"strings"
 	"time"
 
@@ -48,7 +49,7 @@ func (uu *UserUseCase) UserRegister(domain *Domain) (Domain, string, error) {
 	user, err := uu.userRepository.Create(domain)
 
 	if err != nil {
-		return Domain{}, "", err
+		return Domain{}, "", errors.New("failed to register user")
 	}
 
 	token := util.GenerateToken(user.Id.Hex(), user.Role)
@@ -72,6 +73,25 @@ func (uu *UserUseCase) Login(domain *Domain) (string, error) {
 
 	token := util.GenerateToken(user.Id.Hex(), user.Role)
 	return token, nil
+}
+
+func (uu *UserUseCase) GetUsersWithSortAndOrder(page int, limit int, sort string, order string) ([]Domain, int, error) {
+	skip := limit * (page - 1)
+	var orderInMongo int
+
+	if order == "asc" {
+		orderInMongo = 1
+	} else {
+		orderInMongo = -1
+	}
+
+	users, totalData, err := uu.userRepository.GetUsersWithSortAndOrder(skip, limit, sort, orderInMongo)
+	if err != nil {
+		return []Domain{}, 0, errors.New("failed to get all users")
+	}
+
+	totalPage := math.Ceil(float64(totalData) / float64(limit))
+	return users, int(totalPage), nil
 }
 
 /*

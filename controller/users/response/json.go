@@ -29,3 +29,11 @@ func FromDomain(domain users.Domain) User {
 		UpdatedAt:   domain.UpdatedAt,
 	}
 }
+
+func FromArrayDomain(data []users.Domain) []User {
+	var array []User
+	for _, v := range data {
+		array = append(array, FromDomain(v))
+	}
+	return array
+}

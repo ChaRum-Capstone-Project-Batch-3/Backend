@@ -45,3 +45,11 @@ func (user *Model) ToDomain() users.Domain {
 		UpdatedAt:   user.UpdatedAt,
 	}
 }
+
+func ToArrayDomain(data []Model) []users.Domain {
+	var array []users.Domain
+	for _, v := range data {
+		array = append(array, v.ToDomain())
+	}
+	return array
+}
