@@ -1,0 +1,151 @@
+openapi: 3.0.0
+info:
+  title: Charum
+  description: |-
+    This is a Charum Back End
+  version: 1.0.0
+servers:
+  - url: http://example.com/api/v1
+tags:
+  - name: user
+    description: Operations about user
+paths:
+  /user/register:
+    post:
+      tags:
+        - user
+      summary: Registration for user
+      description: This registration is used by user
+      operationId: UserRegister
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: user@charum.com
+                userName:
+                  type: string
+                  example: charum-user
+                displayName:
+                  type: string
+                  example: charum user
+                password:
+                  type: string
+                  example: secretpassword
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: success to register
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2Mzc5ZmU4ZGFkMzNlYzQyNTE3MDBkZWQiLCJyb2xlIjoidXNlciIsImlzcyI6ImNoYXJ1bSIsImV4cCI6MTY2ODk0Nzg3NiwibmJmIjoxNjY4OTQ0Mjc2LCJpYXQiOjE2Njg5NDQyNzZ9._hk2Y2pt6tADTN0aHTukPNd2O_wRdHsgn3Vo4jIX_zc
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: invalid request
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: email is already registered
+  /user/login:
+    post:
+      tags:
+        - user
+      summary: Logs user into the system
+      description: Get token for user
+      operationId: Login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: user@charum.com
+                password:
+                  type: string
+                  example: secretpassword
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: success to login
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2Mzc5ZmU4ZGFkMzNlYzQyNTE3MDBkZWQiLCJyb2xlIjoidXNlciIsImlzcyI6ImNoYXJ1bSIsImV4cCI6MTY2ODk0Nzg3NiwibmJmIjoxNjY4OTQ0Mjc2LCJpYXQiOjE2Njg5NDQyNzZ9._hk2Y2pt6tADTN0aHTukPNd2O_wRdHsgn3Vo4jIX_zc
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: invalid request
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: email is not registered
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          example: 6379fe8dad33ec4251700ded
+        email:
+          type: string
+          example: user@charum.com
+        userName:
+          type: string
+          example: charum-user
+        displayName:
+          type: string
+          example: charum user
+        password:
+          type: string
+          example: secretpassword
+        isActive:
+          type: boolean
+          example: true
+        role:
+          type: string
+          example: user
