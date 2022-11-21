@@ -35,6 +35,7 @@ paths:
                 password:
                   type: string
                   example: secretpassword
+        required: true
       responses:
         '201':
           description: Created
@@ -90,6 +91,7 @@ paths:
                 password:
                   type: string
                   example: secretpassword
+        required: true
       responses:
         '200':
           description: OK
