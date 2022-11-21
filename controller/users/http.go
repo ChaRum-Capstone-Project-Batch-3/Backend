@@ -1,7 +1,7 @@
 package users
 
 import (
-	"charum/businesses/users"
+	"charum/business/users"
 	"charum/controller/users/request"
 	"charum/controller/users/response"
 	"net/http"

@@ -1,7 +1,7 @@
 package users
 
 import (
-	"charum/businesses/users"
+	"charum/business/users"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )

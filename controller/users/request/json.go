@@ -1,7 +1,7 @@
 package request
 
 import (
-	"charum/businesses/users"
+	"charum/business/users"
 
 	"github.com/go-playground/validator/v10"
 )

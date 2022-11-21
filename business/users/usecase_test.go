@@ -1,8 +1,8 @@
 package users_test
 
 import (
-	"charum/businesses/users"
-	_userMock "charum/businesses/users/mocks"
+	"charum/business/users"
+	_userMock "charum/business/users/mocks"
 	"errors"
 	"testing"
 	"time"

@@ -1,7 +1,7 @@
 package users
 
 import (
-	"charum/businesses/users"
+	"charum/business/users"
 	"context"
 	"time"
 
