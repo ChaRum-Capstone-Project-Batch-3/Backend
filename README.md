@@ -19,6 +19,6 @@ Charum is application for forum group discussion for many topics. This applicati
 2. Install dependencies
     `go mod download`
 
-## Run on Local Development
+### Run on Local Development
 1. Run the server
     `air`
