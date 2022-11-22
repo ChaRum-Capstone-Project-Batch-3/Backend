@@ -26,12 +26,12 @@ func (req *UserRegister) ToDomain() *users.Domain {
 	}
 }
 
-func (u *UserRegister) Validate() []helper.ValidationError {
+func (req *UserRegister) Validate() []helper.ValidationError {
 	var ve validator.ValidationErrors
 
-	if err := validator.New().Struct(u); err != nil {
+	if err := validator.New().Struct(req); err != nil {
 		if errors.As(err, &ve) {
-			fields := structs.Fields(u)
+			fields := structs.Fields(req)
 			out := make([]helper.ValidationError, len(ve))
 
 			for i, e := range ve {
@@ -69,12 +69,59 @@ func (req *Login) ToDomain() *users.Domain {
 	}
 }
 
-func (u *Login) Validate() []helper.ValidationError {
+func (req *Login) Validate() []helper.ValidationError {
 	var ve validator.ValidationErrors
 
-	if err := validator.New().Struct(u); err != nil {
+	if err := validator.New().Struct(req); err != nil {
 		if errors.As(err, &ve) {
-			fields := structs.Fields(u)
+			fields := structs.Fields(req)
+			out := make([]helper.ValidationError, len(ve))
+
+			for i, e := range ve {
+				out[i] = helper.ValidationError{
+					Field:   e.Field(),
+					Message: helper.MessageForTag(e.Tag()),
+				}
+
+				out[i].Message = strings.Replace(out[i].Message, "[PARAM]", e.Param(), 1)
+
+				// Get field tag
+				for _, f := range fields {
+					if f.Name() == e.Field() {
+						out[i].Field = f.Tag("json")
+						break
+					}
+				}
+			}
+			return out
+		}
+	}
+
+	return nil
+}
+
+type AdminUpdate struct {
+	Email       string `json:"email" validate:"required,email" bson:"email"`
+	UserName    string `json:"userName" validate:"required" bson:"userName"`
+	DisplayName string `json:"displayName" validate:"required" bson:"displayName"`
+	IsActive    bool   `json:"isActive" bson:"isActive"`
+}
+
+func (req *AdminUpdate) ToDomain() *users.Domain {
+	return &users.Domain{
+		Email:       req.Email,
+		UserName:    req.UserName,
+		DisplayName: req.DisplayName,
+		IsActive:    req.IsActive,
+	}
+}
+
+func (req *AdminUpdate) Validate() []helper.ValidationError {
+	var ve validator.ValidationErrors
+
+	if err := validator.New().Struct(req); err != nil {
+		if errors.As(err, &ve) {
+			fields := structs.Fields(req)
 			out := make([]helper.ValidationError, len(ve))
 
 			for i, e := range ve {

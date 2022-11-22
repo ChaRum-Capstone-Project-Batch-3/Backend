@@ -23,6 +23,7 @@ type Repository interface {
 	GetUserByUsername(username string) (Domain, error)
 	GetUsersWithSortAndOrder(skip int, limit int, sort string, order int) ([]Domain, int, error)
 	// Update
+	Update(domain *Domain) (Domain, error)
 	// Delete
 }
 
@@ -34,5 +35,6 @@ type UseCase interface {
 	GetUsersWithSortAndOrder(page int, limit int, sort string, order string) ([]Domain, int, error)
 	GetUserByID(id primitive.ObjectID) (Domain, error)
 	// Update
+	Update(id primitive.ObjectID, domain *Domain) (Domain, error)
 	// Delete
 }

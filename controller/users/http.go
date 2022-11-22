@@ -208,6 +208,52 @@ func (userCtrl *UserController) GetUserByID(c echo.Context) error {
 Update
 */
 
+func (userCtrl *UserController) AdminUpdate(c echo.Context) error {
+	userID, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "invalid id",
+			Data:    nil,
+		})
+	}
+
+	userInput := request.AdminUpdate{}
+
+	if c.Bind(&userInput) != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "fill all the required fields",
+			Data:    nil,
+		})
+	}
+
+	if err := userInput.Validate(); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "validation failed",
+			Data:    err,
+		})
+	}
+
+	user, err := userCtrl.userUseCase.Update(userID, userInput.ToDomain())
+	if err != nil {
+		return c.JSON(http.StatusNotFound, helper.BaseResponse{
+			Status:  http.StatusNotFound,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success to update user",
+		Data: map[string]interface{}{
+			"user": response.FromDomain(user),
+		},
+	})
+}
+
 /*
 Delete
 */

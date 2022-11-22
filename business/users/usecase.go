@@ -107,6 +107,38 @@ func (uu *UserUseCase) GetUserByID(id primitive.ObjectID) (Domain, error) {
 Update
 */
 
+func (uu *UserUseCase) Update(id primitive.ObjectID, domain *Domain) (Domain, error) {
+	user, err := uu.userRepository.GetUserByID(id)
+	if err != nil {
+		return Domain{}, errors.New("failed to get user")
+	}
+
+	if domain.Email != "" {
+		user.Email = domain.Email
+	}
+
+	if domain.UserName != "" {
+		user.UserName = domain.UserName
+	}
+
+	if domain.DisplayName != "" {
+		user.DisplayName = domain.DisplayName
+	}
+
+	if domain.IsActive != user.IsActive {
+		user.IsActive = domain.IsActive
+	}
+
+	user.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
+
+	updatedUser, err := uu.userRepository.Update(&user)
+	if err != nil {
+		return Domain{}, errors.New("failed to update user")
+	}
+
+	return updatedUser, nil
+}
+
 /*
 Delete
 */

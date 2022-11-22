@@ -44,4 +44,5 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	adminUser := admin.Group("/user")
 	adminUser.GET("/:page", cl.UserController.GetUsersWithPagination)
 	adminUser.GET("/id/:id", cl.UserController.GetUserByID)
+	adminUser.PUT("/id/:id", cl.UserController.AdminUpdate)
 }
