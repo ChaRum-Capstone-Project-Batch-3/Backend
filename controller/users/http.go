@@ -105,7 +105,7 @@ func (userCtrl *UserController) Login(c echo.Context) error {
 	})
 }
 
-func (userCtrl *UserController) GetAllUser(c echo.Context) error {
+func (userCtrl *UserController) GetUsersWithPagination(c echo.Context) error {
 	page, err := strconv.Atoi(c.Param("page"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
