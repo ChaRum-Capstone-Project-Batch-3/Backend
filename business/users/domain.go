@@ -32,6 +32,7 @@ type UseCase interface {
 	// Read
 	Login(domain *Domain) (Domain, string, error)
 	GetUsersWithSortAndOrder(page int, limit int, sort string, order string) ([]Domain, int, error)
+	GetUserByID(id primitive.ObjectID) (Domain, error)
 	// Update
 	// Delete
 }

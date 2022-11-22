@@ -94,6 +94,15 @@ func (uu *UserUseCase) GetUsersWithSortAndOrder(page int, limit int, sort string
 	return users, int(totalPage), nil
 }
 
+func (uu *UserUseCase) GetUserByID(id primitive.ObjectID) (Domain, error) {
+	user, err := uu.userRepository.GetUserByID(id)
+	if err != nil {
+		return Domain{}, errors.New("failed to get user")
+	}
+
+	return user, nil
+}
+
 /*
 Update
 */

@@ -40,6 +40,8 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 		})
 	}, adminMiddleware.Check)
 
-	admin := apiV1.Group("/admin")
-	admin.GET("/user/:page", cl.UserController.GetUsersWithPagination, adminMiddleware.Check)
+	admin := apiV1.Group("/admin", adminMiddleware.Check)
+	adminUser := admin.Group("/user")
+	adminUser.GET("/:page", cl.UserController.GetUsersWithPagination)
+	adminUser.GET("/id/:id", cl.UserController.GetUserByID)
 }

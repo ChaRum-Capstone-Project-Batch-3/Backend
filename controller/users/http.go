@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo/v4"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type UserController struct {
@@ -171,6 +172,34 @@ func (userCtrl *UserController) GetUsersWithPagination(c echo.Context) error {
 		Data: map[string]interface{}{
 			"totalPage": totalPage,
 			"users":     response.FromDomainArray(users),
+		},
+	})
+}
+
+func (userCtrl *UserController) GetUserByID(c echo.Context) error {
+	userID, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "invalid id",
+			Data:    nil,
+		})
+	}
+
+	user, err := userCtrl.userUseCase.GetUserByID(userID)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, helper.BaseResponse{
+			Status:  http.StatusNotFound,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success to get user by id",
+		Data: map[string]interface{}{
+			"user": response.FromDomain(user),
 		},
 	})
 }
