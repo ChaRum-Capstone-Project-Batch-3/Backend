@@ -114,10 +114,18 @@ func (uu *UserUseCase) Update(id primitive.ObjectID, domain *Domain) (Domain, er
 	}
 
 	if domain.Email != "" {
+		_, err = uu.userRepository.GetUserByEmail(domain.Email)
+		if err == nil {
+			return Domain{}, errors.New("email is already registered")
+		}
 		user.Email = domain.Email
 	}
 
 	if domain.UserName != "" {
+		_, err = uu.userRepository.GetUserByUsername(domain.UserName)
+		if err == nil {
+			return Domain{}, errors.New("username is already used")
+		}
 		user.UserName = domain.UserName
 	}
 
