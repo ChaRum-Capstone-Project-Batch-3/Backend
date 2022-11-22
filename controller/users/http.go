@@ -5,6 +5,7 @@ import (
 	"charum/controller/users/request"
 	"charum/controller/users/response"
 	"charum/helper"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -219,7 +220,6 @@ func (userCtrl *UserController) AdminUpdate(c echo.Context) error {
 	}
 
 	userInput := request.AdminUpdate{}
-
 	if c.Bind(&userInput) != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
@@ -237,9 +237,19 @@ func (userCtrl *UserController) AdminUpdate(c echo.Context) error {
 	}
 
 	user, err := userCtrl.userUseCase.Update(userID, userInput.ToDomain())
+
+	var statusCode int
+	if err == errors.New("failed to get user") {
+		statusCode = http.StatusNotFound
+	} else if !(err == errors.New("username is already used") || err == errors.New("email is already used")) {
+		statusCode = http.StatusConflict
+	} else {
+		statusCode = http.StatusInternalServerError
+	}
+
 	if err != nil {
-		return c.JSON(http.StatusNotFound, helper.BaseResponse{
-			Status:  http.StatusNotFound,
+		return c.JSON(statusCode, helper.BaseResponse{
+			Status:  statusCode,
 			Message: err.Error(),
 			Data:    nil,
 		})
