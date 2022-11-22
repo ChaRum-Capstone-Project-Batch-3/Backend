@@ -144,3 +144,17 @@ func (ur *userRepository) Update(domain *users.Domain) (users.Domain, error) {
 /*
 Delete
 */
+
+func (ur *userRepository) Delete(id primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	_, err := ur.collection.DeleteOne(ctx, bson.M{
+		"_id": id,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

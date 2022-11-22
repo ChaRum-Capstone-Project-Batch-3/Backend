@@ -113,7 +113,7 @@ func (uu *UserUseCase) Update(id primitive.ObjectID, domain *Domain) (Domain, er
 		return Domain{}, errors.New("failed to get user")
 	}
 
-	if domain.Email != "" {
+	if domain.Email != "" && domain.Email != user.Email {
 		_, err = uu.userRepository.GetUserByEmail(domain.Email)
 		if err == nil {
 			return Domain{}, errors.New("email is already registered")
@@ -121,7 +121,7 @@ func (uu *UserUseCase) Update(id primitive.ObjectID, domain *Domain) (Domain, er
 		user.Email = domain.Email
 	}
 
-	if domain.UserName != "" {
+	if domain.UserName != "" && domain.UserName != user.UserName {
 		_, err = uu.userRepository.GetUserByUsername(domain.UserName)
 		if err == nil {
 			return Domain{}, errors.New("username is already used")
@@ -150,3 +150,17 @@ func (uu *UserUseCase) Update(id primitive.ObjectID, domain *Domain) (Domain, er
 /*
 Delete
 */
+
+func (uu *UserUseCase) Delete(id primitive.ObjectID) (Domain, error) {
+	deletedUser, err := uu.userRepository.GetUserByID(id)
+	if err != nil {
+		return Domain{}, errors.New("failed to get user")
+	}
+
+	err = uu.userRepository.Delete(id)
+	if err != nil {
+		return Domain{}, errors.New("failed to delete user")
+	}
+
+	return deletedUser, nil
+}

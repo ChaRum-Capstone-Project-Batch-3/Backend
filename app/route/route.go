@@ -45,4 +45,5 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	adminUser.GET("/:page", cl.UserController.GetUsersWithPagination)
 	adminUser.GET("/id/:id", cl.UserController.GetUserByID)
 	adminUser.PUT("/id/:id", cl.UserController.AdminUpdate)
+	adminUser.DELETE("/id/:id", cl.UserController.Delete)
 }

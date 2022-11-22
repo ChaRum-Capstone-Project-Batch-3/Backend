@@ -267,3 +267,39 @@ func (userCtrl *UserController) AdminUpdate(c echo.Context) error {
 /*
 Delete
 */
+
+func (userCtrl *UserController) Delete(c echo.Context) error {
+	userID, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "invalid id",
+			Data:    nil,
+		})
+	}
+
+	deletedUser, err := userCtrl.userUseCase.Delete(userID)
+
+	var statusCode int
+	if err == errors.New("failed to get user") {
+		statusCode = http.StatusNotFound
+	} else {
+		statusCode = http.StatusInternalServerError
+	}
+
+	if err != nil {
+		return c.JSON(statusCode, helper.BaseResponse{
+			Status:  statusCode,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success to delete user",
+		Data: map[string]interface{}{
+			"user": response.FromDomain(deletedUser),
+		},
+	})
+}
