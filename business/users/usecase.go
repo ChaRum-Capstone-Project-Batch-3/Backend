@@ -60,19 +60,19 @@ func (uu *UserUseCase) UserRegister(domain *Domain) (Domain, string, error) {
 Read
 */
 
-func (uu *UserUseCase) Login(domain *Domain) (string, error) {
+func (uu *UserUseCase) Login(domain *Domain) (Domain, string, error) {
 	user, err := uu.userRepository.GetUserByEmail(domain.Email)
 	if err != nil {
-		return "", errors.New("email is not registered")
+		return Domain{}, "", errors.New("email is not registered")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(domain.Password))
 	if err != nil {
-		return "", errors.New("wrong password")
+		return Domain{}, "", errors.New("wrong password")
 	}
 
 	token := util.GenerateToken(user.Id.Hex(), user.Role)
-	return token, nil
+	return user, token, nil
 }
 
 func (uu *UserUseCase) GetUsersWithSortAndOrder(page int, limit int, sort string, order string) ([]Domain, int, error) {

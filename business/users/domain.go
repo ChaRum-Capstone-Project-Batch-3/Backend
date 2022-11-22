@@ -30,7 +30,7 @@ type UseCase interface {
 	// Create
 	UserRegister(domain *Domain) (Domain, string, error)
 	// Read
-	Login(domain *Domain) (string, error)
+	Login(domain *Domain) (Domain, string, error)
 	GetUsersWithSortAndOrder(page int, limit int, sort string, order string) ([]Domain, int, error)
 	// Update
 	// Delete

@@ -31,16 +31,16 @@ func (userCtrl *UserController) UserRegister(c echo.Context) error {
 	if c.Bind(&userInput) != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
-			Message: "invalid request",
+			Message: "fill all the required fields",
 			Data:    nil,
 		})
 	}
 
-	if userInput.Validate() != nil {
+	if err := userInput.Validate(); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
 			Message: "validation failed",
-			Data:    nil,
+			Data:    err,
 		})
 	}
 
@@ -73,20 +73,20 @@ func (userCtrl *UserController) Login(c echo.Context) error {
 	if c.Bind(&userInput) != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
-			Message: "invalid request",
+			Message: "fill all the required fields",
 			Data:    nil,
 		})
 	}
 
-	if userInput.Validate() != nil {
+	if err := userInput.Validate(); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
 			Message: "validation failed",
-			Data:    nil,
+			Data:    err,
 		})
 	}
 
-	token, err := userCtrl.userUseCase.Login(userInput.ToDomain())
+	user, token, err := userCtrl.userUseCase.Login(userInput.ToDomain())
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, helper.BaseResponse{
 			Status:  http.StatusUnauthorized,
@@ -100,6 +100,7 @@ func (userCtrl *UserController) Login(c echo.Context) error {
 		Message: "success to login",
 		Data: map[string]interface{}{
 			"token": token,
+			"user":  response.FromDomain(user),
 		},
 	})
 }
