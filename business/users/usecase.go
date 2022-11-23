@@ -87,7 +87,7 @@ func (uu *UserUseCase) GetUsersWithSortAndOrder(page int, limit int, sort string
 
 	users, totalData, err := uu.userRepository.GetUsersWithSortAndOrder(skip, limit, sort, orderInMongo)
 	if err != nil {
-		return []Domain{}, 0, errors.New("failed to get all users")
+		return []Domain{}, 0, errors.New("failed to get users")
 	}
 
 	totalPage := math.Ceil(float64(totalData) / float64(limit))

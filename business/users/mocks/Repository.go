@@ -35,6 +35,20 @@ func (_m *Repository) Create(domain *users.Domain) (users.Domain, error) {
 	return r0, r1
 }
 
+// Delete provides a mock function with given fields: id
+func (_m *Repository) Delete(id primitive.ObjectID) error {
+	ret := _m.Called(id)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID) error); ok {
+		r0 = rf(id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // GetUserByEmail provides a mock function with given fields: email
 func (_m *Repository) GetUserByEmail(email string) (users.Domain, error) {
 	ret := _m.Called(email)
@@ -126,6 +140,27 @@ func (_m *Repository) GetUsersWithSortAndOrder(skip int, limit int, sort string,
 	}
 
 	return r0, r1, r2
+}
+
+// Update provides a mock function with given fields: domain
+func (_m *Repository) Update(domain *users.Domain) (users.Domain, error) {
+	ret := _m.Called(domain)
+
+	var r0 users.Domain
+	if rf, ok := ret.Get(0).(func(*users.Domain) users.Domain); ok {
+		r0 = rf(domain)
+	} else {
+		r0 = ret.Get(0).(users.Domain)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*users.Domain) error); ok {
+		r1 = rf(domain)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 type mockConstructorTestingTNewRepository interface {
