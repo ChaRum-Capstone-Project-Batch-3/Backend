@@ -1,14 +1,17 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"net/http"
+	"time"
 
 	_route "charum/app/route"
 	_driver "charum/driver"
 	_mongo "charum/driver/mongo"
 	_util "charum/util"
 
-	_userUseCase "charum/businesses/users"
+	_userUseCase "charum/business/users"
 	_userController "charum/controller/users"
 
 	"github.com/labstack/echo/v4"
@@ -30,5 +33,21 @@ func main() {
 	routeController.Init(e)
 
 	appPort := fmt.Sprintf(":%s", _util.GetConfig("APP_PORT"))
-	e.Logger.Fatal(e.Start(appPort))
+
+	go func() {
+		if err := e.Start(appPort); err != nil && err != http.ErrServerClosed {
+			e.Logger.Fatal("shutting down the server")
+		}
+	}()
+
+	wait := _util.GracefulShutdown(context.Background(), 2*time.Second, map[string]_util.Operation{
+		"database": func(ctx context.Context) error {
+			return _mongo.Close(database)
+		},
+		"http-server": func(ctx context.Context) error {
+			return e.Shutdown(context.Background())
+		},
+	})
+
+	<-wait
 }

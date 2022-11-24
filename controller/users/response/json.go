@@ -1,7 +1,7 @@
 package response
 
 import (
-	"charum/businesses/users"
+	"charum/business/users"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -28,4 +28,12 @@ func FromDomain(domain users.Domain) User {
 		CreatedAt:   domain.CreatedAt,
 		UpdatedAt:   domain.UpdatedAt,
 	}
+}
+
+func FromDomainArray(data []users.Domain) []User {
+	var array []User
+	for _, v := range data {
+		array = append(array, FromDomain(v))
+	}
+	return array
 }
