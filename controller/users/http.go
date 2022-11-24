@@ -34,7 +34,7 @@ func (userCtrl *UserController) Register(c echo.Context) error {
 	if c.Bind(&userInput) != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
-			Message: "fill all the required fields",
+			Message: "fill all the required fields and make sure data type is correct",
 			Data:    nil,
 		})
 	}
@@ -82,7 +82,7 @@ func (userCtrl *UserController) Login(c echo.Context) error {
 	if c.Bind(&userInput) != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
-			Message: "fill all the required fields",
+			Message: "fill all the required fields and make sure data type is correct",
 			Data:    nil,
 		})
 	}
@@ -267,7 +267,7 @@ func (userCtrl *UserController) Update(c echo.Context) error {
 	if c.Bind(&userInput) != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
-			Message: "fill all the required fields",
+			Message: "fill all the required fields and make sure data type is correct",
 			Data:    nil,
 		})
 	}
@@ -282,13 +282,11 @@ func (userCtrl *UserController) Update(c echo.Context) error {
 
 	user, err := userCtrl.userUseCase.Update(userID, userInput.ToDomain())
 
-	var statusCode int
+	statusCode := http.StatusInternalServerError
 	if err == errors.New("failed to get user") {
 		statusCode = http.StatusNotFound
 	} else if !(err == errors.New("username is already used") || err == errors.New("email is already used")) {
 		statusCode = http.StatusConflict
-	} else {
-		statusCode = http.StatusInternalServerError
 	}
 
 	if err != nil {
