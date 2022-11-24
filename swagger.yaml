@@ -438,6 +438,24 @@ paths:
           schema:
             type: string
             example: 637dfc9bb09d0bdd7a2fe3de
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: user@charum.com
+                userName:
+                  type: string
+                  example: charum-user
+                displayName:
+                  type: string
+                  example: charum user
+                isActive:
+                  type: boolean
+                  example: false
       responses:
         '200':
           description: OK
