@@ -16,34 +16,24 @@ type ControllerList struct {
 func (cl *ControllerList) Init(e *echo.Echo) {
 	_middleware.InitLogger(e)
 
-	userMiddleware := _middleware.RoleMiddleware{Role: []string{"user"}}
+	// userMiddleware := _middleware.RoleMiddleware{Role: []string{"user"}}
 	adminMiddleware := _middleware.RoleMiddleware{Role: []string{"admin"}}
 
 	apiV1 := e.Group("/api/v1")
 	apiV1.GET("", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]interface{}{
-			"message": "Hello World!",
+			"message": "Welcome to Charum!",
 		})
 	})
 
 	user := apiV1.Group("/user")
-	user.POST("/register", cl.UserController.UserRegister)
+	user.POST("/register", cl.UserController.Register)
 	user.POST("/login", cl.UserController.Login)
-	user.GET("/user", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]interface{}{
-			"message": "Hello User!",
-		})
-	}, userMiddleware.Check)
-	user.GET("/admin", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]interface{}{
-			"message": "Hello Admin!",
-		})
-	}, adminMiddleware.Check)
 
 	admin := apiV1.Group("/admin", adminMiddleware.Check)
 	adminUser := admin.Group("/user")
-	adminUser.GET("/:page", cl.UserController.GetUsersWithPagination)
-	adminUser.GET("/id/:id", cl.UserController.GetUserByID)
-	adminUser.PUT("/id/:id", cl.UserController.AdminUpdate)
+	adminUser.GET("/:page", cl.UserController.GetManyWithPagination)
+	adminUser.GET("/id/:id", cl.UserController.GetByID)
+	adminUser.PUT("/id/:id", cl.UserController.Update)
 	adminUser.DELETE("/id/:id", cl.UserController.Delete)
 }

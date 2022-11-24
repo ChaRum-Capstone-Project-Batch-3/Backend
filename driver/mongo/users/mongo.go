@@ -34,7 +34,7 @@ func (ur *userRepository) Create(domain *users.Domain) (users.Domain, error) {
 		return users.Domain{}, err
 	}
 
-	result, err := ur.GetUserByID(res.InsertedID.(primitive.ObjectID))
+	result, err := ur.GetByID(res.InsertedID.(primitive.ObjectID))
 	if err != nil {
 		return users.Domain{}, err
 	}
@@ -46,7 +46,7 @@ func (ur *userRepository) Create(domain *users.Domain) (users.Domain, error) {
 Read
 */
 
-func (ur *userRepository) GetUserByID(id primitive.ObjectID) (users.Domain, error) {
+func (ur *userRepository) GetByID(id primitive.ObjectID) (users.Domain, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
@@ -61,7 +61,7 @@ func (ur *userRepository) GetUserByID(id primitive.ObjectID) (users.Domain, erro
 	return result.ToDomain(), nil
 }
 
-func (ur *userRepository) GetUserByEmail(email string) (users.Domain, error) {
+func (ur *userRepository) GetByEmail(email string) (users.Domain, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
@@ -73,7 +73,7 @@ func (ur *userRepository) GetUserByEmail(email string) (users.Domain, error) {
 	return result.ToDomain(), err
 }
 
-func (ur *userRepository) GetUserByUsername(username string) (users.Domain, error) {
+func (ur *userRepository) GetByUsername(username string) (users.Domain, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
@@ -85,7 +85,7 @@ func (ur *userRepository) GetUserByUsername(username string) (users.Domain, erro
 	return result.ToDomain(), err
 }
 
-func (ur *userRepository) GetUsersWithSortAndOrder(skip int, limit int, sort string, order int) ([]users.Domain, int, error) {
+func (ur *userRepository) GetWithSortAndOrder(skip int, limit int, sort string, order int) ([]users.Domain, int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
@@ -133,7 +133,7 @@ func (ur *userRepository) Update(domain *users.Domain) (users.Domain, error) {
 		return users.Domain{}, err
 	}
 
-	result, err := ur.GetUserByID(domain.Id)
+	result, err := ur.GetByID(domain.Id)
 	if err != nil {
 		return users.Domain{}, err
 	}

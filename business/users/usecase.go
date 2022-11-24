@@ -25,14 +25,14 @@ func NewUserUseCase(ur Repository) UseCase {
 Create
 */
 
-func (uu *UserUseCase) UserRegister(domain *Domain) (Domain, string, error) {
+func (uu *UserUseCase) Register(domain *Domain) (Domain, string, error) {
 	domain.UserName = strings.ToLower(domain.UserName)
-	_, err := uu.userRepository.GetUserByEmail(domain.Email)
+	_, err := uu.userRepository.GetByEmail(domain.Email)
 	if err == nil {
 		return Domain{}, "", errors.New("email is already registered")
 	}
 
-	_, err = uu.userRepository.GetUserByUsername(domain.UserName)
+	_, err = uu.userRepository.GetByUsername(domain.UserName)
 	if err == nil {
 		return Domain{}, "", errors.New("username is already used")
 	}
@@ -61,7 +61,7 @@ Read
 */
 
 func (uu *UserUseCase) Login(domain *Domain) (Domain, string, error) {
-	user, err := uu.userRepository.GetUserByEmail(domain.Email)
+	user, err := uu.userRepository.GetByEmail(domain.Email)
 	if err != nil {
 		return Domain{}, "", errors.New("email is not registered")
 	}
@@ -75,7 +75,7 @@ func (uu *UserUseCase) Login(domain *Domain) (Domain, string, error) {
 	return user, token, nil
 }
 
-func (uu *UserUseCase) GetUsersWithSortAndOrder(page int, limit int, sort string, order string) ([]Domain, int, error) {
+func (uu *UserUseCase) GetWithSortAndOrder(page int, limit int, sort string, order string) ([]Domain, int, error) {
 	skip := limit * (page - 1)
 	var orderInMongo int
 
@@ -85,7 +85,7 @@ func (uu *UserUseCase) GetUsersWithSortAndOrder(page int, limit int, sort string
 		orderInMongo = -1
 	}
 
-	users, totalData, err := uu.userRepository.GetUsersWithSortAndOrder(skip, limit, sort, orderInMongo)
+	users, totalData, err := uu.userRepository.GetWithSortAndOrder(skip, limit, sort, orderInMongo)
 	if err != nil {
 		return []Domain{}, 0, errors.New("failed to get users")
 	}
@@ -94,8 +94,8 @@ func (uu *UserUseCase) GetUsersWithSortAndOrder(page int, limit int, sort string
 	return users, int(totalPage), nil
 }
 
-func (uu *UserUseCase) GetUserByID(id primitive.ObjectID) (Domain, error) {
-	user, err := uu.userRepository.GetUserByID(id)
+func (uu *UserUseCase) GetByID(id primitive.ObjectID) (Domain, error) {
+	user, err := uu.userRepository.GetByID(id)
 	if err != nil {
 		return Domain{}, errors.New("failed to get user")
 	}
@@ -108,13 +108,13 @@ Update
 */
 
 func (uu *UserUseCase) Update(id primitive.ObjectID, domain *Domain) (Domain, error) {
-	user, err := uu.userRepository.GetUserByID(id)
+	user, err := uu.userRepository.GetByID(id)
 	if err != nil {
 		return Domain{}, errors.New("failed to get user")
 	}
 
 	if domain.Email != "" && domain.Email != user.Email {
-		_, err = uu.userRepository.GetUserByEmail(domain.Email)
+		_, err = uu.userRepository.GetByEmail(domain.Email)
 		if err == nil {
 			return Domain{}, errors.New("email is already registered")
 		}
@@ -122,7 +122,7 @@ func (uu *UserUseCase) Update(id primitive.ObjectID, domain *Domain) (Domain, er
 	}
 
 	if domain.UserName != "" && domain.UserName != user.UserName {
-		_, err = uu.userRepository.GetUserByUsername(domain.UserName)
+		_, err = uu.userRepository.GetByUsername(domain.UserName)
 		if err == nil {
 			return Domain{}, errors.New("username is already used")
 		}
@@ -152,7 +152,7 @@ Delete
 */
 
 func (uu *UserUseCase) Delete(id primitive.ObjectID) (Domain, error) {
-	deletedUser, err := uu.userRepository.GetUserByID(id)
+	deletedUser, err := uu.userRepository.GetByID(id)
 	if err != nil {
 		return Domain{}, errors.New("failed to get user")
 	}

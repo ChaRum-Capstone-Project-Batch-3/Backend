@@ -10,14 +10,14 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type UserRegister struct {
+type Register struct {
 	Email       string `json:"email" validate:"required,email" bson:"email"`
 	UserName    string `json:"userName" validate:"required" bson:"userName"`
 	DisplayName string `json:"displayName" validate:"required" bson:"displayName"`
 	Password    string `json:"password" validate:"required,min=8,containsany=ABCDEFGHIJKLMNOPQRSTUVWXYZ,containsany=!@#$%^&*,containsany=abcdefghijklmnopqrstuvwxyz,containsany=0123456789" bson:"password"`
 }
 
-func (req *UserRegister) ToDomain() *users.Domain {
+func (req *Register) ToDomain() *users.Domain {
 	return &users.Domain{
 		Email:       req.Email,
 		UserName:    req.UserName,
@@ -26,7 +26,7 @@ func (req *UserRegister) ToDomain() *users.Domain {
 	}
 }
 
-func (req *UserRegister) Validate() []helper.ValidationError {
+func (req *Register) Validate() []helper.ValidationError {
 	var ve validator.ValidationErrors
 
 	if err := validator.New().Struct(req); err != nil {
@@ -100,14 +100,14 @@ func (req *Login) Validate() []helper.ValidationError {
 	return nil
 }
 
-type AdminUpdate struct {
+type Update struct {
 	Email       string `json:"email" validate:"required,email" bson:"email"`
 	UserName    string `json:"userName" validate:"required" bson:"userName"`
 	DisplayName string `json:"displayName" validate:"required" bson:"displayName"`
 	IsActive    bool   `json:"isActive" bson:"isActive"`
 }
 
-func (req *AdminUpdate) ToDomain() *users.Domain {
+func (req *Update) ToDomain() *users.Domain {
 	return &users.Domain{
 		Email:       req.Email,
 		UserName:    req.UserName,
@@ -116,7 +116,7 @@ func (req *AdminUpdate) ToDomain() *users.Domain {
 	}
 }
 
-func (req *AdminUpdate) Validate() []helper.ValidationError {
+func (req *Update) Validate() []helper.ValidationError {
 	var ve validator.ValidationErrors
 
 	if err := validator.New().Struct(req); err != nil {

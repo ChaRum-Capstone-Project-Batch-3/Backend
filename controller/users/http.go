@@ -27,8 +27,8 @@ func NewUserController(userUC users.UseCase) *UserController {
 Create
 */
 
-func (userCtrl *UserController) UserRegister(c echo.Context) error {
-	userInput := request.UserRegister{}
+func (userCtrl *UserController) Register(c echo.Context) error {
+	userInput := request.Register{}
 
 	if c.Bind(&userInput) != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
@@ -46,10 +46,16 @@ func (userCtrl *UserController) UserRegister(c echo.Context) error {
 		})
 	}
 
-	user, token, err := userCtrl.userUseCase.UserRegister(userInput.ToDomain())
+	user, token, err := userCtrl.userUseCase.Register(userInput.ToDomain())
+
+	statusCode := http.StatusInternalServerError
+	if err == errors.New("email is already registered") || err == errors.New("username is already used") {
+		statusCode = http.StatusConflict
+	}
+
 	if err != nil {
-		return c.JSON(http.StatusConflict, helper.BaseResponse{
-			Status:  http.StatusConflict,
+		return c.JSON(statusCode, helper.BaseResponse{
+			Status:  statusCode,
 			Message: err.Error(),
 			Data:    nil,
 		})
@@ -107,7 +113,7 @@ func (userCtrl *UserController) Login(c echo.Context) error {
 	})
 }
 
-func (userCtrl *UserController) GetUsersWithPagination(c echo.Context) error {
+func (userCtrl *UserController) GetManyWithPagination(c echo.Context) error {
 	page, err := strconv.Atoi(c.Param("page"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
@@ -158,7 +164,7 @@ func (userCtrl *UserController) GetUsersWithPagination(c echo.Context) error {
 		})
 	}
 
-	users, totalPage, err := userCtrl.userUseCase.GetUsersWithSortAndOrder(page, limitNumber, sort, order)
+	users, totalPage, err := userCtrl.userUseCase.GetWithSortAndOrder(page, limitNumber, sort, order)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,
@@ -177,7 +183,7 @@ func (userCtrl *UserController) GetUsersWithPagination(c echo.Context) error {
 	})
 }
 
-func (userCtrl *UserController) GetUserByID(c echo.Context) error {
+func (userCtrl *UserController) GetByID(c echo.Context) error {
 	userID, err := primitive.ObjectIDFromHex(c.Param("id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
@@ -187,7 +193,7 @@ func (userCtrl *UserController) GetUserByID(c echo.Context) error {
 		})
 	}
 
-	user, err := userCtrl.userUseCase.GetUserByID(userID)
+	user, err := userCtrl.userUseCase.GetByID(userID)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, helper.BaseResponse{
 			Status:  http.StatusNotFound,
@@ -209,7 +215,7 @@ func (userCtrl *UserController) GetUserByID(c echo.Context) error {
 Update
 */
 
-func (userCtrl *UserController) AdminUpdate(c echo.Context) error {
+func (userCtrl *UserController) Update(c echo.Context) error {
 	userID, err := primitive.ObjectIDFromHex(c.Param("id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
@@ -219,7 +225,7 @@ func (userCtrl *UserController) AdminUpdate(c echo.Context) error {
 		})
 	}
 
-	userInput := request.AdminUpdate{}
+	userInput := request.Update{}
 	if c.Bind(&userInput) != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
