@@ -456,6 +456,7 @@ paths:
                 isActive:
                   type: boolean
                   example: false
+        required: true
       responses:
         '200':
           description: OK
