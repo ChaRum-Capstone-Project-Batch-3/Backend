@@ -38,11 +38,11 @@ func TestMain(m *testing.M) {
 
 func TestUserRegister(t *testing.T) {
 	t.Run("Test Case 1 | Valid Register", func(t *testing.T) {
-		userRepository.On("GetUserByEmail", userDomain.Email).Return(users.Domain{}, errors.New("not found")).Once()
-		userRepository.On("GetUserByUsername", userDomain.UserName).Return(users.Domain{}, errors.New("not found")).Once()
+		userRepository.On("GetByEmail", userDomain.Email).Return(users.Domain{}, errors.New("not found")).Once()
+		userRepository.On("GetByUsername", userDomain.UserName).Return(users.Domain{}, errors.New("not found")).Once()
 		userRepository.On("Create", mock.Anything).Return(userDomain, nil).Once()
 
-		actualUser, token, err := userUseCase.UserRegister(&userDomain)
+		actualUser, token, err := userUseCase.Register(&userDomain)
 
 		assert.NotNil(t, actualUser)
 		assert.NotEmpty(t, token)
@@ -51,9 +51,9 @@ func TestUserRegister(t *testing.T) {
 
 	t.Run("Test Case 2 | Invalid Register | Email already registered", func(t *testing.T) {
 		expectedErr := errors.New("email is already registered")
-		userRepository.On("GetUserByEmail", userDomain.Email).Return(userDomain, nil).Once()
+		userRepository.On("GetByEmail", userDomain.Email).Return(userDomain, nil).Once()
 
-		actualUser, token, err := userUseCase.UserRegister(&userDomain)
+		actualUser, token, err := userUseCase.Register(&userDomain)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Empty(t, token)
@@ -62,10 +62,10 @@ func TestUserRegister(t *testing.T) {
 
 	t.Run("Test Case 3 | Invalid Register | Username already used", func(t *testing.T) {
 		expectedErr := errors.New("username is already used")
-		userRepository.On("GetUserByEmail", userDomain.Email).Return(users.Domain{}, errors.New("not found")).Once()
-		userRepository.On("GetUserByUsername", userDomain.UserName).Return(userDomain, nil).Once()
+		userRepository.On("GetByEmail", userDomain.Email).Return(users.Domain{}, errors.New("not found")).Once()
+		userRepository.On("GetByUsername", userDomain.UserName).Return(userDomain, nil).Once()
 
-		actualUser, token, err := userUseCase.UserRegister(&userDomain)
+		actualUser, token, err := userUseCase.Register(&userDomain)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Empty(t, token)
@@ -74,11 +74,11 @@ func TestUserRegister(t *testing.T) {
 
 	t.Run("Test Case 4 | Invalid Register | Error when creating user", func(t *testing.T) {
 		expectedErr := errors.New("failed to register user")
-		userRepository.On("GetUserByEmail", userDomain.Email).Return(users.Domain{}, errors.New("not found")).Once()
-		userRepository.On("GetUserByUsername", userDomain.UserName).Return(users.Domain{}, errors.New("not found")).Once()
+		userRepository.On("GetByEmail", userDomain.Email).Return(users.Domain{}, errors.New("not found")).Once()
+		userRepository.On("GetByUsername", userDomain.UserName).Return(users.Domain{}, errors.New("not found")).Once()
 		userRepository.On("Create", mock.Anything).Return(users.Domain{}, expectedErr).Once()
 
-		actualUser, token, err := userUseCase.UserRegister(&userDomain)
+		actualUser, token, err := userUseCase.Register(&userDomain)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Empty(t, token)
@@ -92,7 +92,7 @@ func TestLogin(t *testing.T) {
 		encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte(copyDomain.Password), bcrypt.DefaultCost)
 		copyDomain.Password = string(encryptedPassword)
 
-		userRepository.On("GetUserByEmail", userDomain.Email).Return(copyDomain, nil).Once()
+		userRepository.On("GetByEmail", userDomain.Email).Return(copyDomain, nil).Once()
 
 		actualUsers, token, actualErr := userUseCase.Login(&userDomain)
 
@@ -103,7 +103,7 @@ func TestLogin(t *testing.T) {
 
 	t.Run("Test Case 2 | Invalid Login | Email not found", func(t *testing.T) {
 		expectedErr := errors.New("email is not registered")
-		userRepository.On("GetUserByEmail", userDomain.Email).Return(users.Domain{}, expectedErr).Once()
+		userRepository.On("GetByEmail", userDomain.Email).Return(users.Domain{}, expectedErr).Once()
 
 		actualUsers, token, err := userUseCase.Login(&userDomain)
 
@@ -114,7 +114,7 @@ func TestLogin(t *testing.T) {
 
 	t.Run("Test Case 3 | Invalid Login | Wrong password", func(t *testing.T) {
 		expectedErr := errors.New("wrong password")
-		userRepository.On("GetUserByEmail", userDomain.Email).Return(userDomain, nil).Once()
+		userRepository.On("GetByEmail", userDomain.Email).Return(userDomain, nil).Once()
 
 		actualUsers, token, actualErr := userUseCase.Login(&userDomain)
 
@@ -124,11 +124,11 @@ func TestLogin(t *testing.T) {
 	})
 }
 
-func TestGetUsersWithSortAndOrder(t *testing.T) {
+func TestGetWithSortAndOrder(t *testing.T) {
 	t.Run("Test Case 1 | Valid Get Users", func(t *testing.T) {
-		userRepository.On("GetUsersWithSortAndOrder", 0, 1, "createdAt", -1).Return([]users.Domain{userDomain}, 1, nil).Once()
+		userRepository.On("GetWithSortAndOrder", 0, 1, "createdAt", -1).Return([]users.Domain{userDomain}, 1, nil).Once()
 
-		actualUsers, totalData, actualErr := userUseCase.GetUsersWithSortAndOrder(1, 1, "createdAt", "desc")
+		actualUsers, totalData, actualErr := userUseCase.GetWithSortAndOrder(1, 1, "createdAt", "desc")
 
 		assert.NotZero(t, totalData)
 		assert.NotNil(t, actualUsers)
@@ -137,9 +137,9 @@ func TestGetUsersWithSortAndOrder(t *testing.T) {
 
 	t.Run("Test Case 2 | Invalid Get Users | Error when getting users", func(t *testing.T) {
 		expectedErr := errors.New("failed to get users")
-		userRepository.On("GetUsersWithSortAndOrder", 0, 1, "createdAt", 1).Return([]users.Domain{}, 1, expectedErr).Once()
+		userRepository.On("GetWithSortAndOrder", 0, 1, "createdAt", 1).Return([]users.Domain{}, 1, expectedErr).Once()
 
-		actualUsers, totalData, actualErr := userUseCase.GetUsersWithSortAndOrder(1, 1, "createdAt", "asc")
+		actualUsers, totalData, actualErr := userUseCase.GetWithSortAndOrder(1, 1, "createdAt", "asc")
 
 		assert.Zero(t, totalData)
 		assert.Equal(t, []users.Domain{}, actualUsers)
@@ -147,11 +147,11 @@ func TestGetUsersWithSortAndOrder(t *testing.T) {
 	})
 }
 
-func TestGetUserByID(t *testing.T) {
+func TestGetByID(t *testing.T) {
 	t.Run("Test Case 1 | Valid Get User", func(t *testing.T) {
-		userRepository.On("GetUserByID", userDomain.Id).Return(userDomain, nil).Once()
+		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
 
-		actualUser, actualErr := userUseCase.GetUserByID(userDomain.Id)
+		actualUser, actualErr := userUseCase.GetByID(userDomain.Id)
 
 		assert.NotNil(t, actualUser)
 		assert.Nil(t, actualErr)
@@ -159,9 +159,9 @@ func TestGetUserByID(t *testing.T) {
 
 	t.Run("Test Case 2 | Invalid Get User | Error when getting user", func(t *testing.T) {
 		expectedErr := errors.New("failed to get user")
-		userRepository.On("GetUserByID", userDomain.Id).Return(users.Domain{}, expectedErr).Once()
+		userRepository.On("GetByID", userDomain.Id).Return(users.Domain{}, expectedErr).Once()
 
-		actualUser, actualErr := userUseCase.GetUserByID(userDomain.Id)
+		actualUser, actualErr := userUseCase.GetByID(userDomain.Id)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Equal(t, expectedErr, actualErr)
@@ -176,9 +176,9 @@ func TestUpdate(t *testing.T) {
 		copyDomain.DisplayName = "new display"
 		copyDomain.IsActive = false
 
-		userRepository.On("GetUserByID", userDomain.Id).Return(userDomain, nil).Once()
-		userRepository.On("GetUserByEmail", copyDomain.Email).Return(users.Domain{}, errors.New("not found")).Once()
-		userRepository.On("GetUserByUsername", copyDomain.UserName).Return(users.Domain{}, errors.New("not found")).Once()
+		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
+		userRepository.On("GetByEmail", copyDomain.Email).Return(users.Domain{}, errors.New("not found")).Once()
+		userRepository.On("GetByUsername", copyDomain.UserName).Return(users.Domain{}, errors.New("not found")).Once()
 		userRepository.On("Update", mock.Anything).Return(copyDomain, nil).Once()
 
 		actualUser, actualErr := userUseCase.Update(copyDomain.Id, &copyDomain)
@@ -189,7 +189,7 @@ func TestUpdate(t *testing.T) {
 
 	t.Run("Test Case 2 | Invalid Update | Error when getting user", func(t *testing.T) {
 		expectedErr := errors.New("failed to get user")
-		userRepository.On("GetUserByID", userDomain.Id).Return(users.Domain{}, expectedErr).Once()
+		userRepository.On("GetByID", userDomain.Id).Return(users.Domain{}, expectedErr).Once()
 
 		actualUser, actualErr := userUseCase.Update(userDomain.Id, &userDomain)
 
@@ -199,7 +199,7 @@ func TestUpdate(t *testing.T) {
 
 	t.Run("Test Case 3 | Invalid Update | Error when updating user", func(t *testing.T) {
 		expectedErr := errors.New("failed to update user")
-		userRepository.On("GetUserByID", userDomain.Id).Return(userDomain, nil).Once()
+		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
 		userRepository.On("Update", mock.Anything).Return(users.Domain{}, expectedErr).Once()
 
 		actualUser, actualErr := userUseCase.Update(userDomain.Id, &userDomain)
@@ -212,8 +212,8 @@ func TestUpdate(t *testing.T) {
 		expectedErr := errors.New("email is already registered")
 		copyDomain := userDomain
 		copyDomain.Email = "existemail@charum.com"
-		userRepository.On("GetUserByID", userDomain.Id).Return(userDomain, nil).Once()
-		userRepository.On("GetUserByEmail", copyDomain.Email).Return(copyDomain, nil).Once()
+		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
+		userRepository.On("GetByEmail", copyDomain.Email).Return(copyDomain, nil).Once()
 
 		actualUser, actualErr := userUseCase.Update(userDomain.Id, &copyDomain)
 
@@ -226,8 +226,8 @@ func TestUpdate(t *testing.T) {
 		copyDomain := userDomain
 		copyDomain.UserName = "existusername"
 
-		userRepository.On("GetUserByID", userDomain.Id).Return(userDomain, nil).Once()
-		userRepository.On("GetUserByUsername", copyDomain.UserName).Return(copyDomain, nil).Once()
+		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
+		userRepository.On("GetByUsername", copyDomain.UserName).Return(copyDomain, nil).Once()
 
 		actualUser, actualErr := userUseCase.Update(userDomain.Id, &copyDomain)
 
@@ -238,7 +238,7 @@ func TestUpdate(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	t.Run("Test Case 1 | Valid Delete", func(t *testing.T) {
-		userRepository.On("GetUserByID", userDomain.Id).Return(userDomain, nil).Once()
+		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
 		userRepository.On("Delete", userDomain.Id).Return(nil).Once()
 
 		actualUser, actualErr := userUseCase.Delete(userDomain.Id)
@@ -249,7 +249,7 @@ func TestDelete(t *testing.T) {
 
 	t.Run("Test Case 2 | Invalid Delete | Error when getting user", func(t *testing.T) {
 		expectedErr := errors.New("failed to get user")
-		userRepository.On("GetUserByID", userDomain.Id).Return(users.Domain{}, expectedErr).Once()
+		userRepository.On("GetByID", userDomain.Id).Return(users.Domain{}, expectedErr).Once()
 
 		actualUser, actualErr := userUseCase.Delete(userDomain.Id)
 
@@ -259,7 +259,7 @@ func TestDelete(t *testing.T) {
 
 	t.Run("Test Case 3 | Invalid Delete | Error when deleting user", func(t *testing.T) {
 		expectedErr := errors.New("failed to delete user")
-		userRepository.On("GetUserByID", userDomain.Id).Return(userDomain, nil).Once()
+		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
 		userRepository.On("Delete", userDomain.Id).Return(expectedErr).Once()
 
 		actualUser, actualErr := userUseCase.Delete(userDomain.Id)

@@ -35,8 +35,8 @@ func (_m *UseCase) Delete(id primitive.ObjectID) (users.Domain, error) {
 	return r0, r1
 }
 
-// GetUserByID provides a mock function with given fields: id
-func (_m *UseCase) GetUserByID(id primitive.ObjectID) (users.Domain, error) {
+// GetByID provides a mock function with given fields: id
+func (_m *UseCase) GetByID(id primitive.ObjectID) (users.Domain, error) {
 	ret := _m.Called(id)
 
 	var r0 users.Domain
@@ -56,8 +56,8 @@ func (_m *UseCase) GetUserByID(id primitive.ObjectID) (users.Domain, error) {
 	return r0, r1
 }
 
-// GetUsersWithSortAndOrder provides a mock function with given fields: page, limit, sort, order
-func (_m *UseCase) GetUsersWithSortAndOrder(page int, limit int, sort string, order string) ([]users.Domain, int, error) {
+// GetWithSortAndOrder provides a mock function with given fields: page, limit, sort, order
+func (_m *UseCase) GetWithSortAndOrder(page int, limit int, sort string, order string) ([]users.Domain, int, error) {
 	ret := _m.Called(page, limit, sort, order)
 
 	var r0 []users.Domain
@@ -114,29 +114,8 @@ func (_m *UseCase) Login(domain *users.Domain) (users.Domain, string, error) {
 	return r0, r1, r2
 }
 
-// Update provides a mock function with given fields: id, domain
-func (_m *UseCase) Update(id primitive.ObjectID, domain *users.Domain) (users.Domain, error) {
-	ret := _m.Called(id, domain)
-
-	var r0 users.Domain
-	if rf, ok := ret.Get(0).(func(primitive.ObjectID, *users.Domain) users.Domain); ok {
-		r0 = rf(id, domain)
-	} else {
-		r0 = ret.Get(0).(users.Domain)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(primitive.ObjectID, *users.Domain) error); ok {
-		r1 = rf(id, domain)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// UserRegister provides a mock function with given fields: domain
-func (_m *UseCase) UserRegister(domain *users.Domain) (users.Domain, string, error) {
+// Register provides a mock function with given fields: domain
+func (_m *UseCase) Register(domain *users.Domain) (users.Domain, string, error) {
 	ret := _m.Called(domain)
 
 	var r0 users.Domain
@@ -161,6 +140,27 @@ func (_m *UseCase) UserRegister(domain *users.Domain) (users.Domain, string, err
 	}
 
 	return r0, r1, r2
+}
+
+// Update provides a mock function with given fields: id, domain
+func (_m *UseCase) Update(id primitive.ObjectID, domain *users.Domain) (users.Domain, error) {
+	ret := _m.Called(id, domain)
+
+	var r0 users.Domain
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID, *users.Domain) users.Domain); ok {
+		r0 = rf(id, domain)
+	} else {
+		r0 = ret.Get(0).(users.Domain)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(primitive.ObjectID, *users.Domain) error); ok {
+		r1 = rf(id, domain)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 type mockConstructorTestingTNewUseCase interface {

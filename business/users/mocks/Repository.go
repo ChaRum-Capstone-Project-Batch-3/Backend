@@ -49,8 +49,8 @@ func (_m *Repository) Delete(id primitive.ObjectID) error {
 	return r0
 }
 
-// GetUserByEmail provides a mock function with given fields: email
-func (_m *Repository) GetUserByEmail(email string) (users.Domain, error) {
+// GetByEmail provides a mock function with given fields: email
+func (_m *Repository) GetByEmail(email string) (users.Domain, error) {
 	ret := _m.Called(email)
 
 	var r0 users.Domain
@@ -70,8 +70,8 @@ func (_m *Repository) GetUserByEmail(email string) (users.Domain, error) {
 	return r0, r1
 }
 
-// GetUserByID provides a mock function with given fields: id
-func (_m *Repository) GetUserByID(id primitive.ObjectID) (users.Domain, error) {
+// GetByID provides a mock function with given fields: id
+func (_m *Repository) GetByID(id primitive.ObjectID) (users.Domain, error) {
 	ret := _m.Called(id)
 
 	var r0 users.Domain
@@ -91,8 +91,8 @@ func (_m *Repository) GetUserByID(id primitive.ObjectID) (users.Domain, error) {
 	return r0, r1
 }
 
-// GetUserByUsername provides a mock function with given fields: username
-func (_m *Repository) GetUserByUsername(username string) (users.Domain, error) {
+// GetByUsername provides a mock function with given fields: username
+func (_m *Repository) GetByUsername(username string) (users.Domain, error) {
 	ret := _m.Called(username)
 
 	var r0 users.Domain
@@ -112,8 +112,8 @@ func (_m *Repository) GetUserByUsername(username string) (users.Domain, error) {
 	return r0, r1
 }
 
-// GetUsersWithSortAndOrder provides a mock function with given fields: skip, limit, sort, order
-func (_m *Repository) GetUsersWithSortAndOrder(skip int, limit int, sort string, order int) ([]users.Domain, int, error) {
+// GetWithSortAndOrder provides a mock function with given fields: skip, limit, sort, order
+func (_m *Repository) GetWithSortAndOrder(skip int, limit int, sort string, order int) ([]users.Domain, int, error) {
 	ret := _m.Called(skip, limit, sort, order)
 
 	var r0 []users.Domain
