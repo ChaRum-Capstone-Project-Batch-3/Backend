@@ -5,6 +5,7 @@ import (
 	"charum/controller/users/request"
 	"charum/controller/users/response"
 	"charum/helper"
+	"charum/util"
 	"errors"
 	"net/http"
 	"strconv"
@@ -205,6 +206,43 @@ func (userCtrl *UserController) GetByID(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
 		Message: "success to get user by id",
+		Data: map[string]interface{}{
+			"user": response.FromDomain(user),
+		},
+	})
+}
+
+func (userCtrl *UserController) GetProfile(c echo.Context) error {
+	id, err := util.GetUIDFromToken(c)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, helper.BaseResponse{
+			Status:  http.StatusUnauthorized,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	userID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "invalid token",
+			Data:    nil,
+		})
+	}
+
+	user, err := userCtrl.userUseCase.GetByID(userID)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, helper.BaseResponse{
+			Status:  http.StatusNotFound,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success to get user profile",
 		Data: map[string]interface{}{
 			"user": response.FromDomain(user),
 		},
