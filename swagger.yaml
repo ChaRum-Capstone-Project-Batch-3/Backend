@@ -7,16 +7,18 @@ info:
 servers:
   - url: http://example.com/api/v1
 tags:
-  - name: user
+  - name: User
     description: Operations about user
+  - name: Admin
+    description: Operations for admin
 paths:
   /user/register:
     post:
       tags:
-        - user
+        - User
       summary: Registration for user
       description: This registration is used by user
-      operationId: UserRegister
+      operationId: Register
       requestBody:
         content:
           application/json:
@@ -44,14 +46,20 @@ paths:
               schema:
                 type: object
                 properties:
+                  status:
+                    type: integer
+                    example: 201
                   message:
                     type: string
                     example: success to register
-                  token:
-                    type: string
-                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2Mzc5ZmU4ZGFkMzNlYzQyNTE3MDBkZWQiLCJyb2xlIjoidXNlciIsImlzcyI6ImNoYXJ1bSIsImV4cCI6MTY2ODk0Nzg3NiwibmJmIjoxNjY4OTQ0Mjc2LCJpYXQiOjE2Njg5NDQyNzZ9._hk2Y2pt6tADTN0aHTukPNd2O_wRdHsgn3Vo4jIX_zc
-                  user:
-                    $ref: '#/components/schemas/User'
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2Mzc5ZmU4ZGFkMzNlYzQyNTE3MDBkZWQiLCJyb2xlIjoidXNlciIsImlzcyI6ImNoYXJ1bSIsImV4cCI6MTY2ODk0Nzg3NiwibmJmIjoxNjY4OTQ0Mjc2LCJpYXQiOjE2Njg5NDQyNzZ9._hk2Y2pt6tADTN0aHTukPNd2O_wRdHsgn3Vo4jIX_zc
+                      user:
+                        $ref: '#/components/schemas/User'
         '400':
           description: Bad Request
           content:
@@ -59,9 +67,21 @@ paths:
               schema:
                 type: object
                 properties:
+                  status:
+                    type: integer
+                    example: 400
                   message:
                     type: string
-                    example: invalid request
+                    example: validation failed
+                  data:
+                    type: object
+                    properties:
+                      field:
+                        type: string
+                        example: password
+                      message:
+                        type: string
+                        example: This field must be at least 8 characters
         '409':
           description: Conflict
           content:
@@ -69,15 +89,37 @@ paths:
               schema:
                 type: object
                 properties:
+                  status:
+                    type: integer
+                    example: 409
                   message:
                     type: string
                     example: email is already registered
+                  data:
+                    type: string
+                    example: null
+        '500':
+          description: Internal Server Error
+          content:
+           application/json:
+            schema:
+              type: object
+              properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to register user
+                  data:
+                    type: string
+                    example: null
   /user/login:
     post:
       tags:
-        - user
+        - User
       summary: Logs user into the system
-      description: Get token for user
+      description: Get token for user and user's data
       operationId: Login
       requestBody:
         content:
@@ -100,12 +142,20 @@ paths:
               schema:
                 type: object
                 properties:
+                  status:
+                    type: integer
+                    example: 200
                   message:
                     type: string
                     example: success to login
-                  token:
-                    type: string
-                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2Mzc5ZmU4ZGFkMzNlYzQyNTE3MDBkZWQiLCJyb2xlIjoidXNlciIsImlzcyI6ImNoYXJ1bSIsImV4cCI6MTY2ODk0Nzg3NiwibmJmIjoxNjY4OTQ0Mjc2LCJpYXQiOjE2Njg5NDQyNzZ9._hk2Y2pt6tADTN0aHTukPNd2O_wRdHsgn3Vo4jIX_zc
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2Mzc5ZmU4ZGFkMzNlYzQyNTE3MDBkZWQiLCJyb2xlIjoidXNlciIsImlzcyI6ImNoYXJ1bSIsImV4cCI6MTY2ODk0Nzg3NiwibmJmIjoxNjY4OTQ0Mjc2LCJpYXQiOjE2Njg5NDQyNzZ9._hk2Y2pt6tADTN0aHTukPNd2O_wRdHsgn3Vo4jIX_zc
+                      user:
+                        $ref: '#/components/schemas/User'
         '400':
           description: Bad Request
           content:
@@ -113,9 +163,21 @@ paths:
               schema:
                 type: object
                 properties:
+                  status:
+                    type: integer
+                    example: 400
                   message:
                     type: string
-                    example: invalid request
+                    example: validation failed
+                  data:
+                    type: object
+                    properties:
+                      field:
+                        type: string
+                        example: password
+                      message:
+                        type: string
+                        example: This field must be at least 8 characters
         '401':
           description: Unauthorized
           content:
@@ -123,10 +185,461 @@ paths:
               schema:
                 type: object
                 properties:
+                  status:
+                    type: integer
+                    example: 400
                   message:
                     type: string
                     example: email is not registered
+                  data:
+                    type: string
+                    example: null
+  /user/profile:
+    post:
+      tags:
+        - User
+      summary: Get user profile
+      description: Get user's profile data
+      operationId: GetProfile
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to login
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2Mzc5ZmU4ZGFkMzNlYzQyNTE3MDBkZWQiLCJyb2xlIjoidXNlciIsImlzcyI6ImNoYXJ1bSIsImV4cCI6MTY2ODk0Nzg3NiwibmJmIjoxNjY4OTQ0Mjc2LCJpYXQiOjE2Njg5NDQyNzZ9._hk2Y2pt6tADTN0aHTukPNd2O_wRdHsgn3Vo4jIX_zc
+                      user:
+                        $ref: '#/components/schemas/User'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: validation failed
+                  data:
+                    type: object
+                    properties:
+                      field:
+                        type: string
+                        example: password
+                      message:
+                        type: string
+                        example: This field must be at least 8 characters
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: email is not registered
+                  data:
+                    type: string
+                    example: null
+  /admin/{page}:
+    get:
+      tags:
+        - Admin
+      summary: Get user list
+      description: Get user list with pagination and sorting
+      operationId: GetManyWithPagination
+      parameters:
+        - in: path
+          name: page
+          description: page displayed
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: limit
+          description: user limitation for per page
+          required: false
+          schema:
+            type: integer
+            example: 25
+            default: 25
+        - in: query
+          name: sort
+          description: define parameter for sorting. available options = id, email, userName, displayName, createdAt, or updatedAt
+          required: false
+          schema:
+           type: string
+           example: createdAt
+           default: createdAt
+        - in: query
+          name: order
+          description: define the order of the selected sort. available options = asc or desc
+          required: false
+          schema:
+            type: string
+            example: desc
+            default: desc
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to get user by id
+                  data:
+                    type: object
+                    properties:
+                      totalPage:
+                        type: integer
+                        example: 2
+                      user:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/User'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: page must be a number
+                  data:
+                    type: string
+                    example: null
+                    
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to get users
+                  data:
+                    type: string
+                    example: null
+  /admin/user/{id}:
+    get:
+      tags:
+        - Admin
+      summary: Get user profile
+      description: Get user's profile data
+      operationId: GetByID
+      parameters:
+        - in: path
+          name: id
+          description: user ID
+          required: true
+          schema:
+            type: string
+            example: 637dfc9bb09d0bdd7a2fe3de
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to get user by id
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: invalid id
+                  data:
+                    type: string
+                    example: null
+                    
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: failed to get user
+                  data:
+                    type: string
+                    example: null
+    put:
+      tags:
+        - Admin
+      summary: Update user profile
+      description: Update user's profile data
+      operationId: Update
+      parameters:
+        - in: path
+          name: id
+          description: user ID
+          required: true
+          schema:
+            type: string
+            example: 637dfc9bb09d0bdd7a2fe3de
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to update
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: invalid id
+                  data:
+                    type: string
+                    example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: unauthorized
+                  data:
+                    type: string
+                    example: null
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: failed to get user
+                  data:
+                    type: string
+                    example: null
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 409
+                  message:
+                    type: string
+                    example: email is already used
+                  data:
+                    type: string
+                    example: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to update user
+                  data:
+                    type: string
+                    example: null
+    delete:
+      tags:
+        - Admin
+      summary: Delete user profile
+      description: Delete user's data
+      operationId: Delete
+      parameters:
+        - in: path
+          name: id
+          description: user ID
+          required: true
+          schema:
+            type: string
+            example: 637dfc9bb09d0bdd7a2fe3de
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to delete user
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: invalid id
+                  data:
+                    type: string
+                    example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: unauthorized
+                  data:
+                    type: string
+                    example: null
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: failed to get user
+                  data:
+                    type: string
+                    example: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to delete user
+                  data:
+                    type: string
+                    example: null
 components:
+  securitySchemes:
+      bearerAuth:
+        type: http
+        scheme: bearer
+        bearerFormat: JWT
   schemas:
     User:
       type: object
@@ -151,3 +664,5 @@ components:
         role:
           type: string
           example: user
+security:
+  - bearerAuth: []
