@@ -1,7 +1,7 @@
 package driver
 
 import (
-	userDomain "charum/businesses/users"
+	userDomain "charum/business/users"
 	userDB "charum/driver/mongo/users"
 
 	"go.mongodb.org/mongo-driver/mongo"

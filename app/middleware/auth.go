@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"charum/helper"
 	"charum/util"
 	"net/http"
 	"strings"
@@ -29,8 +30,10 @@ func (rm RoleMiddleware) Check(next echo.HandlerFunc) echo.HandlerFunc {
 			}
 		}
 
-		return c.JSON(http.StatusUnauthorized, map[string]string{
-			"message": "unauthorized",
+		return c.JSON(http.StatusUnauthorized, helper.BaseResponse{
+			Status:  http.StatusUnauthorized,
+			Message: "unauthorized",
+			Data:    nil,
 		})
 	}
 }

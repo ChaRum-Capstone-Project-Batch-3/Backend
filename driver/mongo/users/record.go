@@ -1,7 +1,7 @@
 package users
 
 import (
-	"charum/businesses/users"
+	"charum/business/users"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -44,4 +44,12 @@ func (user *Model) ToDomain() users.Domain {
 		CreatedAt:   user.CreatedAt,
 		UpdatedAt:   user.UpdatedAt,
 	}
+}
+
+func ToArrayDomain(data []Model) []users.Domain {
+	var array []users.Domain
+	for _, v := range data {
+		array = append(array, v.ToDomain())
+	}
+	return array
 }

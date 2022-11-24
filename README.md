@@ -22,3 +22,9 @@ Charum is application for forum group discussion for many topics. This applicati
 ### Run on Local Development
 1. Run the server
     `air`
+
+### Run Unit Testing on Use Case
+1. Run the test with cover
+    `go test -coverprofile=cover ./business/...`
+2. Show the coverage
+    `go tool cover -html=cover`
