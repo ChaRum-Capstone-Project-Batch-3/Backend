@@ -113,30 +113,23 @@ func (uu *UserUseCase) Update(id primitive.ObjectID, domain *Domain) (Domain, er
 		return Domain{}, errors.New("failed to get user")
 	}
 
-	if domain.Email != "" && domain.Email != user.Email {
+	if domain.Email != user.Email {
 		_, err = uu.userRepository.GetByEmail(domain.Email)
 		if err == nil {
 			return Domain{}, errors.New("email is already registered")
 		}
-		user.Email = domain.Email
 	}
 
-	if domain.UserName != "" && domain.UserName != user.UserName {
+	if domain.UserName != user.UserName {
 		_, err = uu.userRepository.GetByUsername(domain.UserName)
 		if err == nil {
 			return Domain{}, errors.New("username is already used")
 		}
-		user.UserName = domain.UserName
 	}
 
-	if domain.DisplayName != "" {
-		user.DisplayName = domain.DisplayName
-	}
-
-	if domain.IsActive != user.IsActive {
-		user.IsActive = domain.IsActive
-	}
-
+	user.Email = domain.Email
+	user.UserName = domain.UserName
+	user.DisplayName = domain.DisplayName
 	user.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
 
 	updatedUser, err := uu.userRepository.Update(&user)
@@ -145,6 +138,40 @@ func (uu *UserUseCase) Update(id primitive.ObjectID, domain *Domain) (Domain, er
 	}
 
 	return updatedUser, nil
+}
+
+func (uu *UserUseCase) Suspend(id primitive.ObjectID) (Domain, error) {
+	user, err := uu.userRepository.GetByID(id)
+	if err != nil {
+		return Domain{}, errors.New("failed to get user")
+	}
+
+	user.IsActive = false
+	user.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
+
+	suspendedUser, err := uu.userRepository.Update(&user)
+	if err != nil {
+		return Domain{}, errors.New("failed to suspend user")
+	}
+
+	return suspendedUser, nil
+}
+
+func (uu *UserUseCase) Unsuspend(id primitive.ObjectID) (Domain, error) {
+	user, err := uu.userRepository.GetByID(id)
+	if err != nil {
+		return Domain{}, errors.New("failed to get user")
+	}
+
+	user.IsActive = true
+	user.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
+
+	unsuspendedUser, err := uu.userRepository.Update(&user)
+	if err != nil {
+		return Domain{}, errors.New("failed to unsuspend user")
+	}
+
+	return unsuspendedUser, nil
 }
 
 /*

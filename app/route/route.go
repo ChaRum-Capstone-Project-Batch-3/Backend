@@ -33,9 +33,12 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	user.GET("/profile", cl.UserController.GetProfile, authMiddleware.Check)
 
 	admin := apiV1.Group("/admin", adminMiddleware.Check)
+
 	adminUser := admin.Group("/user")
 	adminUser.GET("/:page", cl.UserController.GetManyWithPagination)
 	adminUser.GET("/id/:id", cl.UserController.GetByID)
 	adminUser.PUT("/id/:id", cl.UserController.Update)
 	adminUser.DELETE("/id/:id", cl.UserController.Delete)
+	adminUser.PUT("/suspend/:id", cl.UserController.Suspend)
+	adminUser.PUT("/unsuspend/:id", cl.UserController.Unsuspend)
 }
