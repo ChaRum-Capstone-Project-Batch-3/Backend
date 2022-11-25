@@ -15,6 +15,7 @@ import (
 	_userController "charum/controller/users"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
@@ -29,6 +30,11 @@ func main() {
 	routeController := _route.ControllerList{
 		UserController: userController,
 	}
+
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+	}))
 
 	routeController.Init(e)
 
