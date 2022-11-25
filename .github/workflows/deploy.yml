@@ -9,9 +9,6 @@ on:
 
 jobs:
 
-  testing:
-    runs-on: self-hosted
-
   build:
 
     runs-on: self-hosted
