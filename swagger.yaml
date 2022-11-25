@@ -261,7 +261,7 @@ paths:
                   data:
                     type: string
                     example: null
-  /admin/{page}:
+  /admin/user/{page}:
     get:
       tags:
         - Admin
