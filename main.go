@@ -35,7 +35,7 @@ func main() {
 	appPort := fmt.Sprintf(":%s", _util.GetConfig("APP_PORT"))
 
 	go func() {
-		if err := e.Start(appPort); err != nil && err != http.ErrServerClosed {
+		if err := e.StartTLS(appPort, "cert.pem", "key.pem"); err != nil && err != http.ErrServerClosed {
 			e.Logger.Fatal("shutting down the server")
 		}
 	}()

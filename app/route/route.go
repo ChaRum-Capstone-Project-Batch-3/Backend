@@ -16,8 +16,9 @@ type ControllerList struct {
 func (cl *ControllerList) Init(e *echo.Echo) {
 	_middleware.InitLogger(e)
 
-	userMiddleware := _middleware.RoleMiddleware{Role: []string{"user"}}
+	// userMiddleware := _middleware.RoleMiddleware{Role: []string{"user"}}
 	adminMiddleware := _middleware.RoleMiddleware{Role: []string{"admin"}}
+	authMiddleware := _middleware.RoleMiddleware{Role: []string{"user", "admin"}}
 
 	apiV1 := e.Group("/api/v1")
 	apiV1.GET("", func(c echo.Context) error {
@@ -29,7 +30,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	user := apiV1.Group("/user")
 	user.POST("/register", cl.UserController.Register)
 	user.POST("/login", cl.UserController.Login)
-	user.GET("/profile", cl.UserController.GetProfile, userMiddleware.Check)
+	user.GET("/profile", cl.UserController.GetProfile, authMiddleware.Check)
 
 	admin := apiV1.Group("/admin", adminMiddleware.Check)
 	adminUser := admin.Group("/user")
