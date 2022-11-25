@@ -308,9 +308,15 @@ func (userCtrl *UserController) Suspend(c echo.Context) error {
 	}
 
 	user, err := userCtrl.userUseCase.Suspend(userID)
+
+	statusCode := http.StatusInternalServerError
+	if err == errors.New("failed to get user") {
+		statusCode = http.StatusNotFound
+	}
+
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
-			Status:  http.StatusInternalServerError,
+		return c.JSON(statusCode, helper.BaseResponse{
+			Status:  statusCode,
 			Message: err.Error(),
 			Data:    nil,
 		})
@@ -336,9 +342,15 @@ func (userCtrl *UserController) Unsuspend(c echo.Context) error {
 	}
 
 	user, err := userCtrl.userUseCase.Unsuspend(userID)
+
+	statusCode := http.StatusInternalServerError
+	if err == errors.New("failed to get user") {
+		statusCode = http.StatusNotFound
+	}
+
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
-			Status:  http.StatusInternalServerError,
+		return c.JSON(statusCode, helper.BaseResponse{
+			Status:  statusCode,
 			Message: err.Error(),
 			Data:    nil,
 		})
