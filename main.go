@@ -15,6 +15,7 @@ import (
 	_userController "charum/controller/users"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
@@ -30,12 +31,17 @@ func main() {
 		UserController: userController,
 	}
 
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+	}))
+
 	routeController.Init(e)
 
 	appPort := fmt.Sprintf(":%s", _util.GetConfig("APP_PORT"))
 
 	go func() {
-		if err := e.Start(appPort); err != nil && err != http.ErrServerClosed {
+		if err := e.StartTLS(appPort, "cert.pem", "key.pem"); err != nil && err != http.ErrServerClosed {
 			e.Logger.Fatal("shutting down the server")
 		}
 	}()

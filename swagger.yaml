@@ -195,7 +195,7 @@ paths:
                     type: string
                     example: null
   /user/profile:
-    post:
+    get:
       tags:
         - User
       summary: Get user profile
@@ -261,7 +261,7 @@ paths:
                   data:
                     type: string
                     example: null
-  /admin/{page}:
+  /admin/user/{page}:
     get:
       tags:
         - Admin
@@ -357,7 +357,7 @@ paths:
                   data:
                     type: string
                     example: null
-  /admin/user/{id}:
+  /admin/user/id/{id}:
     get:
       tags:
         - Admin
@@ -438,6 +438,25 @@ paths:
           schema:
             type: string
             example: 637dfc9bb09d0bdd7a2fe3de
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: user@charum.com
+                userName:
+                  type: string
+                  example: charum-user
+                displayName:
+                  type: string
+                  example: charum user
+                isActive:
+                  type: boolean
+                  example: false
+        required: true
       responses:
         '200':
           description: OK

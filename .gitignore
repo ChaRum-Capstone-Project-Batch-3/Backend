@@ -6,3 +6,7 @@ tmp
 
 # testing
 *cover
+
+# ssl
+cert.pem
+key.pem

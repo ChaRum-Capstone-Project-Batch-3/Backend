@@ -1,0 +1,25 @@
+
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: self-hosted
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Stopping old docker container
+      run: sudo docker stop /charum-backend || true
+    - name: Removing old docker container
+      run: sudo docker rm /charum-backend || true
+    - name: Build docker images
+      run: sudo docker build -t charum-backend:1.0.0 .
+    - name: Run docker container
+      run: sudo docker run -itd -v /home/ubuntu/cert.pem:/app/cert.pem -v /home/ubuntu/key.pem:/app/key.pem -v /home/ubuntu/.env:/app/.env --name charum-backend -p 443:443 charum-backend:1.0.0
