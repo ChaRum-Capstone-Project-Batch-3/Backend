@@ -357,7 +357,7 @@ paths:
                   data:
                     type: string
                     example: null
-  /admin/user/{id}:
+  /admin/user/id/{id}:
     get:
       tags:
         - Admin
