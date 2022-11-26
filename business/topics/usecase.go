@@ -6,12 +6,12 @@ import (
 	"time"
 )
 
-type TopicsUseCase struct {
+type TopicUseCase struct {
 	topicsRepository Repository
 }
 
 func NewTopicUseCase(tr Repository) UseCase {
-	return &TopicsUseCase{
+	return &TopicUseCase{
 		topicsRepository: tr,
 	}
 }
@@ -20,7 +20,7 @@ func NewTopicUseCase(tr Repository) UseCase {
 Create topic
 */
 
-func (uc *TopicsUseCase) CreateTopic(domain *Domain) (Domain, error) {
+func (uc *TopicUseCase) CreateTopic(domain *Domain) (Domain, error) {
 	domain.Id = primitive.NewObjectID()
 	domain.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
 	domain.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
@@ -36,7 +36,7 @@ func (uc *TopicsUseCase) CreateTopic(domain *Domain) (Domain, error) {
 Get topic by id
 */
 
-func (uc *TopicsUseCase) GetByID(id primitive.ObjectID) (Domain, error) {
+func (uc *TopicUseCase) GetByID(id primitive.ObjectID) (Domain, error) {
 	result, err := uc.topicsRepository.GetByID(id)
 	if err != nil {
 		return Domain{}, errors.New("failed to get topic")
@@ -47,7 +47,7 @@ func (uc *TopicsUseCase) GetByID(id primitive.ObjectID) (Domain, error) {
 /*
 Update topic
 */
-func (uc *TopicsUseCase) UpdateTopic(id primitive.ObjectID, domain *Domain) (Domain, error) {
+func (uc *TopicUseCase) UpdateTopic(id primitive.ObjectID, domain *Domain) (Domain, error) {
 	result, err := uc.topicsRepository.GetByID(id)
 	if err != nil {
 		return Domain{}, errors.New("failed to get topic")
@@ -73,7 +73,7 @@ func (uc *TopicsUseCase) UpdateTopic(id primitive.ObjectID, domain *Domain) (Dom
 Delete topic
 */
 
-func (uc *TopicsUseCase) DeleteTopic(id primitive.ObjectID) (Domain, error) {
+func (uc *TopicUseCase) DeleteTopic(id primitive.ObjectID) (Domain, error) {
 	result, err := uc.topicsRepository.GetByID(id)
 	if err != nil {
 		return Domain{}, errors.New("failed to get topic")
