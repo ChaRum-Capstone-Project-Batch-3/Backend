@@ -2,6 +2,7 @@ package route
 
 import (
 	_middleware "charum/app/middleware"
+	"charum/controller/topics"
 	"charum/controller/users"
 	"net/http"
 
@@ -11,6 +12,7 @@ import (
 type ControllerList struct {
 	LoggerMiddleware echo.MiddlewareFunc
 	UserController   *users.UserController
+	TopicController  *topics.TopicController
 }
 
 func (cl *ControllerList) Init(e *echo.Echo) {
@@ -33,9 +35,20 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	user.GET("/profile", cl.UserController.GetProfile, authMiddleware.Check)
 
 	admin := apiV1.Group("/admin", adminMiddleware.Check)
+
 	adminUser := admin.Group("/user")
 	adminUser.GET("/:page", cl.UserController.GetManyWithPagination)
 	adminUser.GET("/id/:id", cl.UserController.GetByID)
 	adminUser.PUT("/id/:id", cl.UserController.Update)
 	adminUser.DELETE("/id/:id", cl.UserController.Delete)
+	adminUser.PUT("/suspend/:id", cl.UserController.Suspend)
+	adminUser.PUT("/unsuspend/:id", cl.UserController.Unsuspend)
+
+	adminTopic := admin.Group("/topic")
+	adminTopic.POST("", cl.TopicController.CreateTopic)
+	adminTopic.GET("", cl.TopicController.GetAll)
+	adminTopic.GET("/name/:topic", cl.TopicController.GetByTopic)
+	adminTopic.GET("/:id", cl.TopicController.GetByID)
+	adminTopic.PUT("/:id", cl.TopicController.UpdateTopic)
+	adminTopic.DELETE("/:id", cl.TopicController.DeleteTopic)
 }

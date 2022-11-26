@@ -222,16 +222,7 @@ func (userCtrl *UserController) GetProfile(c echo.Context) error {
 		})
 	}
 
-	userID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "invalid token",
-			Data:    nil,
-		})
-	}
-
-	user, err := userCtrl.userUseCase.GetByID(userID)
+	user, err := userCtrl.userUseCase.GetByID(id)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, helper.BaseResponse{
 			Status:  http.StatusNotFound,
@@ -306,6 +297,78 @@ func (userCtrl *UserController) Update(c echo.Context) error {
 	})
 }
 
+func (userCtrl *UserController) Suspend(c echo.Context) error {
+	userID, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "invalid id",
+			Data:    nil,
+		})
+	}
+
+	user, err := userCtrl.userUseCase.Suspend(userID)
+
+	statusCode := http.StatusInternalServerError
+	if err == errors.New("failed to get user") {
+		statusCode = http.StatusNotFound
+	} else if err == errors.New("user is already suspended") {
+		statusCode = http.StatusConflict
+	}
+
+	if err != nil {
+		return c.JSON(statusCode, helper.BaseResponse{
+			Status:  statusCode,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success to suspend user",
+		Data: map[string]interface{}{
+			"user": response.FromDomain(user),
+		},
+	})
+}
+
+func (userCtrl *UserController) Unsuspend(c echo.Context) error {
+	userID, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "invalid id",
+			Data:    nil,
+		})
+	}
+
+	user, err := userCtrl.userUseCase.Unsuspend(userID)
+
+	statusCode := http.StatusInternalServerError
+	if err == errors.New("failed to get user") {
+		statusCode = http.StatusNotFound
+	} else if err == errors.New("user is not suspended") {
+		statusCode = http.StatusConflict
+	}
+
+	if err != nil {
+		return c.JSON(statusCode, helper.BaseResponse{
+			Status:  statusCode,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success to unsuspend user",
+		Data: map[string]interface{}{
+			"user": response.FromDomain(user),
+		},
+	})
+}
+
 /*
 Delete
 */
@@ -322,11 +385,9 @@ func (userCtrl *UserController) Delete(c echo.Context) error {
 
 	deletedUser, err := userCtrl.userUseCase.Delete(userID)
 
-	var statusCode int
+	statusCode := http.StatusInternalServerError
 	if err == errors.New("failed to get user") {
 		statusCode = http.StatusNotFound
-	} else {
-		statusCode = http.StatusInternalServerError
 	}
 
 	if err != nil {

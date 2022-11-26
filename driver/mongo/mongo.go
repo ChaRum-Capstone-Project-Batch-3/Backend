@@ -29,18 +29,18 @@ func Init(databaseName string) *mongo.Database {
 		panic(err)
 	}
 
-	// Check the connection
-	err = client.Ping(ctx, nil)
-	if err != nil {
-		panic(err)
-	}
+	//// Check the connection
+	//err = client.Ping(ctx, nil)
+	//if err != nil {
+	//	panic(err)
+	//}
 
 	database := client.Database(databaseName)
 	return database
 }
 
 func Close(db *mongo.Database) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 	return db.Client().Disconnect(ctx)
 }
