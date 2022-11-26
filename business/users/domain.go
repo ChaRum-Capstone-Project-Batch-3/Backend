@@ -37,6 +37,8 @@ type UseCase interface {
 	GetByID(id primitive.ObjectID) (Domain, error)
 	// Update
 	Update(id primitive.ObjectID, domain *Domain) (Domain, error)
+	Suspend(id primitive.ObjectID) (Domain, error)
+	Unsuspend(id primitive.ObjectID) (Domain, error)
 	// Delete
 	Delete(id primitive.ObjectID) (Domain, error)
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type JWTCustomClaims struct {
@@ -53,14 +54,19 @@ func GetPayloadToken(token string) (JWTCustomClaims, error) {
 	return claims, nil
 }
 
-func GetUIDFromToken(c echo.Context) (string, error) {
+func GetUIDFromToken(c echo.Context) (primitive.ObjectID, error) {
 	authHeader := c.Request().Header.Get("Authorization")
 	token := strings.Replace(authHeader, "Bearer ", "", -1)
 
 	claims, err := GetPayloadToken(token)
 	if err != nil {
-		return "", err
+		return primitive.NilObjectID, err
 	}
 
-	return claims.UID, nil
+	id, err := primitive.ObjectIDFromHex(claims.UID)
+	if err != nil {
+		return primitive.NilObjectID, errors.New("invalid id")
+	}
+
+	return id, nil
 }

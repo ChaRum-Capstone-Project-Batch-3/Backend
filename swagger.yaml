@@ -5,7 +5,7 @@ info:
     This is a Charum Back End
   version: 1.0.0
 servers:
-  - url: http://example.com/api/v1
+  - url: https://charum-api.nyakit.in/api/v1
 tags:
   - name: User
     description: Operations about user
@@ -559,7 +559,7 @@ paths:
     delete:
       tags:
         - Admin
-      summary: Delete user profile
+      summary: Delete user
       description: Delete user's data
       operationId: Delete
       parameters:
@@ -650,6 +650,202 @@ paths:
                   message:
                     type: string
                     example: failed to delete user
+                  data:
+                    type: string
+                    example: null
+  /admin/user/suspend/{id}:
+    put:
+      tags:
+        - Admin
+      summary: Suspend user
+      description: Suspend user
+      operationId: Suspend
+      parameters:
+        - in: path
+          name: id
+          description: user ID
+          required: true
+          schema:
+            type: string
+            example: 637dfc9bb09d0bdd7a2fe3de
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to suspend user
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: invalid id
+                  data:
+                    type: string
+                    example: null
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: failed to get user
+                  data:
+                    type: string
+                    example: null
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 409
+                  message:
+                    type: string
+                    example: user is already suspended
+                  data:
+                    type: string
+                    example: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to suspend user
+                  data:
+                    type: string
+                    example: null
+  /admin/user/unsuspend/{id}:
+    put:
+      tags:
+        - Admin
+      summary: Suspend user
+      description: Suspend user
+      operationId: Unsuspend
+      parameters:
+        - in: path
+          name: id
+          description: user ID
+          required: true
+          schema:
+            type: string
+            example: 637dfc9bb09d0bdd7a2fe3de
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to unsuspend user
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: invalid id
+                  data:
+                    type: string
+                    example: null
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: failed to get user
+                  data:
+                    type: string
+                    example: null
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 409
+                  message:
+                    type: string
+                    example: user is not suspended
+                  data:
+                    type: string
+                    example: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to suspend user
                   data:
                     type: string
                     example: null
