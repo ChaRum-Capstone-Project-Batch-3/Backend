@@ -10,3 +10,6 @@ tmp
 # ssl
 cert.pem
 key.pem
+
+# Goland
+.idea

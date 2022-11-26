@@ -14,6 +14,9 @@ import (
 	_userUseCase "charum/business/users"
 	_userController "charum/controller/users"
 
+	_topicUseCase "charum/business/topics"
+	_topicController "charum/controller/topics"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -27,8 +30,13 @@ func main() {
 	userUsecase := _userUseCase.NewUserUseCase(userRepository)
 	userController := _userController.NewUserController(userUsecase)
 
+	topicRepository := _driver.NewTopicRepository(database)
+	topicUsecase := _topicUseCase.NewTopicUseCase(topicRepository)
+	topicController := _topicController.NewTopicController(topicUsecase)
+
 	routeController := _route.ControllerList{
-		UserController: userController,
+		UserController:  userController,
+		TopicController: topicController,
 	}
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
