@@ -58,6 +58,42 @@ func (tr *topicRepository) GetByID(id primitive.ObjectID) (topics.Domain, error)
 	return result.ToDomain(), nil
 }
 
+func (tr *topicRepository) GetAll() ([]topics.Domain, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	var result []Model
+	cursor, err := tr.collection.Find(ctx, bson.M{})
+	if err != nil {
+		return []topics.Domain{}, err
+	}
+	if err = cursor.All(ctx, &result); err != nil {
+		return []topics.Domain{}, err
+	}
+
+	var results []topics.Domain
+	for _, data := range result {
+		results = append(results, data.ToDomain())
+	}
+
+	return results, nil
+}
+
+func (tr *topicRepository) GetByTopic(topic string) (topics.Domain, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	var result Model
+	err := tr.collection.FindOne(ctx, bson.M{
+		"topic": topic,
+	}).Decode(&result)
+	if err != nil {
+		return topics.Domain{}, err
+	}
+
+	return result.ToDomain(), nil
+}
+
 /*
 Update
 */

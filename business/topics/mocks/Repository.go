@@ -49,6 +49,29 @@ func (_m *Repository) DeleteTopic(id primitive.ObjectID) error {
 	return r0
 }
 
+// GetAll provides a mock function with given fields:
+func (_m *Repository) GetAll() ([]topics.Domain, error) {
+	ret := _m.Called()
+
+	var r0 []topics.Domain
+	if rf, ok := ret.Get(0).(func() []topics.Domain); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]topics.Domain)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetByID provides a mock function with given fields: id
 func (_m *Repository) GetByID(id primitive.ObjectID) (topics.Domain, error) {
 	ret := _m.Called(id)
@@ -63,6 +86,27 @@ func (_m *Repository) GetByID(id primitive.ObjectID) (topics.Domain, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(primitive.ObjectID) error); ok {
 		r1 = rf(id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetByTopic provides a mock function with given fields: topic
+func (_m *Repository) GetByTopic(topic string) (topics.Domain, error) {
+	ret := _m.Called(topic)
+
+	var r0 topics.Domain
+	if rf, ok := ret.Get(0).(func(string) topics.Domain); ok {
+		r0 = rf(topic)
+	} else {
+		r0 = ret.Get(0).(topics.Domain)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(topic)
 	} else {
 		r1 = ret.Error(1)
 	}

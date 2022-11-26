@@ -5,6 +5,7 @@ import (
 	"charum/controller/topics/request"
 	"charum/controller/topics/response"
 	"charum/helper"
+	"errors"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
@@ -21,7 +22,7 @@ func NewTopicController(topicUC topics.UseCase) *TopicController {
 }
 
 func (topicCtrl *TopicController) CreateTopic(c echo.Context) error {
-	userInput := request.Create{}
+	userInput := request.Topic{}
 
 	if c.Bind(&userInput) != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
@@ -40,9 +41,14 @@ func (topicCtrl *TopicController) CreateTopic(c echo.Context) error {
 	}
 
 	topic, err := topicCtrl.TopicUseCase.CreateTopic(userInput.ToDomain())
+
+	statusCode := http.StatusInternalServerError
+	if err == errors.New("topic already exist") {
+		statusCode = http.StatusConflict
+	}
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
-			Status:  http.StatusInternalServerError,
+		return c.JSON(statusCode, helper.BaseResponse{
+			Status:  statusCode,
 			Message: err.Error(),
 			Data:    nil,
 		})
@@ -85,6 +91,47 @@ func (topicCtrl *TopicController) GetByID(c echo.Context) error {
 	})
 }
 
+func (topicCtrl *TopicController) GetAll(c echo.Context) error {
+	topic, err := topicCtrl.TopicUseCase.GetAll()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success get all topics",
+		Data: map[string]interface{}{
+			"topics": response.FromDomainArray(topic),
+		},
+	})
+}
+
+// get by topic name
+func (topicCtrl *TopicController) GetByTopic(c echo.Context) error {
+	topicName := c.Param("topic")
+
+	topic, err := topicCtrl.TopicUseCase.GetByTopic(topicName)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, helper.BaseResponse{
+			Status:  http.StatusNotFound,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success get topic by name",
+		Data: map[string]interface{}{
+			"topic": response.FromDomain(topic),
+		},
+	})
+}
+
 /*
 Update
 */
@@ -99,7 +146,7 @@ func (topicCtrl *TopicController) UpdateTopic(c echo.Context) error {
 		})
 	}
 
-	userInput := request.Create{}
+	userInput := request.Topic{}
 	if c.Bind(&userInput) != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
@@ -119,6 +166,9 @@ func (topicCtrl *TopicController) UpdateTopic(c echo.Context) error {
 	topic, err := topicCtrl.TopicUseCase.UpdateTopic(topicID, userInput.ToDomain())
 
 	statusCode := http.StatusInternalServerError
+	if err == errors.New("topic already exist") {
+		statusCode = http.StatusConflict
+	}
 	if err != nil {
 		return c.JSON(statusCode, helper.BaseResponse{
 			Status:  statusCode,

@@ -45,8 +45,10 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	adminUser.PUT("/unsuspend/:id", cl.UserController.Unsuspend)
 
 	adminTopic := admin.Group("/topic")
-	adminTopic.POST("/create", cl.TopicController.CreateTopic)
-	adminTopic.GET("/id/:id", cl.TopicController.GetByID)
-	adminTopic.PUT("/id/:id", cl.TopicController.UpdateTopic)
-	adminTopic.DELETE("/id/:id", cl.TopicController.DeleteTopic)
+	adminTopic.POST("", cl.TopicController.CreateTopic)
+	adminTopic.GET("", cl.TopicController.GetAll)
+	adminTopic.GET("/name/:topic", cl.TopicController.GetByTopic)
+	adminTopic.GET("/:id", cl.TopicController.GetByID)
+	adminTopic.PUT("/:id", cl.TopicController.UpdateTopic)
+	adminTopic.DELETE("/:id", cl.TopicController.DeleteTopic)
 }

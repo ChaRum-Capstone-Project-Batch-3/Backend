@@ -15,6 +15,8 @@ type Repository interface {
 	CreateTopic(domain *Domain) (Domain, error)
 	// Read
 	GetByID(id primitive.ObjectID) (Domain, error)
+	GetAll() ([]Domain, error)
+	GetByTopic(topic string) (Domain, error)
 	// Update
 	UpdateTopic(domain *Domain) (Domain, error)
 	// Delete
@@ -26,6 +28,8 @@ type UseCase interface {
 	CreateTopic(domain *Domain) (Domain, error)
 	// Read
 	GetByID(id primitive.ObjectID) (Domain, error)
+	GetAll() ([]Domain, error)
+	GetByTopic(topic string) (Domain, error)
 	// Update
 	UpdateTopic(id primitive.ObjectID, domain *Domain) (Domain, error)
 	// Delete
