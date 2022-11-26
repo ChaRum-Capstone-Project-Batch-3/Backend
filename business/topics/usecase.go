@@ -64,7 +64,7 @@ func (uc *TopicUseCase) UpdateTopic(id primitive.ObjectID, domain *Domain) (Doma
 
 	updatedResult, err := uc.topicsRepository.UpdateTopic(&result)
 	if err != nil {
-		return Domain{}, errors.New("failed to update data")
+		return Domain{}, errors.New("failed to update topic")
 	}
 	return updatedResult, nil
 }
