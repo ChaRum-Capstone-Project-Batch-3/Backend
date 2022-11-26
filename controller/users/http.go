@@ -312,6 +312,8 @@ func (userCtrl *UserController) Suspend(c echo.Context) error {
 	statusCode := http.StatusInternalServerError
 	if err == errors.New("failed to get user") {
 		statusCode = http.StatusNotFound
+	} else if err == errors.New("user is already suspended") {
+		statusCode = http.StatusConflict
 	}
 
 	if err != nil {
@@ -346,6 +348,8 @@ func (userCtrl *UserController) Unsuspend(c echo.Context) error {
 	statusCode := http.StatusInternalServerError
 	if err == errors.New("failed to get user") {
 		statusCode = http.StatusNotFound
+	} else if err == errors.New("user is not suspended") {
+		statusCode = http.StatusConflict
 	}
 
 	if err != nil {

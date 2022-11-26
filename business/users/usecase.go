@@ -146,6 +146,10 @@ func (uu *UserUseCase) Suspend(id primitive.ObjectID) (Domain, error) {
 		return Domain{}, errors.New("failed to get user")
 	}
 
+	if !user.IsActive {
+		return Domain{}, errors.New("user is already suspended")
+	}
+
 	user.IsActive = false
 	user.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
 
@@ -161,6 +165,10 @@ func (uu *UserUseCase) Unsuspend(id primitive.ObjectID) (Domain, error) {
 	user, err := uu.userRepository.GetByID(id)
 	if err != nil {
 		return Domain{}, errors.New("failed to get user")
+	}
+
+	if user.IsActive {
+		return Domain{}, errors.New("user is not suspended")
 	}
 
 	user.IsActive = true
