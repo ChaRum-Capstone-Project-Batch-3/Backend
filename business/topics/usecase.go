@@ -83,7 +83,9 @@ func (uc *TopicUseCase) UpdateTopic(id primitive.ObjectID, domain *Domain) (Doma
 	}
 
 	result.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
-
+	// update topic and description
+	result.Topic = domain.Topic
+	result.Description = domain.Description
 	updatedResult, err := uc.topicsRepository.UpdateTopic(&result)
 	if err != nil {
 		return Domain{}, errors.New("failed to update topic")
