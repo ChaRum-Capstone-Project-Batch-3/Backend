@@ -8,7 +8,7 @@ import (
 
 func GetConfig(key string) string {
 	viper.AddConfigPath(".")
-	viper.SetConfigFile("D:/Nguly/Git/Backend/.env")
+	viper.SetConfigFile(".env")
 
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatalf("error when reading config: %s", err)
