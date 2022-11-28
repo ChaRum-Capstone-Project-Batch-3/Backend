@@ -3,6 +3,7 @@
 
 # live reload
 tmp
+air.toml
 
 # testing
 *cover

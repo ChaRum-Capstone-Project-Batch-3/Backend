@@ -6,9 +6,10 @@ import (
 	"charum/controller/topics/response"
 	"charum/helper"
 	"errors"
+	"net/http"
+
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"net/http"
 )
 
 type TopicController struct {
@@ -41,12 +42,12 @@ func (topicCtrl *TopicController) CreateTopic(c echo.Context) error {
 	}
 
 	topic, err := topicCtrl.TopicUseCase.CreateTopic(userInput.ToDomain())
-
-	statusCode := http.StatusInternalServerError
-	if err == errors.New("topic already exist") {
-		statusCode = http.StatusConflict
-	}
 	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if err == errors.New("topic already exist") {
+			statusCode = http.StatusConflict
+		}
+
 		return c.JSON(statusCode, helper.BaseResponse{
 			Status:  statusCode,
 			Message: err.Error(),
@@ -164,12 +165,12 @@ func (topicCtrl *TopicController) UpdateTopic(c echo.Context) error {
 	}
 
 	topic, err := topicCtrl.TopicUseCase.UpdateTopic(topicID, userInput.ToDomain())
-
-	statusCode := http.StatusInternalServerError
-	if err == errors.New("topic already exist") {
-		statusCode = http.StatusConflict
-	}
 	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if err == errors.New("topic already exist") {
+			statusCode = http.StatusConflict
+		}
+
 		return c.JSON(statusCode, helper.BaseResponse{
 			Status:  statusCode,
 			Message: err.Error(),

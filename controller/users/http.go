@@ -308,15 +308,14 @@ func (userCtrl *UserController) Suspend(c echo.Context) error {
 	}
 
 	user, err := userCtrl.userUseCase.Suspend(userID)
-
-	statusCode := http.StatusInternalServerError
-	if err == errors.New("failed to get user") {
-		statusCode = http.StatusNotFound
-	} else if err == errors.New("user is already suspended") {
-		statusCode = http.StatusConflict
-	}
-
 	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if err == errors.New("failed to get user") {
+			statusCode = http.StatusNotFound
+		} else if err == errors.New("user is already suspended") {
+			statusCode = http.StatusConflict
+		}
+
 		return c.JSON(statusCode, helper.BaseResponse{
 			Status:  statusCode,
 			Message: err.Error(),
@@ -344,15 +343,14 @@ func (userCtrl *UserController) Unsuspend(c echo.Context) error {
 	}
 
 	user, err := userCtrl.userUseCase.Unsuspend(userID)
-
-	statusCode := http.StatusInternalServerError
-	if err == errors.New("failed to get user") {
-		statusCode = http.StatusNotFound
-	} else if err == errors.New("user is not suspended") {
-		statusCode = http.StatusConflict
-	}
-
 	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if err == errors.New("failed to get user") {
+			statusCode = http.StatusNotFound
+		} else if err == errors.New("user is not suspended") {
+			statusCode = http.StatusConflict
+		}
+
 		return c.JSON(statusCode, helper.BaseResponse{
 			Status:  statusCode,
 			Message: err.Error(),
@@ -384,13 +382,12 @@ func (userCtrl *UserController) Delete(c echo.Context) error {
 	}
 
 	deletedUser, err := userCtrl.userUseCase.Delete(userID)
-
-	statusCode := http.StatusInternalServerError
-	if err == errors.New("failed to get user") {
-		statusCode = http.StatusNotFound
-	}
-
 	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if err == errors.New("failed to get user") {
+			statusCode = http.StatusNotFound
+		}
+
 		return c.JSON(statusCode, helper.BaseResponse{
 			Status:  statusCode,
 			Message: err.Error(),
