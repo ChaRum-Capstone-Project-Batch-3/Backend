@@ -2,6 +2,7 @@ package route
 
 import (
 	_middleware "charum/app/middleware"
+	"charum/controller/threads"
 	"charum/controller/topics"
 	"charum/controller/users"
 	"net/http"
@@ -13,6 +14,7 @@ type ControllerList struct {
 	LoggerMiddleware echo.MiddlewareFunc
 	UserController   *users.UserController
 	TopicController  *topics.TopicController
+	ThreadController *threads.ThreadController
 }
 
 func (cl *ControllerList) Init(e *echo.Echo) {
@@ -33,6 +35,13 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	user.POST("/register", cl.UserController.Register)
 	user.POST("/login", cl.UserController.Login)
 	user.GET("/profile", cl.UserController.GetProfile, authMiddleware.Check)
+
+	thread := apiV1.Group("/thread")
+	thread.POST("", cl.ThreadController.Create, authMiddleware.Check)
+	thread.GET("/:page", cl.ThreadController.GetManyWithPagination)
+	thread.GET("/id/:id", cl.ThreadController.GetByID)
+	thread.PUT("/id/:id", cl.ThreadController.Update, authMiddleware.Check)
+	thread.DELETE("/id/:id", cl.ThreadController.Delete, authMiddleware.Check)
 
 	admin := apiV1.Group("/admin", adminMiddleware.Check)
 
