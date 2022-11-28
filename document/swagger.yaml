@@ -9,6 +9,8 @@ servers:
 tags:
   - name: User
     description: Operations about user
+  - name: Thread
+    description: Operation about thread
   - name: Admin
     description: Operations for admin
 paths:
@@ -261,13 +263,510 @@ paths:
                   data:
                     type: string
                     example: null
+  /thread:
+    post:
+      tags:
+        - Thread
+      summary: Create Thread
+      description: Create Thread by User and Admin
+      operationId: CreateThread
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                topic:
+                  type: string
+                  example: Technology
+                title:
+                  type: string
+                  example: NextJS 13
+                description:
+                  type: string
+                  example: Best NextJS update ever
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 201
+                  message:
+                    type: string
+                    example: success to create thread
+                  data:
+                    type: object
+                    properties:
+                      thread:
+                       $ref: '#/components/schemas/Thread'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: validation failed
+                  data:
+                    type: object
+                    properties:
+                      field:
+                        type: string
+                        example: topic
+                      message:
+                        type: string
+                        example: This field is required
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: invalid token
+                  data:
+                    type: string
+                    example: null
+        '500':
+          description: Internal Server Error 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to create thread
+                  data:
+                    type: string
+                    example: null
+  /thread/{page}:
+    get:
+      tags:
+        - Thread
+      summary: Get thread list with pagination and sorting
+      operationId: GetThreadsWithPagnation
+      parameters:
+        - in: path
+          name: page
+          description: page displayed
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: limit
+          description: user limitation for per page
+          required: false
+          schema:
+            type: integer
+            example: 25
+            default: 25
+        - in: query
+          name: sort
+          description: define parameter for sorting. available options = id, title, createdAt, or updatedAt
+          required: false
+          schema:
+            type: string
+            example: createdAt
+            default: createdAt
+        - in: query
+          name: order
+          description: define the order of the selected sort. available options = asc or desc
+          required: false
+          schema:
+            type: string
+            example: desc
+            default: desc
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to get user by id
+                  data:
+                    type: object
+                    properties:
+                      totalPage:
+                        type: integer
+                        example: 2
+                      threads:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Thread'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: page must be a number
+                  data:
+                    type: string
+                    example: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to get threads
+                  data:
+                    type: string
+                    example: null
+  /thread/id/{id}:
+    get:
+      tags:
+        - Thread
+      summary: Get thread by id
+      description: get thread's data by id
+      operationId: GetThreadByID
+      parameters:
+        - in: path
+          name: id
+          description: thread id
+          required: true
+          schema:
+            type: string
+            example: 6379fe8dad33ec4251700ded
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                   type: integer
+                   example: 200
+                  message:
+                    type: string
+                    example: success to get thread
+                  data:
+                   type: object
+                   properties:
+                    thread:
+                     $ref: '#/components/schemas/Thread'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                   type: integer
+                   example: 400
+                  message:
+                    type: string
+                    example: invalid thread id
+                  data:
+                   type: string
+                   example: null
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                   type: integer
+                   example: 404
+                  message:
+                    type: string
+                    example: failed to get thread
+                  data:
+                   type: string
+                   example: null
+    put:
+      tags:
+        - Thread
+      summary: Update thread by id
+      description: update user own thread or update thread by admin
+      operationId: updateThread
+      parameters:
+        - in: path
+          name: id
+          description: thread id
+          required: true
+          schema:
+            type: string
+            example: 6379fe8dad33ec4251700ded
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                topic:
+                  type: string
+                  example: Technology
+                title:
+                  type: string
+                  example: NextJS 13
+                description:
+                  type: string
+                  example: Best NextJS update ever
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to update thread
+                  data:
+                    type: object
+                    properties:
+                      thread:
+                       $ref: '#/components/schemas/Thread'
+        '400':
+          description: bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: invalid thread id
+                  data:
+                    type: string
+                    example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: invalid token
+                  data:
+                    type: string
+                    example: null
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 403
+                  message:
+                    type: string
+                    example: you are not the thread creator
+                  data:
+                    type: string
+                    example: null
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: failed to get topic
+                  data:
+                    type: string
+                    example: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to update thread
+                  data:
+                    type: string
+                    example: null
+    delete:
+      tags:
+        - Thread
+      summary: Delete thread
+      description: creator and admin can delete thread
+      operationId: DeleteThread
+      parameters:
+        - in: path
+          name: id
+          description: thread id
+          required: true
+          schema:
+            type: string
+            example: 6379fe8dad33ec4251700ded
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to delete thread
+                  data:
+                    type: object
+                    properties:
+                      thread:
+                       $ref: '#/components/schemas/Thread'
+        '400':
+          description: bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: invalid thread id
+                  data:
+                    type: string
+                    example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: invalid token
+                  data:
+                    type: string
+                    example: null
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 403
+                  message:
+                    type: string
+                    example: you are not the thread creator
+                  data:
+                    type: string
+                    example: null
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: failed to get thread
+                  data:
+                    type: string
+                    example: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to delete thread
+                  data:
+                    type: string
+                    example: null
+  
   /admin/user/{page}:
     get:
       tags:
         - Admin
       summary: Get user list
       description: Get user list with pagination and sorting
-      operationId: GetManyWithPagination
+      operationId: GetUsersWithPagination
       parameters:
         - in: path
           name: page
@@ -320,7 +819,7 @@ paths:
                       totalPage:
                         type: integer
                         example: 2
-                      user:
+                      users:
                         type: array
                         items:
                           $ref: '#/components/schemas/User'
@@ -363,7 +862,7 @@ paths:
         - Admin
       summary: Get user profile
       description: Get user's profile data
-      operationId: GetByID
+      operationId: GetUserByID
       parameters:
         - in: path
           name: id
@@ -992,7 +1491,7 @@ paths:
         - Admin
       summary: Get topic data
       description: Get topic data by id
-      operationId: GetByID
+      operationId: GetTopicByID
       parameters:
         - in: path
           name: id
@@ -1309,13 +1808,14 @@ components:
       type: object
       properties:
         id:
+          type: string
           example: 6379fe8dad33ec4251700ded
         email:
           type: string
           example: user@charum.com
         userName:
           type: string
-          example: charum-user
+          example: charumuser
         displayName:
           type: string
           example: charum user
@@ -1328,11 +1828,18 @@ components:
         role:
           type: string
           example: user
+        createdAt:
+          type: string
+          example: 2022-11-26T23:05:11.806+07:00
+        updatedAt:
+          type: string
+          example: 2022-11-26T23:05:11.806+07:00
 
     Topic:
       type: object
       properties:
         id:
+          type: string
           example: 6379fe8dad33ec4251700ded
         topic:
           type: string
@@ -1340,6 +1847,40 @@ components:
         description:
           type: string
           example: topic description
+        createdAt:
+          type: string
+          example: 2022-11-26T23:05:11.806+07:00
+        updatedAt:
+          type: string
+          example: 2022-11-26T23:05:11.806+07:00
+    
+    Thread:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 6379fe8dad33ec4251700ded
+        topicId:
+          example: 6379fe8dad33ec4251700ded
+        creatorId:
+          example: 6379fe8dad33ec4251700ded
+        title:
+          type: string
+          example: NextJS 13
+        description:
+          type: string
+          example: Best NextJS update ever
+        likes:
+         type: array
+         items:
+          type: object
+          properties:
+            userID:
+              type: string
+              example: 6379fe8dad33ec4251700ded
+            createdAt:
+              type: string
+              example: 2022-11-26T23:05:11.806+07:00
         createdAt:
           type: string
           example: 2022-11-26T23:05:11.806+07:00
