@@ -29,7 +29,6 @@ Create
 */
 
 func (tu *ThreadUseCase) Create(creatorID primitive.ObjectID, topicName string, domain *Domain) (Domain, error) {
-	// get topic by topic name
 	topic, err := tu.topicRepository.GetByTopic(topicName)
 	if err != nil {
 		return Domain{}, errors.New("failed to get topic")
@@ -86,7 +85,7 @@ func (tu *ThreadUseCase) GetByID(id primitive.ObjectID) (Domain, error) {
 Update
 */
 
-func (tu *ThreadUseCase) Update(creatorID primitive.ObjectID, threadID primitive.ObjectID, topicName string, domain *Domain) (Domain, error) {
+func (tu *ThreadUseCase) Update(userID primitive.ObjectID, threadID primitive.ObjectID, topicName string, domain *Domain) (Domain, error) {
 	topic, err := tu.topicRepository.GetByTopic(topicName)
 	if err != nil {
 		return Domain{}, errors.New("failed to get topic")
@@ -97,12 +96,12 @@ func (tu *ThreadUseCase) Update(creatorID primitive.ObjectID, threadID primitive
 		return Domain{}, errors.New("failed to get thread")
 	}
 
-	user, err := tu.userRepository.GetByID(creatorID)
+	user, err := tu.userRepository.GetByID(userID)
 	if err != nil {
 		return Domain{}, errors.New("failed to get user")
 	}
 
-	if user.Role != "admin" && thread.CreatorID != creatorID {
+	if user.Role != "admin" && thread.CreatorID != userID {
 		return Domain{}, errors.New("you are not the thread creator")
 	}
 
@@ -123,18 +122,18 @@ func (tu *ThreadUseCase) Update(creatorID primitive.ObjectID, threadID primitive
 Delete
 */
 
-func (tu *ThreadUseCase) Delete(creatorID primitive.ObjectID, threadID primitive.ObjectID) (Domain, error) {
+func (tu *ThreadUseCase) Delete(userID primitive.ObjectID, threadID primitive.ObjectID) (Domain, error) {
 	thread, err := tu.threadRepository.GetByID(threadID)
 	if err != nil {
 		return Domain{}, errors.New("failed to get thread")
 	}
 
-	user, err := tu.userRepository.GetByID(creatorID)
+	user, err := tu.userRepository.GetByID(userID)
 	if err != nil {
 		return Domain{}, errors.New("failed to get user")
 	}
 
-	if user.Role != "admin" && thread.CreatorID != creatorID {
+	if user.Role != "admin" && thread.CreatorID != userID {
 		return Domain{}, errors.New("you are not the thread creator")
 	}
 
