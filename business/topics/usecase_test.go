@@ -4,11 +4,12 @@ import (
 	"charum/business/topics"
 	_topicMock "charum/business/topics/mocks"
 	"errors"
+	"testing"
+	"time"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"testing"
-	"time"
 )
 
 var (
@@ -42,6 +43,7 @@ func TestCreateTopic(t *testing.T) {
 		assert.NotNil(t, result)
 		assert.Nil(t, err)
 	})
+
 	t.Run("Test case 2 | Invalid create topic | Invalid Create | Topic already exist", func(t *testing.T) {
 		expectedErr := errors.New("topic already exist")
 		topicRepository.On("GetByTopic", topicDomain.Topic).Return(topics.Domain{}, nil).Once()
@@ -52,6 +54,7 @@ func TestCreateTopic(t *testing.T) {
 		assert.Equal(t, topics.Domain{}, result)
 		assert.Equal(t, err, expectedErr)
 	})
+
 	t.Run("Test case 3 | Invalid create topic | Error when creating topic", func(t *testing.T) {
 		expectedErr := errors.New("failed to create topic")
 		topicRepository.On("GetByTopic", topicDomain.Topic).Return(topics.Domain{}, errors.New("not found")).Once()
@@ -73,6 +76,7 @@ func TestGetByID(t *testing.T) {
 		assert.NotNil(t, result)
 		assert.Nil(t, err)
 	})
+
 	t.Run("Test case 2 | Invalid get topic by id | Error when getting topic by id", func(t *testing.T) {
 		expectedErr := errors.New("failed to get topic")
 		topicRepository.On("GetByID", topicDomain.Id).Return(topics.Domain{}, expectedErr).Once()
@@ -93,6 +97,7 @@ func TestGetByTopic(t *testing.T) {
 		assert.NotNil(t, result)
 		assert.Nil(t, err)
 	})
+
 	t.Run("Test case 2 | Invalid get topic by topic | Error when getting topic by topic", func(t *testing.T) {
 		expectedErr := errors.New("failed to get topic")
 		topicRepository.On("GetByTopic", topicDomain.Topic).Return(topics.Domain{}, expectedErr).Once()
@@ -113,6 +118,7 @@ func TestGetAll(t *testing.T) {
 		assert.NotNil(t, result)
 		assert.Nil(t, err)
 	})
+
 	t.Run("Test case 2 | Invalid get all topic | Error when getting all topic", func(t *testing.T) {
 		expectedErr := errors.New("failed to get all topic")
 		topicRepository.On("GetAll").Return([]topics.Domain{}, expectedErr).Once()
@@ -138,6 +144,7 @@ func TestUpdateTopic(t *testing.T) {
 		assert.NotNil(t, result)
 		assert.Nil(t, err)
 	})
+
 	t.Run("Test case 2 | Invalid update topic | Error when getting topic by id", func(t *testing.T) {
 		expectedErr := errors.New("failed to get topic")
 		topicRepository.On("GetByID", topicDomain.Id).Return(topics.Domain{}, expectedErr).Once()
@@ -147,12 +154,26 @@ func TestUpdateTopic(t *testing.T) {
 		assert.Equal(t, topics.Domain{}, result)
 		assert.Equal(t, err, expectedErr)
 	})
+
 	t.Run("Test case 3 | Invalid update topic | Error when updating topic", func(t *testing.T) {
 		expectedErr := errors.New("failed to update topic")
 		topicRepository.On("GetByID", topicDomain.Id).Return(topicDomain, nil).Once()
 		topicRepository.On("UpdateTopic", mock.Anything).Return(topics.Domain{}, expectedErr).Once()
 
 		result, err := topicUseCase.UpdateTopic(topicDomain.Id, &topicDomain)
+
+		assert.Equal(t, topics.Domain{}, result)
+		assert.Equal(t, err, expectedErr)
+	})
+
+	t.Run("Test case 4 | Invalid update topic | Topic already exist", func(t *testing.T) {
+		copyDomain := topicDomain
+		copyDomain.Topic = "Updated Topic"
+		expectedErr := errors.New("topic already exist")
+		topicRepository.On("GetByID", topicDomain.Id).Return(topicDomain, nil).Once()
+		topicRepository.On("GetByTopic", copyDomain.Topic).Return(copyDomain, nil).Once()
+
+		result, err := topicUseCase.UpdateTopic(copyDomain.Id, &copyDomain)
 
 		assert.Equal(t, topics.Domain{}, result)
 		assert.Equal(t, err, expectedErr)
@@ -169,6 +190,7 @@ func TestDeleteTopic(t *testing.T) {
 		assert.NotNil(t, result)
 		assert.Nil(t, err)
 	})
+
 	t.Run("Test case 2 | Invalid delete topic | Error when getting topic by id", func(t *testing.T) {
 		expectedErr := errors.New("failed to get topic")
 		topicRepository.On("GetByID", topicDomain.Id).Return(topics.Domain{}, expectedErr).Once()
@@ -178,6 +200,7 @@ func TestDeleteTopic(t *testing.T) {
 		assert.Equal(t, topics.Domain{}, result)
 		assert.Equal(t, err, expectedErr)
 	})
+
 	t.Run("Test case 3 | Invalid delete topic | Error when deleting topic", func(t *testing.T) {
 		expectedErr := errors.New("failed to delete topic")
 		topicRepository.On("GetByID", topicDomain.Id).Return(topicDomain, nil).Once()
