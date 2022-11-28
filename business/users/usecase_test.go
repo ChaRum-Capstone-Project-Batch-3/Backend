@@ -268,3 +268,95 @@ func TestDelete(t *testing.T) {
 		assert.Equal(t, expectedErr, actualErr)
 	})
 }
+
+func TestSuspend(t *testing.T) {
+	t.Run("Test Case 1 | Valid Suspend", func(t *testing.T) {
+		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
+		userRepository.On("Update", mock.Anything).Return(userDomain, nil).Once()
+
+		actualUser, actualErr := userUseCase.Suspend(userDomain.Id)
+
+		assert.NotNil(t, actualUser)
+		assert.Nil(t, actualErr)
+	})
+
+	t.Run("Test Case 2 | Invalid Suspend | Error when getting user", func(t *testing.T) {
+		expectedErr := errors.New("failed to get user")
+		userRepository.On("GetByID", userDomain.Id).Return(users.Domain{}, expectedErr).Once()
+
+		actualUser, actualErr := userUseCase.Suspend(userDomain.Id)
+
+		assert.Equal(t, users.Domain{}, actualUser)
+		assert.Equal(t, expectedErr, actualErr)
+	})
+
+	t.Run("Test Case 3 | Invalid Suspend | Error when suspending user", func(t *testing.T) {
+		expectedErr := errors.New("failed to suspend user")
+		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
+		userRepository.On("Update", mock.Anything).Return(users.Domain{}, expectedErr).Once()
+
+		actualUser, actualErr := userUseCase.Suspend(userDomain.Id)
+
+		assert.Equal(t, users.Domain{}, actualUser)
+		assert.Equal(t, expectedErr, actualErr)
+	})
+
+	t.Run("Test Case 4 | Invalid Suspend | User is already suspended", func(t *testing.T) {
+		expectedErr := errors.New("user is already suspended")
+		copyDomain := userDomain
+		copyDomain.IsActive = false
+		userRepository.On("GetByID", userDomain.Id).Return(copyDomain, nil).Once()
+
+		actualUser, actualErr := userUseCase.Suspend(userDomain.Id)
+
+		assert.Equal(t, users.Domain{}, actualUser)
+		assert.Equal(t, expectedErr, actualErr)
+	})
+}
+
+func TestUnsuspend(t *testing.T) {
+	t.Run("Test Case 1 | Valid Unsuspend", func(t *testing.T) {
+		copyDomain := userDomain
+		copyDomain.IsActive = false
+		userRepository.On("GetByID", userDomain.Id).Return(copyDomain, nil).Once()
+		userRepository.On("Update", mock.Anything).Return(userDomain, nil).Once()
+
+		actualUser, actualErr := userUseCase.Unsuspend(userDomain.Id)
+
+		assert.NotNil(t, actualUser)
+		assert.Nil(t, actualErr)
+	})
+
+	t.Run("Test Case 2 | Invalid Unsuspend | Error when getting user", func(t *testing.T) {
+		expectedErr := errors.New("failed to get user")
+		userRepository.On("GetByID", userDomain.Id).Return(users.Domain{}, expectedErr).Once()
+
+		actualUser, actualErr := userUseCase.Unsuspend(userDomain.Id)
+
+		assert.Equal(t, users.Domain{}, actualUser)
+		assert.Equal(t, expectedErr, actualErr)
+	})
+
+	t.Run("Test Case 3 | Invalid Unsuspend | Error when unsuspending user", func(t *testing.T) {
+		expectedErr := errors.New("failed to unsuspend user")
+		copyDomain := userDomain
+		copyDomain.IsActive = false
+		userRepository.On("GetByID", userDomain.Id).Return(copyDomain, nil).Once()
+		userRepository.On("Update", mock.Anything).Return(users.Domain{}, expectedErr).Once()
+
+		actualUser, actualErr := userUseCase.Unsuspend(userDomain.Id)
+
+		assert.Equal(t, users.Domain{}, actualUser)
+		assert.Equal(t, expectedErr, actualErr)
+	})
+
+	t.Run("Test Case 4 | Invalid Unsuspend | User is not suspended", func(t *testing.T) {
+		expectedErr := errors.New("user is not suspended")
+		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
+
+		actualUser, actualErr := userUseCase.Unsuspend(userDomain.Id)
+
+		assert.Equal(t, users.Domain{}, actualUser)
+		assert.Equal(t, expectedErr, actualErr)
+	})
+}
