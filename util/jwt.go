@@ -11,8 +11,7 @@ import (
 )
 
 type JWTCustomClaims struct {
-	UID  string `json:"uid"`
-	Role string `json:"role"`
+	UID string `json:"uid"`
 	jwt.RegisteredClaims
 }
 
@@ -21,7 +20,6 @@ var JWTSecretKey = GetConfig("JWT_SECRET_KEY")
 func GenerateToken(uid string, role string) string {
 	claims := JWTCustomClaims{
 		uid,
-		role,
 		jwt.RegisteredClaims{
 			Issuer:    "charum",
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

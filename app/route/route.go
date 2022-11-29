@@ -2,6 +2,7 @@ package route
 
 import (
 	_middleware "charum/app/middleware"
+	_usersDomain "charum/business/users"
 	"charum/controller/comments"
 	"charum/controller/threads"
 	"charum/controller/topics"
@@ -13,6 +14,7 @@ import (
 
 type ControllerList struct {
 	LoggerMiddleware  echo.MiddlewareFunc
+	UserRepository    _usersDomain.Repository
 	UserController    *users.UserController
 	TopicController   *topics.TopicController
 	ThreadController  *threads.ThreadController
@@ -22,9 +24,9 @@ type ControllerList struct {
 func (cl *ControllerList) Init(e *echo.Echo) {
 	_middleware.InitLogger(e)
 
-	// userMiddleware := _middleware.RoleMiddleware{Role: []string{"user"}}
-	adminMiddleware := _middleware.RoleMiddleware{Role: []string{"admin"}}
-	authMiddleware := _middleware.RoleMiddleware{Role: []string{"user", "admin"}}
+	// userMiddleware := _middleware.RoleMiddleware{Role: []string{"user"}, UserRepository: cl.UserRepository}
+	adminMiddleware := _middleware.RoleMiddleware{Role: []string{"admin"}, UserRepository: cl.UserRepository}
+	authMiddleware := _middleware.RoleMiddleware{Role: []string{"user", "admin"}, UserRepository: cl.UserRepository}
 
 	apiV1 := e.Group("/api/v1")
 	apiV1.GET("", func(c echo.Context) error {

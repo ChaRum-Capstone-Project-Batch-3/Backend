@@ -49,6 +49,7 @@ func main() {
 	commentController := _commentController.NewCommentController(commentUsecase)
 
 	routeController := _route.ControllerList{
+		UserRepository:    userRepository,
 		UserController:    userController,
 		TopicController:   topicController,
 		ThreadController:  threadController,
