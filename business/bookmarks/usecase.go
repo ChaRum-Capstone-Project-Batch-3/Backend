@@ -31,7 +31,7 @@ func (bu *BookmarkUseCase) AddBookmark(userID primitive.ObjectID, threadID primi
 	if err != nil {
 		return Domain{}, errors.New("failed to get thread")
 	}
-	
+
 	domain.Id = primitive.NewObjectID()
 	domain.UserID = userID
 	domain.Threads = append(domain.Threads, Thread{
@@ -53,16 +53,19 @@ func (bu *BookmarkUseCase) AddBookmark(userID primitive.ObjectID, threadID primi
 Read
 */
 
-// check user already bookmarked or not
 func (bu *BookmarkUseCase) CheckBookmark(userID primitive.ObjectID) (bool, error) {
-	bookmark, err := bu.userRepository.GetByID(userID)
+	_, err := bu.bookmarkRepository.GetByID(userID)
 	if err != nil {
-		return false, errors.New("failed to get bookmark")
-	}
-
-	if bookmark.Id == primitive.NilObjectID {
 		return false, nil
 	}
-
 	return true, nil
+}
+
+// get bookmark by user id
+func (bu *BookmarkUseCase) GetByID(userID primitive.ObjectID) (Domain, error) {
+	result, err := bu.bookmarkRepository.GetByID(userID)
+	if err != nil {
+		return Domain{}, errors.New("failed to get bookmark")
+	}
+	return result, nil
 }

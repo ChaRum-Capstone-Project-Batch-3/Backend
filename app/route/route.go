@@ -45,6 +45,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	user.POST("/login", cl.UserController.Login)
 	user.GET("/profile", cl.UserController.GetProfile, authMiddleware.Check)
 	user.POST("/bookmark/:thread_id", cl.BookmarkController.AddBookmark, authMiddleware.Check)
+	user.GET("/bookmark", cl.BookmarkController.GetByID, authMiddleware.Check)
 
 	thread := apiV1.Group("/thread")
 	thread.POST("", cl.ThreadController.Create, authMiddleware.Check)

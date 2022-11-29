@@ -51,7 +51,7 @@ func (br *bookmarkRepository) GetByID(id primitive.ObjectID) (bookmarks.Domain, 
 
 	var result Bookmark
 	err := br.collection.FindOne(ctx, bson.M{
-		"_id": id,
+		"userId": id,
 	}).Decode(&result)
 	if err != nil {
 		return bookmarks.Domain{}, err
