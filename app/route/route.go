@@ -2,6 +2,7 @@ package route
 
 import (
 	_middleware "charum/app/middleware"
+	"charum/controller/bookmarks"
 	"charum/controller/threads"
 	"charum/controller/topics"
 	"charum/controller/users"
@@ -11,10 +12,11 @@ import (
 )
 
 type ControllerList struct {
-	LoggerMiddleware echo.MiddlewareFunc
-	UserController   *users.UserController
-	TopicController  *topics.TopicController
-	ThreadController *threads.ThreadController
+	LoggerMiddleware   echo.MiddlewareFunc
+	UserController     *users.UserController
+	TopicController    *topics.TopicController
+	ThreadController   *threads.ThreadController
+	BookmarkController *bookmarks.BookmarkController
 }
 
 func (cl *ControllerList) Init(e *echo.Echo) {
@@ -35,6 +37,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	user.POST("/register", cl.UserController.Register)
 	user.POST("/login", cl.UserController.Login)
 	user.GET("/profile", cl.UserController.GetProfile, authMiddleware.Check)
+	user.POST("/bookmark/:thread_id", cl.BookmarkController.AddBookmark, authMiddleware.Check)
 
 	thread := apiV1.Group("/thread")
 	thread.POST("", cl.ThreadController.Create, authMiddleware.Check)

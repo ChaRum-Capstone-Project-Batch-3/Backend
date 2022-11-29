@@ -20,6 +20,9 @@ import (
 	_threadUseCase "charum/business/threads"
 	_threadController "charum/controller/threads"
 
+	_bookmarkUseCase "charum/business/bookmarks"
+	_bookmarkController "charum/controller/bookmarks"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -41,10 +44,15 @@ func main() {
 	threadUsecase := _threadUseCase.NewThreadUseCase(threadRepository, topicRepository, userRepository)
 	threadController := _threadController.NewThreadController(threadUsecase)
 
+	bookmarkRepository := _driver.NewBookmarkRepository(database)
+	bookmarkUsecase := _bookmarkUseCase.NewBookmarkUseCase(bookmarkRepository, threadRepository, userRepository)
+	bookmarkController := _bookmarkController.NewBookmarkController(bookmarkUsecase)
+
 	routeController := _route.ControllerList{
-		UserController:   userController,
-		TopicController:  topicController,
-		ThreadController: threadController,
+		UserController:     userController,
+		TopicController:    topicController,
+		ThreadController:   threadController,
+		BookmarkController: bookmarkController,
 	}
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
