@@ -30,9 +30,9 @@ func (rm RoleMiddleware) Check(next echo.HandlerFunc) echo.HandlerFunc {
 			}
 		}
 
-		return c.JSON(http.StatusForbidden, helper.BaseResponse{
-			Status:  http.StatusForbidden,
-			Message: "forbidden",
+		return c.JSON(http.StatusUnauthorized, helper.BaseResponse{
+			Status:  http.StatusUnauthorized,
+			Message: "unauthorized",
 			Data:    nil,
 		})
 	}

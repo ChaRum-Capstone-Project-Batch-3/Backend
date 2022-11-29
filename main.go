@@ -20,6 +20,9 @@ import (
 	_threadUseCase "charum/business/threads"
 	_threadController "charum/controller/threads"
 
+	_commentUseCase "charum/business/comments"
+	_commentController "charum/controller/comments"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -41,10 +44,15 @@ func main() {
 	threadUsecase := _threadUseCase.NewThreadUseCase(threadRepository, topicRepository, userRepository)
 	threadController := _threadController.NewThreadController(threadUsecase)
 
+	commentRepository := _driver.NewCommentRepository(database)
+	commentUsecase := _commentUseCase.NewCommentUseCase(commentRepository, threadRepository)
+	commentController := _commentController.NewCommentController(commentUsecase)
+
 	routeController := _route.ControllerList{
-		UserController:   userController,
-		TopicController:  topicController,
-		ThreadController: threadController,
+		UserController:    userController,
+		TopicController:   topicController,
+		ThreadController:  threadController,
+		CommentController: commentController,
 	}
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
