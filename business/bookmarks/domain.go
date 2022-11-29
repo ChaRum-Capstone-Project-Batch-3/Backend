@@ -18,8 +18,10 @@ type Thread struct {
 type Repository interface {
 	// Create
 	AddBookmark(domain *Domain) (Domain, error)
+	GetByID(id primitive.ObjectID) (Domain, error)
 }
 
 type UseCase interface {
 	AddBookmark(userID primitive.ObjectID, threadID primitive.ObjectID, domain *Domain) (Domain, error)
+	GetByID(userID primitive.ObjectID) (Domain, error)
 }
