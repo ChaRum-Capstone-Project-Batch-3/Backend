@@ -3,6 +3,16 @@ package users
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type Domain struct {
+	Id          primitive.ObjectID
+	Email       string
+	UserName    string
+	DisplayName string
+	Password    string `json:"-"`
+	BookmarkID  primitive.ObjectID
+	IsActive    bool
+	Role        string
+	CreatedAt   primitive.DateTime
+	UpdatedAt   primitive.DateTime
 	Id          primitive.ObjectID `json:"_id" bson:"_id"`
 	Email       string             `json:"email" bson:"email"`
 	UserName    string             `json:"userName" bson:"userName"`
