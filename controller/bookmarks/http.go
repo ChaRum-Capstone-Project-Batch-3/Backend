@@ -53,8 +53,8 @@ func (bc *BookmarkController) AddBookmark(c echo.Context) error {
 
 	result, err := bc.bookmarkUseCase.AddBookmark(userID, threadID, bookmarkInput.ToDomain())
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
-			Status:  http.StatusInternalServerError,
+		return c.JSON(http.StatusAlreadyReported, helper.BaseResponse{
+			Status:  http.StatusAlreadyReported,
 			Message: err.Error(),
 			Data:    nil,
 		})
