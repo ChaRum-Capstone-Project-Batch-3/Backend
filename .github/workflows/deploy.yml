@@ -19,6 +19,8 @@ jobs:
       run: sudo docker stop /charum-backend || true
     - name: Removing old docker container
       run: sudo docker rm /charum-backend || true
+    - name: Removing old docker images || true
+      run: sudo docker rmi charum-backend:1.0.0 .
     - name: Build docker images
       run: sudo docker build -t charum-backend:1.0.0 .
     - name: Run docker container
