@@ -48,9 +48,8 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 
 	comment := apiV1.Group("/comment")
 	comment.POST("/:thread-id", cl.CommentController.Create, authMiddleware.Check)
-	comment.GET("/:thread-id", cl.CommentController.GetByThreadID)
-	comment.PUT("/id/:comment-id", cl.CommentController.Update, authMiddleware.Check)
-	comment.DELETE("/id/:comment-id", cl.CommentController.Delete, authMiddleware.Check)
+	comment.PUT("/:comment-id", cl.CommentController.Update, authMiddleware.Check)
+	comment.DELETE("/:comment-id", cl.CommentController.Delete, authMiddleware.Check)
 
 	admin := apiV1.Group("/admin", adminMiddleware.Check)
 
