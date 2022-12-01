@@ -3,11 +3,11 @@ package topics
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type Domain struct {
-	Id          primitive.ObjectID
-	Topic       string
-	Description string
-	CreatedAt   primitive.DateTime
-	UpdatedAt   primitive.DateTime
+	Id          primitive.ObjectID `json:"_id" bson:"_id"`
+	Topic       string             `json:"topic" bson:"topic"`
+	Description string             `json:"description" bson:"description"`
+	CreatedAt   primitive.DateTime `json:"createdAt" bson:"createdAt"`
+	UpdatedAt   primitive.DateTime `json:"updatedAt" bson:"updatedAt"`
 }
 
 type Repository interface {

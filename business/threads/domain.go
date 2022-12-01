@@ -7,16 +7,16 @@ import (
 )
 
 type Domain struct {
-	Id            primitive.ObjectID
-	TopicID       primitive.ObjectID
-	CreatorID     primitive.ObjectID
-	Title         string
-	Description   string
-	Likes         []Like
-	SuspendStatus string
-	SuspendDetail string
-	CreatedAt     primitive.DateTime
-	UpdatedAt     primitive.DateTime
+	Id            primitive.ObjectID `json:"_id" bson:"_id"`
+	TopicID       primitive.ObjectID `json:"topicID" bson:"topicID"`
+	CreatorID     primitive.ObjectID `json:"creatorID" bson:"creatorID"`
+	Title         string             `json:"title" bson:"title"`
+	Description   string             `json:"description" bson:"description"`
+	Likes         []Like             `json:"likes" bson:"likes"`
+	SuspendStatus string             `json:"suspendStatus,omitempty" bson:"suspendStatus"`
+	SuspendDetail string             `json:"suspendDetail,omitempty" bson:"suspendDetail"`
+	CreatedAt     primitive.DateTime `json:"createdAt" bson:"createdAt"`
+	UpdatedAt     primitive.DateTime `json:"updatedAt" bson:"updatedAt"`
 }
 
 type Like struct {

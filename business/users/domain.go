@@ -3,15 +3,15 @@ package users
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type Domain struct {
-	Id          primitive.ObjectID
-	Email       string
-	UserName    string
-	DisplayName string
-	Password    string `json:"-"`
-	IsActive    bool
-	Role        string
-	CreatedAt   primitive.DateTime
-	UpdatedAt   primitive.DateTime
+	Id          primitive.ObjectID `json:"_id" bson:"_id"`
+	Email       string             `json:"email" bson:"email"`
+	UserName    string             `json:"userName" bson:"userName"`
+	DisplayName string             `json:"displayName" bson:"displayName"`
+	Password    string             `json:"-"`
+	IsActive    bool               `json:"isActive" bson:"isActive"`
+	Role        string             `json:"role" bson:"role"`
+	CreatedAt   primitive.DateTime `json:"createdAt" bson:"createdAt"`
+	UpdatedAt   primitive.DateTime `json:"updatedAt" bson:"updatedAt"`
 }
 
 type Repository interface {
