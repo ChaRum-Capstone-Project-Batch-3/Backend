@@ -60,7 +60,7 @@ func (cc *CommentController) Create(c echo.Context) error {
 	comment, err := cc.CommentUseCase.Create(commentInput.ToDomain())
 	if err != nil {
 		statusCode := http.StatusInternalServerError
-		if err.Error() == "failed to get thread" {
+		if err.Error() == "failed to get thread" || err.Error() == "failed to get user" {
 			statusCode = http.StatusNotFound
 		}
 
@@ -92,48 +92,6 @@ func (cc *CommentController) Create(c echo.Context) error {
 /*
 Read
 */
-
-func (cc *CommentController) GetByThreadID(c echo.Context) error {
-	threadID, err := primitive.ObjectIDFromHex(c.Param("thread-id"))
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "invalid thread id",
-			Data:    nil,
-		})
-	}
-
-	comments, err := cc.CommentUseCase.GetByThreadID(threadID)
-	if err != nil {
-		statusCode := http.StatusInternalServerError
-		if err.Error() == "failed to get thread" {
-			statusCode = http.StatusNotFound
-		}
-
-		return c.JSON(statusCode, helper.BaseResponse{
-			Status:  statusCode,
-			Message: err.Error(),
-			Data:    err,
-		})
-	}
-
-	reponseComments, err := cc.CommentUseCase.DomainToResponseArray(comments)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
-			Status:  http.StatusInternalServerError,
-			Message: err.Error(),
-			Data:    err,
-		})
-	}
-
-	return c.JSON(http.StatusOK, helper.BaseResponse{
-		Status:  http.StatusOK,
-		Message: "success get comments",
-		Data: map[string]interface{}{
-			"comments": reponseComments,
-		},
-	})
-}
 
 /*
 Update
@@ -233,11 +191,20 @@ func (cc *CommentController) Delete(c echo.Context) error {
 		})
 	}
 
+	responseComment, err := cc.CommentUseCase.DomainToResponse(comment)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    err,
+		})
+	}
+
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
 		Message: "success delete comment",
 		Data: map[string]interface{}{
-			"comment": comment,
+			"comment": responseComment,
 		},
 	})
 }
