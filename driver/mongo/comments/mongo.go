@@ -89,6 +89,41 @@ func (cr *commentRepository) GetByThreadID(threadID primitive.ObjectID) ([]comme
 Update
 */
 
+func (cr *commentRepository) Update(domain *comments.Domain) (comments.Domain, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	_, err := cr.collection.UpdateOne(ctx, bson.M{
+		"_id": domain.Id,
+	}, bson.M{
+		"$set": FromDomain(domain),
+	})
+	if err != nil {
+		return comments.Domain{}, err
+	}
+
+	result, err := cr.GetByID(domain.Id)
+	if err != nil {
+		return comments.Domain{}, err
+	}
+
+	return result, nil
+}
+
 /*
 Delete
 */
+
+func (cr *commentRepository) Delete(id primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	_, err := cr.collection.DeleteOne(ctx, bson.M{
+		"_id": id,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

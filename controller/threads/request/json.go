@@ -11,7 +11,7 @@ import (
 )
 
 type Thread struct {
-	Topic       string `json:"topic" validate:"required"`
+	TopicID     string `json:"topicID" validate:"required"`
 	Title       string `json:"title" validate:"required"`
 	Description string `json:"description" validate:"required"`
 }

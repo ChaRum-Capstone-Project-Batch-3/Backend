@@ -1,6 +1,10 @@
 package threads
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"charum/dto"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type Domain struct {
 	Id            primitive.ObjectID
@@ -34,12 +38,14 @@ type Repository interface {
 
 type UseCase interface {
 	// Create
-	Create(creatorID primitive.ObjectID, topicName string, domain *Domain) (Domain, error)
+	Create(domain *Domain) (Domain, error)
 	// Read
-	GetWithSortAndOrder(page int, limit int, sort string, order string) ([]Domain, int, error)
+	GetWithSortAndOrder(page int, limit int, sort string, order string) ([]Domain, int, int, error)
 	GetByID(id primitive.ObjectID) (Domain, error)
+	DomainToResponse(domain Domain) (dto.ResponseThread, error)
+	DomainsToResponseArray(domains []Domain) ([]dto.ResponseThread, error)
 	// Update
-	Update(userID primitive.ObjectID, threadID primitive.ObjectID, topicName string, domain *Domain) (Domain, error)
+	Update(domain *Domain) (Domain, error)
 	// Delete
 	Delete(userID primitive.ObjectID, threadID primitive.ObjectID) (Domain, error)
 }

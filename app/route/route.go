@@ -24,7 +24,6 @@ type ControllerList struct {
 func (cl *ControllerList) Init(e *echo.Echo) {
 	_middleware.InitLogger(e)
 
-	// userMiddleware := _middleware.RoleMiddleware{Role: []string{"user"}, UserRepository: cl.UserRepository}
 	adminMiddleware := _middleware.RoleMiddleware{Role: []string{"admin"}, UserRepository: cl.UserRepository}
 	authMiddleware := _middleware.RoleMiddleware{Role: []string{"user", "admin"}, UserRepository: cl.UserRepository}
 
@@ -50,6 +49,8 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	comment := apiV1.Group("/comment")
 	comment.POST("/:thread-id", cl.CommentController.Create, authMiddleware.Check)
 	comment.GET("/:thread-id", cl.CommentController.GetByThreadID)
+	comment.PUT("/id/:comment-id", cl.CommentController.Update, authMiddleware.Check)
+	comment.DELETE("/id/:comment-id", cl.CommentController.Delete, authMiddleware.Check)
 
 	admin := apiV1.Group("/admin", adminMiddleware.Check)
 
@@ -64,7 +65,6 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	adminTopic := admin.Group("/topic")
 	adminTopic.POST("", cl.TopicController.CreateTopic)
 	adminTopic.GET("", cl.TopicController.GetAll)
-	adminTopic.GET("/name/:topic", cl.TopicController.GetByTopic)
 	adminTopic.GET("/:id", cl.TopicController.GetByID)
 	adminTopic.PUT("/:id", cl.TopicController.UpdateTopic)
 	adminTopic.DELETE("/:id", cl.TopicController.DeleteTopic)

@@ -1,6 +1,10 @@
 package comments
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"charum/dto"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type Domain struct {
 	Id        primitive.ObjectID `json:"_id" bson:"_id"`
@@ -18,7 +22,9 @@ type Repository interface {
 	GetByID(id primitive.ObjectID) (Domain, error)
 	GetByThreadID(threadID primitive.ObjectID) ([]Domain, error)
 	// Update
+	Update(domain *Domain) (Domain, error)
 	// Delete
+	Delete(id primitive.ObjectID) error
 }
 
 type UseCase interface {
@@ -26,6 +32,10 @@ type UseCase interface {
 	Create(domain *Domain) (Domain, error)
 	// Read
 	GetByThreadID(threadID primitive.ObjectID) ([]Domain, error)
+	DomainToResponse(comment Domain) (dto.ResponseComment, error)
+	DomainToResponseArray(comments []Domain) ([]dto.ResponseComment, error)
 	// Update
+	Update(domain *Domain) (Domain, error)
 	// Delete
+	Delete(id primitive.ObjectID, userID primitive.ObjectID) (Domain, error)
 }

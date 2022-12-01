@@ -33,19 +33,18 @@ func main() {
 	database := _mongo.Init(_util.GetConfig("DB_NAME"))
 
 	userRepository := _driver.NewUserRepository(database)
-	userUsecase := _userUseCase.NewUserUseCase(userRepository)
-	userController := _userController.NewUserController(userUsecase)
-
 	topicRepository := _driver.NewTopicRepository(database)
-	topicUsecase := _topicUseCase.NewTopicUseCase(topicRepository)
-	topicController := _topicController.NewTopicController(topicUsecase)
-
 	threadRepository := _driver.NewThreadRepository(database)
-	threadUsecase := _threadUseCase.NewThreadUseCase(threadRepository, topicRepository, userRepository)
-	threadController := _threadController.NewThreadController(threadUsecase)
-
 	commentRepository := _driver.NewCommentRepository(database)
-	commentUsecase := _commentUseCase.NewCommentUseCase(commentRepository, threadRepository)
+
+	userUsecase := _userUseCase.NewUserUseCase(userRepository)
+	topicUsecase := _topicUseCase.NewTopicUseCase(topicRepository)
+	threadUsecase := _threadUseCase.NewThreadUseCase(threadRepository, topicRepository, userRepository)
+	commentUsecase := _commentUseCase.NewCommentUseCase(commentRepository, threadRepository, userRepository)
+
+	userController := _userController.NewUserController(userUsecase)
+	topicController := _topicController.NewTopicController(topicUsecase)
+	threadController := _threadController.NewThreadController(threadUsecase, commentUsecase)
 	commentController := _commentController.NewCommentController(commentUsecase)
 
 	routeController := _route.ControllerList{

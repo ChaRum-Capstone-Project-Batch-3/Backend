@@ -3,7 +3,6 @@ package comments
 import (
 	"charum/business/comments"
 	"charum/controller/comments/request"
-	"charum/controller/comments/response"
 	"charum/helper"
 	"charum/util"
 	"net/http"
@@ -72,11 +71,20 @@ func (cc *CommentController) Create(c echo.Context) error {
 		})
 	}
 
+	responseComment, err := cc.CommentUseCase.DomainToResponse(comment)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    err,
+		})
+	}
+
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
 		Message: "success create comment",
 		Data: map[string]interface{}{
-			"comment": response.FromDomain(comment),
+			"comment": responseComment,
 		},
 	})
 }
@@ -109,11 +117,20 @@ func (cc *CommentController) GetByThreadID(c echo.Context) error {
 		})
 	}
 
+	reponseComments, err := cc.CommentUseCase.DomainToResponseArray(comments)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    err,
+		})
+	}
+
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
 		Message: "success get comments",
 		Data: map[string]interface{}{
-			"comments": response.FromDomainArray(comments),
+			"comments": reponseComments,
 		},
 	})
 }
@@ -122,6 +139,105 @@ func (cc *CommentController) GetByThreadID(c echo.Context) error {
 Update
 */
 
+func (cc *CommentController) Update(c echo.Context) error {
+	uid, err := util.GetUIDFromToken(c)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, helper.BaseResponse{
+			Status:  http.StatusUnauthorized,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	commentID, err := primitive.ObjectIDFromHex(c.Param("comment-id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "invalid comment id",
+			Data:    nil,
+		})
+	}
+
+	commentInput := request.Comment{}
+	c.Bind(&commentInput)
+
+	if err := commentInput.Validate(); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "validation failed",
+			Data:    err,
+		})
+	}
+
+	commentDomain := commentInput.ToDomain()
+	commentDomain.Id = commentID
+	commentDomain.UserID = uid
+
+	comment, err := cc.CommentUseCase.Update(commentDomain)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if err.Error() == "failed to get comment" {
+			statusCode = http.StatusNotFound
+		}
+
+		return c.JSON(statusCode, helper.BaseResponse{
+			Status:  statusCode,
+			Message: err.Error(),
+			Data:    err,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success update comment",
+		Data: map[string]interface{}{
+			"comment": comment,
+		},
+	})
+}
+
 /*
 Delete
 */
+
+func (cc *CommentController) Delete(c echo.Context) error {
+	uid, err := util.GetUIDFromToken(c)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, helper.BaseResponse{
+			Status:  http.StatusUnauthorized,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	commentID, err := primitive.ObjectIDFromHex(c.Param("comment-id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "invalid comment id",
+			Data:    nil,
+		})
+	}
+
+	comment, err := cc.CommentUseCase.Delete(commentID, uid)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if err.Error() == "failed to get comment" {
+			statusCode = http.StatusNotFound
+		}
+
+		return c.JSON(statusCode, helper.BaseResponse{
+			Status:  statusCode,
+			Message: err.Error(),
+			Data:    err,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success delete comment",
+		Data: map[string]interface{}{
+			"comment": comment,
+		},
+	})
+}

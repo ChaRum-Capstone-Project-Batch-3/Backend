@@ -63,7 +63,7 @@ func GetUIDFromToken(c echo.Context) (primitive.ObjectID, error) {
 
 	id, err := primitive.ObjectIDFromHex(claims.UID)
 	if err != nil {
-		return primitive.NilObjectID, errors.New("invalid id")
+		return primitive.NilObjectID, errors.New("invalid user id")
 	}
 
 	return id, nil
