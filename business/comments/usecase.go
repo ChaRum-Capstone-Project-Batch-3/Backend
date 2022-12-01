@@ -45,7 +45,7 @@ func (cu *CommentUseCase) Create(domain *Domain) (Domain, error) {
 
 	comment, err := cu.commentRepository.Create(domain)
 	if err != nil {
-		return Domain{}, err
+		return Domain{}, errors.New("failed to create comment")
 	}
 
 	return comment, nil
@@ -63,7 +63,7 @@ func (cu *CommentUseCase) GetByThreadID(threadID primitive.ObjectID) ([]Domain, 
 
 	comments, err := cu.commentRepository.GetByThreadID(threadID)
 	if err != nil {
-		return []Domain{}, err
+		return []Domain{}, errors.New("failed to get comments")
 	}
 
 	return comments, nil
@@ -93,7 +93,7 @@ func (cu *CommentUseCase) DomainToResponseArray(comments []Domain) ([]dto.Respon
 	for _, comment := range comments {
 		responseComment, err := cu.DomainToResponse(comment)
 		if err != nil {
-			return []dto.ResponseComment{}, err
+			return []dto.ResponseComment{}, errors.New("failed to get response comment")
 		}
 
 		responseComments = append(responseComments, responseComment)
@@ -109,7 +109,7 @@ Update
 func (cu *CommentUseCase) Update(domain *Domain) (Domain, error) {
 	comment, err := cu.commentRepository.GetByID(domain.Id)
 	if err != nil {
-		return Domain{}, err
+		return Domain{}, errors.New("failed to get comment")
 	}
 
 	if comment.UserID != domain.UserID {
@@ -126,7 +126,7 @@ func (cu *CommentUseCase) Update(domain *Domain) (Domain, error) {
 
 	comment, err = cu.commentRepository.Update(&comment)
 	if err != nil {
-		return Domain{}, err
+		return Domain{}, errors.New("failed to update comment")
 	}
 
 	return comment, nil
@@ -139,7 +139,7 @@ Delete
 func (cu *CommentUseCase) Delete(id primitive.ObjectID, userID primitive.ObjectID) (Domain, error) {
 	comment, err := cu.commentRepository.GetByID(id)
 	if err != nil {
-		return Domain{}, err
+		return Domain{}, errors.New("failed to get comment")
 	}
 
 	if comment.UserID != userID {
@@ -153,7 +153,7 @@ func (cu *CommentUseCase) Delete(id primitive.ObjectID, userID primitive.ObjectI
 
 	err = cu.commentRepository.Delete(id)
 	if err != nil {
-		return Domain{}, err
+		return Domain{}, errors.New("failed to delete comment")
 	}
 
 	return comment, nil
