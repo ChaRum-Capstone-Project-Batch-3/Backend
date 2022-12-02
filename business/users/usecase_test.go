@@ -128,9 +128,10 @@ func TestGetWithSortAndOrder(t *testing.T) {
 	t.Run("Test Case 1 | Valid Get Users", func(t *testing.T) {
 		userRepository.On("GetWithSortAndOrder", 0, 1, "createdAt", -1).Return([]users.Domain{userDomain}, 1, nil).Once()
 
-		actualUsers, totalData, actualErr := userUseCase.GetWithSortAndOrder(1, 1, "createdAt", "desc")
+		actualUsers, totalPage, totalData, actualErr := userUseCase.GetWithSortAndOrder(1, 1, "createdAt", "desc")
 
 		assert.NotZero(t, totalData)
+		assert.NotZero(t, totalPage)
 		assert.NotNil(t, actualUsers)
 		assert.Nil(t, actualErr)
 	})
@@ -139,9 +140,10 @@ func TestGetWithSortAndOrder(t *testing.T) {
 		expectedErr := errors.New("failed to get users")
 		userRepository.On("GetWithSortAndOrder", 0, 1, "createdAt", 1).Return([]users.Domain{}, 1, expectedErr).Once()
 
-		actualUsers, totalData, actualErr := userUseCase.GetWithSortAndOrder(1, 1, "createdAt", "asc")
+		actualUsers, totalPage, totalData, actualErr := userUseCase.GetWithSortAndOrder(1, 1, "createdAt", "asc")
 
 		assert.Zero(t, totalData)
+		assert.Zero(t, totalPage)
 		assert.Equal(t, []users.Domain{}, actualUsers)
 		assert.Equal(t, expectedErr, actualErr)
 	})
