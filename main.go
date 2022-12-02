@@ -23,6 +23,9 @@ import (
 	_commentUseCase "charum/business/comments"
 	_commentController "charum/controller/comments"
 
+	_followThreadUseCase "charum/business/follow_threads"
+	_followThreadController "charum/controller/follow_threads"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -36,23 +39,27 @@ func main() {
 	topicRepository := _driver.NewTopicRepository(database)
 	threadRepository := _driver.NewThreadRepository(database)
 	commentRepository := _driver.NewCommentRepository(database)
+	followThreadRepository := _driver.NewFollowThreadRepository(database)
 
 	userUsecase := _userUseCase.NewUserUseCase(userRepository)
 	topicUsecase := _topicUseCase.NewTopicUseCase(topicRepository)
 	threadUsecase := _threadUseCase.NewThreadUseCase(threadRepository, topicRepository, userRepository)
 	commentUsecase := _commentUseCase.NewCommentUseCase(commentRepository, threadRepository, userRepository)
+	followThreadUsecase := _followThreadUseCase.NewFollowThreadUseCase(followThreadRepository, userRepository, threadRepository)
 
 	userController := _userController.NewUserController(userUsecase)
 	topicController := _topicController.NewTopicController(topicUsecase)
 	threadController := _threadController.NewThreadController(threadUsecase, commentUsecase)
 	commentController := _commentController.NewCommentController(commentUsecase)
+	followThreadController := _followThreadController.NewFollowThreadController(followThreadUsecase)
 
 	routeController := _route.ControllerList{
-		UserRepository:    userRepository,
-		UserController:    userController,
-		TopicController:   topicController,
-		ThreadController:  threadController,
-		CommentController: commentController,
+		UserRepository:         userRepository,
+		UserController:         userController,
+		TopicController:        topicController,
+		ThreadController:       threadController,
+		CommentController:      commentController,
+		FollowThreadController: followThreadController,
 	}
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
