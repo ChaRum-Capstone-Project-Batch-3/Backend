@@ -75,7 +75,7 @@ func (uu *UserUseCase) Login(domain *Domain) (Domain, string, error) {
 	return user, token, nil
 }
 
-func (uu *UserUseCase) GetWithSortAndOrder(page int, limit int, sort string, order string) ([]Domain, int, error) {
+func (uu *UserUseCase) GetWithSortAndOrder(page int, limit int, sort string, order string) ([]Domain, int, int, error) {
 	skip := limit * (page - 1)
 	var orderInMongo int
 
@@ -87,11 +87,11 @@ func (uu *UserUseCase) GetWithSortAndOrder(page int, limit int, sort string, ord
 
 	users, totalData, err := uu.userRepository.GetWithSortAndOrder(skip, limit, sort, orderInMongo)
 	if err != nil {
-		return []Domain{}, 0, errors.New("failed to get users")
+		return []Domain{}, 0, 0, errors.New("failed to get users")
 	}
 
 	totalPage := math.Ceil(float64(totalData) / float64(limit))
-	return users, int(totalPage), nil
+	return users, int(totalPage), totalData, nil
 }
 
 func (uu *UserUseCase) GetByID(id primitive.ObjectID) (Domain, error) {

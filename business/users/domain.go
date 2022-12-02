@@ -33,7 +33,7 @@ type UseCase interface {
 	Register(domain *Domain) (Domain, string, error)
 	// Read
 	Login(domain *Domain) (Domain, string, error)
-	GetWithSortAndOrder(page int, limit int, sort string, order string) ([]Domain, int, error)
+	GetWithSortAndOrder(page int, limit int, sort string, order string) ([]Domain, int, int, error)
 	GetByID(id primitive.ObjectID) (Domain, error)
 	// Update
 	Update(id primitive.ObjectID, domain *Domain) (Domain, error)

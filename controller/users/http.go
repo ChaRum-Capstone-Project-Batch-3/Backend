@@ -165,7 +165,7 @@ func (userCtrl *UserController) GetManyWithPagination(c echo.Context) error {
 		})
 	}
 
-	users, totalPage, err := userCtrl.userUseCase.GetWithSortAndOrder(page, limitNumber, sort, order)
+	users, totalPage, totalData, err := userCtrl.userUseCase.GetWithSortAndOrder(page, limitNumber, sort, order)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,
@@ -178,8 +178,13 @@ func (userCtrl *UserController) GetManyWithPagination(c echo.Context) error {
 		Status:  http.StatusOK,
 		Message: "success to get all users",
 		Data: map[string]interface{}{
-			"totalPage": totalPage,
-			"users":     response.FromDomainArray(users),
+			"users": response.FromDomainArray(users),
+		},
+		Pagination: helper.Page{
+			Size:        limitNumber,
+			TotalData:   totalData,
+			TotalPage:   totalPage,
+			CurrentPage: page,
 		},
 	})
 }
