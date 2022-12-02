@@ -1,9 +1,9 @@
 package threads
 
 import (
+	"charum/business/comments"
 	"charum/business/threads"
 	"charum/controller/threads/request"
-	"charum/controller/threads/response"
 	"charum/helper"
 	"charum/util"
 	"net/http"
@@ -15,12 +15,14 @@ import (
 )
 
 type ThreadController struct {
-	threadUseCase threads.UseCase
+	threadUseCase  threads.UseCase
+	commentUseCase comments.UseCase
 }
 
-func NewThreadController(threadUC threads.UseCase) *ThreadController {
+func NewThreadController(threadUC threads.UseCase, commentUC comments.UseCase) *ThreadController {
 	return &ThreadController{
-		threadUseCase: threadUC,
+		threadUseCase:  threadUC,
+		commentUseCase: commentUC,
 	}
 }
 
@@ -49,7 +51,18 @@ func (tc *ThreadController) Create(c echo.Context) error {
 		})
 	}
 
-	result, err := tc.threadUseCase.Create(userID, threadInput.Topic, threadInput.ToDomain())
+	threadDomain := threadInput.ToDomain()
+	threadDomain.CreatorID = userID
+	threadDomain.TopicID, err = primitive.ObjectIDFromHex(threadInput.TopicID)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "invalid topic id",
+			Data:    nil,
+		})
+	}
+
+	result, err := tc.threadUseCase.Create(threadDomain)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,
@@ -62,7 +75,7 @@ func (tc *ThreadController) Create(c echo.Context) error {
 		Status:  http.StatusCreated,
 		Message: "success to create thread",
 		Data: map[string]interface{}{
-			"thread": response.FromDomain(result),
+			"thread": result,
 		},
 	})
 }
@@ -122,12 +135,13 @@ func (tc *ThreadController) GetManyWithPagination(c echo.Context) error {
 		})
 	}
 
-	threads, totalPage, err := tc.threadUseCase.GetWithSortAndOrder(page, limitNumber, sort, order)
+	threads, totalPage, totalData, err := tc.threadUseCase.GetWithSortAndOrder(page, limitNumber, sort, order)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
-			Status:  http.StatusInternalServerError,
-			Message: err.Error(),
-			Data:    nil,
+			Status:     http.StatusInternalServerError,
+			Message:    err.Error(),
+			Data:       nil,
+			Pagination: helper.Page{},
 		})
 	}
 
@@ -135,8 +149,13 @@ func (tc *ThreadController) GetManyWithPagination(c echo.Context) error {
 		Status:  http.StatusOK,
 		Message: "success to get threads",
 		Data: map[string]interface{}{
-			"totalPage": totalPage,
-			"threads":   response.FromDomainArray(threads),
+			"threads": threads,
+		},
+		Pagination: helper.Page{
+			Size:        limitNumber,
+			TotalData:   totalData,
+			TotalPage:   totalPage,
+			CurrentPage: page,
 		},
 	})
 }
@@ -151,7 +170,7 @@ func (tc *ThreadController) GetByID(c echo.Context) error {
 		})
 	}
 
-	result, err := tc.threadUseCase.GetByID(threadID)
+	thread, err := tc.threadUseCase.GetByID(threadID)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, helper.BaseResponse{
 			Status:  http.StatusNotFound,
@@ -160,11 +179,41 @@ func (tc *ThreadController) GetByID(c echo.Context) error {
 		})
 	}
 
+	comment, err := tc.commentUseCase.GetByThreadID(threadID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	responseComment, err := tc.commentUseCase.DomainToResponseArray(comment)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	reponseThread, err := tc.threadUseCase.DomainToResponse(thread)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	reponseThread.TotalComment = len(responseComment)
+
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
 		Message: "success to get thread",
 		Data: map[string]interface{}{
-			"thread": response.FromDomain(result),
+			"thread":   reponseThread,
+			"comments": responseComment,
 		},
 	})
 }
@@ -203,7 +252,21 @@ func (tc *ThreadController) Update(c echo.Context) error {
 		})
 	}
 
-	result, err := tc.threadUseCase.Update(userID, threadID, threadInput.Topic, threadInput.ToDomain())
+	topicID, err := primitive.ObjectIDFromHex(threadInput.TopicID)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "invalid topic id",
+			Data:    nil,
+		})
+	}
+
+	threadDomain := threadInput.ToDomain()
+	threadDomain.Id = threadID
+	threadDomain.TopicID = topicID
+	threadDomain.CreatorID = userID
+
+	result, err := tc.threadUseCase.Update(threadDomain)
 
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -224,7 +287,7 @@ func (tc *ThreadController) Update(c echo.Context) error {
 		Status:  http.StatusOK,
 		Message: "success to update thread",
 		Data: map[string]interface{}{
-			"thread": response.FromDomain(result),
+			"thread": result,
 		},
 	})
 }
@@ -272,7 +335,7 @@ func (tc *ThreadController) Delete(c echo.Context) error {
 		Status:  http.StatusOK,
 		Message: "success to delete thread",
 		Data: map[string]interface{}{
-			"thread": response.FromDomain(deletedThread),
+			"thread": deletedThread,
 		},
 	})
 }

@@ -1,38 +1,49 @@
 package middleware
 
 import (
+	"charum/business/users"
 	"charum/helper"
 	"charum/util"
 	"net/http"
-	"strings"
 
 	"github.com/labstack/echo/v4"
 )
 
 type RoleMiddleware struct {
-	Role []string
-	Func echo.HandlerFunc
+	Role           []string
+	UserRepository users.Repository
+	Func           echo.HandlerFunc
 }
 
 func (rm RoleMiddleware) Check(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		authHeader := c.Request().Header.Get("Authorization")
-		token := strings.Replace(authHeader, "Bearer ", "", -1)
-
-		claims, err := util.GetPayloadToken(token)
+		uid, err := util.GetUIDFromToken(c)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+			return echo.NewHTTPError(http.StatusBadRequest, helper.BaseResponse{
+				Status:  http.StatusBadRequest,
+				Message: "Invalid user id",
+				Data:    nil,
+			})
+		}
+
+		user, err := rm.UserRepository.GetByID(uid)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, helper.BaseResponse{
+				Status:  http.StatusBadRequest,
+				Message: err.Error(),
+				Data:    nil,
+			})
 		}
 
 		for _, role := range rm.Role {
-			if claims.Role == role {
+			if user.Role == role {
 				return next(c)
 			}
 		}
 
-		return c.JSON(http.StatusForbidden, helper.BaseResponse{
-			Status:  http.StatusForbidden,
-			Message: "forbidden",
+		return c.JSON(http.StatusUnauthorized, helper.BaseResponse{
+			Status:  http.StatusUnauthorized,
+			Message: "unauthorized",
 			Data:    nil,
 		})
 	}

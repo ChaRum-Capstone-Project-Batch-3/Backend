@@ -1,29 +1,31 @@
 package request
 
 import (
-	"charum/business/threads"
+	"charum/business/comments"
 	"charum/helper"
 	"errors"
 	"strings"
 
 	"github.com/fatih/structs"
 	"github.com/go-playground/validator/v10"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type Thread struct {
-	TopicID     string `json:"topicID" validate:"required"`
-	Title       string `json:"title" validate:"required"`
-	Description string `json:"description" validate:"required"`
+type Comment struct {
+	ThreadID primitive.ObjectID `json:"threadID" bson:"threadID"`
+	UserID   primitive.ObjectID `json:"userID" bson:"userID"`
+	Comment  string             `json:"comment" validate:"required" bson:"comment"`
 }
 
-func (req *Thread) ToDomain() *threads.Domain {
-	return &threads.Domain{
-		Title:       req.Title,
-		Description: req.Description,
+func (req *Comment) ToDomain() *comments.Domain {
+	return &comments.Domain{
+		ThreadID: req.ThreadID,
+		UserID:   req.UserID,
+		Comment:  req.Comment,
 	}
 }
 
-func (req *Thread) Validate() []helper.ValidationError {
+func (req *Comment) Validate() []helper.ValidationError {
 	var ve validator.ValidationErrors
 
 	if err := validator.New().Struct(req); err != nil {

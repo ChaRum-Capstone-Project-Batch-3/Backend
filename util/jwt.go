@@ -11,8 +11,7 @@ import (
 )
 
 type JWTCustomClaims struct {
-	UID  string `json:"uid"`
-	Role string `json:"role"`
+	UID string `json:"uid"`
 	jwt.RegisteredClaims
 }
 
@@ -21,7 +20,6 @@ var JWTSecretKey = GetConfig("JWT_SECRET_KEY")
 func GenerateToken(uid string, role string) string {
 	claims := JWTCustomClaims{
 		uid,
-		role,
 		jwt.RegisteredClaims{
 			Issuer:    "charum",
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -65,7 +63,7 @@ func GetUIDFromToken(c echo.Context) (primitive.ObjectID, error) {
 
 	id, err := primitive.ObjectIDFromHex(claims.UID)
 	if err != nil {
-		return primitive.NilObjectID, errors.New("invalid id")
+		return primitive.NilObjectID, errors.New("invalid user id")
 	}
 
 	return id, nil

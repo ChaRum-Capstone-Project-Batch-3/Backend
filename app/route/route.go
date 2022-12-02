@@ -2,6 +2,8 @@ package route
 
 import (
 	_middleware "charum/app/middleware"
+	_usersDomain "charum/business/users"
+	"charum/controller/comments"
 	"charum/controller/threads"
 	"charum/controller/topics"
 	"charum/controller/users"
@@ -11,18 +13,19 @@ import (
 )
 
 type ControllerList struct {
-	LoggerMiddleware echo.MiddlewareFunc
-	UserController   *users.UserController
-	TopicController  *topics.TopicController
-	ThreadController *threads.ThreadController
+	LoggerMiddleware  echo.MiddlewareFunc
+	UserRepository    _usersDomain.Repository
+	UserController    *users.UserController
+	TopicController   *topics.TopicController
+	ThreadController  *threads.ThreadController
+	CommentController *comments.CommentController
 }
 
 func (cl *ControllerList) Init(e *echo.Echo) {
 	_middleware.InitLogger(e)
 
-	// userMiddleware := _middleware.RoleMiddleware{Role: []string{"user"}}
-	adminMiddleware := _middleware.RoleMiddleware{Role: []string{"admin"}}
-	authMiddleware := _middleware.RoleMiddleware{Role: []string{"user", "admin"}}
+	adminMiddleware := _middleware.RoleMiddleware{Role: []string{"admin"}, UserRepository: cl.UserRepository}
+	authMiddleware := _middleware.RoleMiddleware{Role: []string{"user", "admin"}, UserRepository: cl.UserRepository}
 
 	apiV1 := e.Group("/api/v1")
 	apiV1.GET("", func(c echo.Context) error {
@@ -43,6 +46,11 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	thread.PUT("/id/:id", cl.ThreadController.Update, authMiddleware.Check)
 	thread.DELETE("/id/:id", cl.ThreadController.Delete, authMiddleware.Check)
 
+	comment := apiV1.Group("/comment")
+	comment.POST("/:thread-id", cl.CommentController.Create, authMiddleware.Check)
+	comment.PUT("/:comment-id", cl.CommentController.Update, authMiddleware.Check)
+	comment.DELETE("/:comment-id", cl.CommentController.Delete, authMiddleware.Check)
+
 	admin := apiV1.Group("/admin", adminMiddleware.Check)
 
 	adminUser := admin.Group("/user")
@@ -56,7 +64,6 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	adminTopic := admin.Group("/topic")
 	adminTopic.POST("", cl.TopicController.CreateTopic)
 	adminTopic.GET("", cl.TopicController.GetAll)
-	adminTopic.GET("/name/:topic", cl.TopicController.GetByTopic)
 	adminTopic.GET("/:id", cl.TopicController.GetByID)
 	adminTopic.PUT("/:id", cl.TopicController.UpdateTopic)
 	adminTopic.DELETE("/:id", cl.TopicController.DeleteTopic)
