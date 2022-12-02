@@ -116,10 +116,10 @@ func (tc *ThreadController) GetManyWithPagination(c echo.Context) error {
 	sort := c.QueryParam("sort")
 	if sort == "" {
 		sort = "createdAt"
-	} else if !(sort == "id" || sort == "title" || sort == "createdAt" || sort == "updatedAt") {
+	} else if !(sort == "id" || sort == "title" || sort == "createdAt" || sort == "updatedAt" || sort == "likes") {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
-			Message: "sort must be id, title, createdAt, or updatedAt",
+			Message: "sort must be id, title, createdAt, updatedAt, or likes",
 			Data:    nil,
 		})
 	}
