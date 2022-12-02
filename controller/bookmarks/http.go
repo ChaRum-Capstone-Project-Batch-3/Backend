@@ -97,3 +97,32 @@ func (bc *BookmarkController) GetByID(c echo.Context) error {
 		},
 	})
 }
+
+// get all bookmark
+func (bc *BookmarkController) GetAllBookmark(c echo.Context) error {
+	userID, err := util.GetUIDFromToken(c)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, helper.BaseResponse{
+			Status:  http.StatusUnauthorized,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	result, err := bc.bookmarkUseCase.GetAllBookmark(userID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success get all bookmark",
+		Data: map[string]interface{}{
+			"bookmarks": result,
+		},
+	})
+}

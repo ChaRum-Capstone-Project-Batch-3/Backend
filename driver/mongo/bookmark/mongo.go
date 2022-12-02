@@ -13,7 +13,7 @@ type bookmarkRepository struct {
 	collection *mongo.Collection
 }
 
-func NewMongoRepository(db *mongo.Database) bookmarks.Repository {
+func NewMongoRepository(db *mongo.Database) *bookmarkRepository {
 	return &bookmarkRepository{
 		collection: db.Collection("bookmarks"),
 	}
@@ -82,4 +82,20 @@ func (br *bookmarkRepository) UpdateBookmark(domain *bookmarks.Domain) (bookmark
 	}
 
 	return result, err
+}
+
+// get all bookmark by user id
+func (br *bookmarkRepository) GetAllBookmark(userID primitive.ObjectID) ([]primitive.ObjectID, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	var result Bookmark
+	err := br.collection.FindOne(ctx, bson.M{
+		"userId": userID,
+	}).Decode(&result)
+	if err != nil {
+		return []primitive.ObjectID{}, err
+	}
+
+	return result.Threads, nil
 }

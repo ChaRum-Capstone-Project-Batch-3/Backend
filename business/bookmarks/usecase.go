@@ -114,3 +114,21 @@ func (bu *BookmarkUseCase) UpdateBookmark(userID primitive.ObjectID, threadID pr
 
 	return bookmark, nil
 }
+
+// return all bookmarked threads by user id
+func (bu *BookmarkUseCase) GetAllBookmark(userID primitive.ObjectID) ([]primitive.ObjectID, error) {
+	bookmark, err := bu.bookmarkRepository.GetByID(userID)
+	if err != nil {
+		return []primitive.ObjectID{}, err
+	}
+	var result []primitive.ObjectID
+	for _, v := range bookmark.Threads {
+		thread, err := bu.threadRepository.GetByID(v)
+		if err != nil {
+			return []primitive.ObjectID{}, err
+		}
+		result = append(result, thread.Id)
+
+	}
+	return result, nil
+}
