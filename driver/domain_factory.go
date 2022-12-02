@@ -1,9 +1,11 @@
 package driver
 
 import (
+	commentDomain "charum/business/comments"
 	threadDomain "charum/business/threads"
 	topicDomain "charum/business/topics"
 	userDomain "charum/business/users"
+	commentDB "charum/driver/mongo/comments"
 	threadDB "charum/driver/mongo/threads"
 	topicDB "charum/driver/mongo/topics"
 	userDB "charum/driver/mongo/users"
@@ -21,4 +23,8 @@ func NewTopicRepository(db *mongo.Database) topicDomain.Repository {
 
 func NewThreadRepository(db *mongo.Database) threadDomain.Repository {
 	return threadDB.NewMongoRepository(db)
+}
+
+func NewCommentRepository(db *mongo.Database) commentDomain.Repository {
+	return commentDB.NewMongoRepository(db)
 }

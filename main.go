@@ -20,6 +20,9 @@ import (
 	_threadUseCase "charum/business/threads"
 	_threadController "charum/controller/threads"
 
+	_commentUseCase "charum/business/comments"
+	_commentController "charum/controller/comments"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -30,26 +33,31 @@ func main() {
 	database := _mongo.Init(_util.GetConfig("DB_NAME"))
 
 	userRepository := _driver.NewUserRepository(database)
-	userUsecase := _userUseCase.NewUserUseCase(userRepository)
-	userController := _userController.NewUserController(userUsecase)
-
 	topicRepository := _driver.NewTopicRepository(database)
-	topicUsecase := _topicUseCase.NewTopicUseCase(topicRepository)
-	topicController := _topicController.NewTopicController(topicUsecase)
-
 	threadRepository := _driver.NewThreadRepository(database)
+	commentRepository := _driver.NewCommentRepository(database)
+
+	userUsecase := _userUseCase.NewUserUseCase(userRepository)
+	topicUsecase := _topicUseCase.NewTopicUseCase(topicRepository)
 	threadUsecase := _threadUseCase.NewThreadUseCase(threadRepository, topicRepository, userRepository)
-	threadController := _threadController.NewThreadController(threadUsecase)
+	commentUsecase := _commentUseCase.NewCommentUseCase(commentRepository, threadRepository, userRepository)
+
+	userController := _userController.NewUserController(userUsecase)
+	topicController := _topicController.NewTopicController(topicUsecase)
+	threadController := _threadController.NewThreadController(threadUsecase, commentUsecase)
+	commentController := _commentController.NewCommentController(commentUsecase)
 
 	routeController := _route.ControllerList{
-		UserController:   userController,
-		TopicController:  topicController,
-		ThreadController: threadController,
+		UserRepository:    userRepository,
+		UserController:    userController,
+		TopicController:   topicController,
+		ThreadController:  threadController,
+		CommentController: commentController,
 	}
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
 	}))
 
 	routeController.Init(e)

@@ -1,18 +1,22 @@
 package threads
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"charum/dto"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type Domain struct {
-	Id            primitive.ObjectID
-	TopicID       primitive.ObjectID
-	CreatorID     primitive.ObjectID
-	Title         string
-	Description   string
-	Likes         []Like
-	SuspendStatus string
-	SuspendDetail string
-	CreatedAt     primitive.DateTime
-	UpdatedAt     primitive.DateTime
+	Id            primitive.ObjectID `json:"_id" bson:"_id"`
+	TopicID       primitive.ObjectID `json:"topicID" bson:"topicID"`
+	CreatorID     primitive.ObjectID `json:"creatorID" bson:"creatorID"`
+	Title         string             `json:"title" bson:"title"`
+	Description   string             `json:"description" bson:"description"`
+	Likes         []Like             `json:"likes" bson:"likes"`
+	SuspendStatus string             `json:"suspendStatus,omitempty" bson:"suspendStatus"`
+	SuspendDetail string             `json:"suspendDetail,omitempty" bson:"suspendDetail"`
+	CreatedAt     primitive.DateTime `json:"createdAt" bson:"createdAt"`
+	UpdatedAt     primitive.DateTime `json:"updatedAt" bson:"updatedAt"`
 }
 
 type Like struct {
@@ -34,12 +38,14 @@ type Repository interface {
 
 type UseCase interface {
 	// Create
-	Create(creatorID primitive.ObjectID, topicName string, domain *Domain) (Domain, error)
+	Create(domain *Domain) (Domain, error)
 	// Read
-	GetWithSortAndOrder(page int, limit int, sort string, order string) ([]Domain, int, error)
+	GetWithSortAndOrder(page int, limit int, sort string, order string) ([]Domain, int, int, error)
 	GetByID(id primitive.ObjectID) (Domain, error)
+	DomainToResponse(domain Domain) (dto.ResponseThread, error)
+	DomainsToResponseArray(domains []Domain) ([]dto.ResponseThread, error)
 	// Update
-	Update(userID primitive.ObjectID, threadID primitive.ObjectID, topicName string, domain *Domain) (Domain, error)
+	Update(domain *Domain) (Domain, error)
 	// Delete
 	Delete(userID primitive.ObjectID, threadID primitive.ObjectID) (Domain, error)
 }
