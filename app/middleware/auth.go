@@ -21,7 +21,7 @@ func (rm RoleMiddleware) Check(next echo.HandlerFunc) echo.HandlerFunc {
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, helper.BaseResponse{
 				Status:  http.StatusBadRequest,
-				Message: "Invalid user id",
+				Message: "invalid token",
 				Data:    nil,
 			})
 		}
