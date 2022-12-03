@@ -3,6 +3,7 @@ package follow_threads
 import (
 	"charum/business/threads"
 	"charum/business/users"
+	"errors"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -62,15 +63,29 @@ Update
 Delete
 */
 
-func (ftu *FollowThreadUseCase) Delete(id primitive.ObjectID) (Domain, error) {
-	result, err := ftu.followThreadRepository.GetByID(id)
+func (ftu *FollowThreadUseCase) Delete(domain *Domain) (Domain, error) {
+	_, err := ftu.userRepository.GetByID(domain.UserID)
 	if err != nil {
-		return Domain{}, err
+		return Domain{}, errors.New("failed to get user")
 	}
 
-	err = ftu.followThreadRepository.Delete(id)
+	_, err = ftu.threadRepository.GetByID(domain.ThreadID)
 	if err != nil {
-		return Domain{}, err
+		return Domain{}, errors.New("failed to get thread")
+	}
+
+	result, err := ftu.followThreadRepository.GetByUserIDAndThreadID(domain.UserID, domain.ThreadID)
+	if err != nil {
+		return Domain{}, errors.New("follow thread not found")
+	}
+
+	if result.UserID != domain.UserID {
+		return Domain{}, errors.New("you are not the owner of this follow thread")
+	}
+
+	err = ftu.followThreadRepository.Delete(domain.Id)
+	if err != nil {
+		return Domain{}, errors.New("failed to unfollow thread")
 	}
 
 	return result, nil

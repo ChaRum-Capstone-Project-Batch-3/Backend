@@ -75,3 +75,45 @@ Update
 /*
 Delete
 */
+
+func (ftc *FollowThreadController) Delete(c echo.Context) error {
+	threadID, err := primitive.ObjectIDFromHex(c.Param("thread-id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "invalid thread id",
+			Data:    nil,
+		})
+	}
+
+	userID, err := util.GetUIDFromToken(c)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, helper.BaseResponse{
+			Status:  http.StatusUnauthorized,
+			Message: "Unauthorized",
+			Data:    nil,
+		})
+	}
+
+	domain := followthreads.Domain{
+		UserID:   userID,
+		ThreadID: threadID,
+	}
+
+	result, err := ftc.followThreadUseCase.Delete(&domain)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "Success to unfollow thread",
+		Data: map[string]interface{}{
+			"thread": result,
+		},
+	})
+}

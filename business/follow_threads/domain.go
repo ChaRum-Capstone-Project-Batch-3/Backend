@@ -16,6 +16,7 @@ type Repository interface {
 	Create(domain *Domain) (Domain, error)
 	// Read
 	GetByID(id primitive.ObjectID) (Domain, error)
+	GetByUserIDAndThreadID(userID primitive.ObjectID, threadID primitive.ObjectID) (Domain, error)
 	// Update
 	// Delete
 	Delete(id primitive.ObjectID) error
@@ -27,5 +28,5 @@ type UseCase interface {
 	// Read
 	// Update
 	// Delete
-	Delete(id primitive.ObjectID) (Domain, error)
+	Delete(domain *Domain) (Domain, error)
 }

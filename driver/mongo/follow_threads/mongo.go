@@ -60,6 +60,22 @@ func (ftr *followThreadRepository) GetByID(id primitive.ObjectID) (followthreads
 	return result.ToDomain(), nil
 }
 
+func (ftr *followThreadRepository) GetByUserIDAndThreadID(userID primitive.ObjectID, threadID primitive.ObjectID) (followthreads.Domain, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	var result Model
+	err := ftr.collection.FindOne(ctx, bson.M{
+		"userID":   userID,
+		"threadID": threadID,
+	}).Decode(&result)
+	if err != nil {
+		return followthreads.Domain{}, err
+	}
+
+	return result.ToDomain(), nil
+}
+
 /*
 Update
 */
@@ -67,3 +83,18 @@ Update
 /*
 Delete
 */
+
+func (ftr *followThreadRepository) Delete(id primitive.ObjectID) error {
+	// delete document by id
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	_, err := ftr.collection.DeleteOne(ctx, bson.M{
+		"_id": id,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
