@@ -61,3 +61,17 @@ Update
 /*
 Delete
 */
+
+func (ftu *FollowThreadUseCase) Delete(id primitive.ObjectID) (Domain, error) {
+	result, err := ftu.followThreadRepository.GetByID(id)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	err = ftu.followThreadRepository.Delete(id)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	return result, nil
+}

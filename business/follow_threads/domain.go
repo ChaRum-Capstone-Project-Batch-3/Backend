@@ -18,6 +18,7 @@ type Repository interface {
 	GetByID(id primitive.ObjectID) (Domain, error)
 	// Update
 	// Delete
+	Delete(id primitive.ObjectID) error
 }
 
 type UseCase interface {
@@ -26,4 +27,5 @@ type UseCase interface {
 	// Read
 	// Update
 	// Delete
+	Delete(id primitive.ObjectID) (Domain, error)
 }
