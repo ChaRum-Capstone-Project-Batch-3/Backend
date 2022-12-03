@@ -45,6 +45,26 @@ func (ftr *followThreadRepository) Create(domain *followthreads.Domain) (followt
 Read
 */
 
+func (ftr *followThreadRepository) GetAllByUserID(userID primitive.ObjectID) ([]followthreads.Domain, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	var result []Model
+	cursor, err := ftr.collection.Find(ctx, bson.M{
+		"userID": userID,
+	})
+	if err != nil {
+		return []followthreads.Domain{}, err
+	}
+
+	err = cursor.All(ctx, &result)
+	if err != nil {
+		return []followthreads.Domain{}, err
+	}
+
+	return ToDomainArray(result), nil
+}
+
 func (ftr *followThreadRepository) GetByID(id primitive.ObjectID) (followthreads.Domain, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
@@ -76,6 +96,20 @@ func (ftr *followThreadRepository) GetByUserIDAndThreadID(userID primitive.Objec
 	return result.ToDomain(), nil
 }
 
+func (ftr *followThreadRepository) CountByThreadID(threadID primitive.ObjectID) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	count, err := ftr.collection.CountDocuments(ctx, bson.M{
+		"threadID": threadID,
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	return int(count), nil
+}
+
 /*
 Update
 */
@@ -85,7 +119,6 @@ Delete
 */
 
 func (ftr *followThreadRepository) Delete(id primitive.ObjectID) error {
-	// delete document by id
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 

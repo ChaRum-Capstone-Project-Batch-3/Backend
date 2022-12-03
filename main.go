@@ -45,11 +45,11 @@ func main() {
 	topicUsecase := _topicUseCase.NewTopicUseCase(topicRepository)
 	threadUsecase := _threadUseCase.NewThreadUseCase(threadRepository, topicRepository, userRepository)
 	commentUsecase := _commentUseCase.NewCommentUseCase(commentRepository, threadRepository, userRepository)
-	followThreadUsecase := _followThreadUseCase.NewFollowThreadUseCase(followThreadRepository, userRepository, threadRepository)
+	followThreadUsecase := _followThreadUseCase.NewFollowThreadUseCase(followThreadRepository, userRepository, threadRepository, commentRepository, threadUsecase)
 
 	userController := _userController.NewUserController(userUsecase)
 	topicController := _topicController.NewTopicController(topicUsecase)
-	threadController := _threadController.NewThreadController(threadUsecase, commentUsecase)
+	threadController := _threadController.NewThreadController(threadUsecase, commentUsecase, followThreadUsecase)
 	commentController := _commentController.NewCommentController(commentUsecase)
 	followThreadController := _followThreadController.NewFollowThreadController(followThreadUsecase)
 

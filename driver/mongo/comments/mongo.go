@@ -85,6 +85,20 @@ func (cr *commentRepository) GetByThreadID(threadID primitive.ObjectID) ([]comme
 	return ToDomainArray(result), nil
 }
 
+func (cr *commentRepository) CountByThreadID(threadID primitive.ObjectID) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	count, err := cr.collection.CountDocuments(ctx, bson.M{
+		"threadID": threadID,
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	return int(count), nil
+}
+
 /*
 Update
 */

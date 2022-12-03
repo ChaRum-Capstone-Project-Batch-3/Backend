@@ -36,3 +36,11 @@ func (m *Model) ToDomain() followThreads.Domain {
 		UpdatedAt:    m.UpdatedAt,
 	}
 }
+
+func ToDomainArray(model []Model) []followThreads.Domain {
+	var domain []followThreads.Domain
+	for _, v := range model {
+		domain = append(domain, v.ToDomain())
+	}
+	return domain
+}

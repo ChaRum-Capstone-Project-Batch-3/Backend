@@ -2,6 +2,7 @@ package threads
 
 import (
 	"charum/business/comments"
+	followThreads "charum/business/follow_threads"
 	"charum/business/threads"
 	"charum/controller/threads/request"
 	"charum/helper"
@@ -15,14 +16,16 @@ import (
 )
 
 type ThreadController struct {
-	threadUseCase  threads.UseCase
-	commentUseCase comments.UseCase
+	threadUseCase       threads.UseCase
+	commentUseCase      comments.UseCase
+	followThreadUseCase followThreads.UseCase
 }
 
-func NewThreadController(threadUC threads.UseCase, commentUC comments.UseCase) *ThreadController {
+func NewThreadController(threadUC threads.UseCase, commentUC comments.UseCase, followThreadUC followThreads.UseCase) *ThreadController {
 	return &ThreadController{
-		threadUseCase:  threadUC,
-		commentUseCase: commentUC,
+		threadUseCase:       threadUC,
+		commentUseCase:      commentUC,
+		followThreadUseCase: followThreadUC,
 	}
 }
 
@@ -145,11 +148,45 @@ func (tc *ThreadController) GetManyWithPagination(c echo.Context) error {
 		})
 	}
 
+	responseThreads, err := tc.threadUseCase.DomainsToResponseArray(threads)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:     http.StatusInternalServerError,
+			Message:    err.Error(),
+			Data:       nil,
+			Pagination: helper.Page{},
+		})
+	}
+
+	for i, thread := range responseThreads {
+		responseThreads[i].TotalFollow, err = tc.followThreadUseCase.CountByThreadID(thread.Id)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+				Status:     http.StatusInternalServerError,
+				Message:    err.Error(),
+				Data:       nil,
+				Pagination: helper.Page{},
+			})
+		}
+
+		responseThreads[i].TotalComment, err = tc.commentUseCase.CountByThreadID(thread.Id)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+				Status:     http.StatusInternalServerError,
+				Message:    err.Error(),
+				Data:       nil,
+				Pagination: helper.Page{},
+			})
+		}
+
+		responseThreads[i].TotalLike = len(thread.Likes)
+	}
+
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
 		Message: "success to get threads",
 		Data: map[string]interface{}{
-			"threads": threads,
+			"threads": responseThreads,
 		},
 		Pagination: helper.Page{
 			Size:        limitNumber,
@@ -188,6 +225,15 @@ func (tc *ThreadController) GetByID(c echo.Context) error {
 		})
 	}
 
+	totalFollow, err := tc.followThreadUseCase.CountByThreadID(threadID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
 	responseComment, err := tc.commentUseCase.DomainToResponseArray(comment)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
@@ -197,7 +243,7 @@ func (tc *ThreadController) GetByID(c echo.Context) error {
 		})
 	}
 
-	reponseThread, err := tc.threadUseCase.DomainToResponse(thread)
+	responseThread, err := tc.threadUseCase.DomainToResponse(thread)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,
@@ -206,13 +252,14 @@ func (tc *ThreadController) GetByID(c echo.Context) error {
 		})
 	}
 
-	reponseThread.TotalComment = len(responseComment)
+	responseThread.TotalComment = len(responseComment)
+	responseThread.TotalFollow = totalFollow
 
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
 		Message: "success to get thread",
 		Data: map[string]interface{}{
-			"thread":   reponseThread,
+			"thread":   responseThread,
 			"comments": responseComment,
 		},
 	})
@@ -272,7 +319,7 @@ func (tc *ThreadController) Update(c echo.Context) error {
 		statusCode := http.StatusInternalServerError
 		if strings.Contains(err.Error(), "failed to get") {
 			statusCode = http.StatusNotFound
-		} else if strings.Contains(err.Error(), "you are not the thread creator") {
+		} else if strings.Contains(err.Error(), "user are not the thread creator") {
 			statusCode = http.StatusForbidden
 		}
 
@@ -320,7 +367,7 @@ func (tc *ThreadController) Delete(c echo.Context) error {
 		statusCode := http.StatusInternalServerError
 		if strings.Contains(err.Error(), "failed to get") {
 			statusCode = http.StatusNotFound
-		} else if strings.Contains(err.Error(), "you are not the thread creator") {
+		} else if strings.Contains(err.Error(), "user are not the thread creator") {
 			statusCode = http.StatusForbidden
 		}
 

@@ -49,6 +49,8 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	thread.DELETE("/id/:id", cl.ThreadController.Delete, authMiddleware.Check)
 	thread.POST("/follow/:thread-id", cl.FollowThreadController.Create, authMiddleware.Check)
 	thread.DELETE("/unfollow/:thread-id", cl.FollowThreadController.Delete, authMiddleware.Check)
+	thread.GET("/following", cl.FollowThreadController.GetFollowedThreadByToken, authMiddleware.Check)
+	thread.GET("/following/:user-id", cl.FollowThreadController.GetFollowedThreadByUserID)
 
 	comment := apiV1.Group("/comment")
 	comment.POST("/:thread-id", cl.CommentController.Create, authMiddleware.Check)

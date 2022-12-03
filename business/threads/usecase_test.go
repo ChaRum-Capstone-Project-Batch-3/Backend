@@ -266,7 +266,7 @@ func TestUpdate(t *testing.T) {
 	t.Run("Test case 6 | Invalid update thread | User Not Creator", func(t *testing.T) {
 		copyThread := threadDomain
 		copyThread.CreatorID = primitive.NewObjectID()
-		expectedErr := errors.New("you are not the thread creator")
+		expectedErr := errors.New("user are not the thread creator")
 
 		topicRepository.On("GetByID", threadDomain.TopicID).Return(topicDomain, nil).Once()
 		threadRepository.On("GetByID", threadDomain.Id).Return(copyThread, nil).Once()
@@ -325,7 +325,7 @@ func TestDelete(t *testing.T) {
 	})
 
 	t.Run("Test case 5 | Invalid delete thread | User Not Creator", func(t *testing.T) {
-		expectedErr := errors.New("you are not the thread creator")
+		expectedErr := errors.New("user are not the thread creator")
 
 		threadRepository.On("GetByID", threadDomain.Id).Return(threadDomain, nil).Once()
 		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()

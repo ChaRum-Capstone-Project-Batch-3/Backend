@@ -84,14 +84,14 @@ func (tu *ThreadUseCase) GetByID(id primitive.ObjectID) (Domain, error) {
 func (tu *ThreadUseCase) DomainToResponse(domain Domain) (dto.ResponseThread, error) {
 	creator, err := tu.userRepository.GetByID(domain.CreatorID)
 	if err != nil {
-		return dto.ResponseThread{}, errors.New("failed to get creator")
+		return dto.ResponseThread{}, errors.New("failed to get creator data")
 	}
 
 	likes := []dto.Like{}
 	for _, like := range domain.Likes {
 		user, err := tu.userRepository.GetByID(like.UserID)
 		if err != nil {
-			return dto.ResponseThread{}, err
+			return dto.ResponseThread{}, errors.New("failed to get user who like thread")
 		}
 
 		likes = append(likes, dto.Like{
@@ -155,7 +155,7 @@ func (tu *ThreadUseCase) Update(domain *Domain) (Domain, error) {
 	}
 
 	if user.Role != "admin" && thread.CreatorID != domain.CreatorID {
-		return Domain{}, errors.New("you are not the thread creator")
+		return Domain{}, errors.New("user are not the thread creator")
 	}
 
 	thread.Title = domain.Title
@@ -186,7 +186,7 @@ func (tu *ThreadUseCase) Delete(userID primitive.ObjectID, threadID primitive.Ob
 	}
 
 	if user.Role != "admin" && thread.CreatorID != userID {
-		return Domain{}, errors.New("you are not the thread creator")
+		return Domain{}, errors.New("user are not the thread creator")
 	}
 
 	err = tu.threadRepository.Delete(threadID)
