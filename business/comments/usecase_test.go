@@ -304,3 +304,21 @@ func TestDelete(t *testing.T) {
 		assert.NotNil(t, err)
 	})
 }
+
+func TestDeleteAllByUserID(t *testing.T) {
+	t.Run("Test case 1 | Valid delete all by user id", func(t *testing.T) {
+		commentRepository.On("DeleteAllByUserID", commentDomain.UserID).Return(nil).Once()
+
+		err := commentUseCase.DeleteAllByUserID(commentDomain.UserID)
+
+		assert.Nil(t, err)
+	})
+
+	t.Run("Test case 2 | Invalid delete all by user id | Failed To Delete All Comment By User ID", func(t *testing.T) {
+		expectedErr := errors.New("failed to delete all comment by user id")
+		commentRepository.On("DeleteAllByUserID", commentDomain.UserID).Return(expectedErr).Once()
+
+		err := commentUseCase.DeleteAllByUserID(commentDomain.UserID)
+		assert.NotNil(t, err)
+	})
+}

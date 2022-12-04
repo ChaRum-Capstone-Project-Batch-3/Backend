@@ -160,6 +160,20 @@ func (_m *UseCase) GetWithSortAndOrder(page int, limit int, sort string, order s
 	return r0, r1, r2, r3
 }
 
+// SuspendByUserID provides a mock function with given fields: userID
+func (_m *UseCase) SuspendByUserID(userID primitive.ObjectID) error {
+	ret := _m.Called(userID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID) error); ok {
+		r0 = rf(userID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Update provides a mock function with given fields: domain
 func (_m *UseCase) Update(domain *threads.Domain) (threads.Domain, error) {
 	ret := _m.Called(domain)
