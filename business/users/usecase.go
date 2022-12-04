@@ -139,6 +139,8 @@ func (uu *UserUseCase) Update(domain *Domain) (Domain, error) {
 	user.Email = domain.Email
 	user.UserName = domain.UserName
 	user.DisplayName = domain.DisplayName
+	user.Biodata = domain.Biodata
+	user.SocialMedia = domain.SocialMedia
 	user.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
 
 	updatedUser, err := uu.userRepository.Update(&user)

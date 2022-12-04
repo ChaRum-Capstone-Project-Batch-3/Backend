@@ -14,6 +14,8 @@ type Register struct {
 	Email       string `json:"email" validate:"required,email" bson:"email"`
 	UserName    string `json:"userName" validate:"required" bson:"userName"`
 	DisplayName string `json:"displayName" validate:"required" bson:"displayName"`
+	Biodata     string `json:"biodata" bson:"biodata"`
+	SocialMedia string `json:"socialMedia" bson:"socialMedia"`
 	Password    string `json:"password" validate:"required,min=8,containsany=ABCDEFGHIJKLMNOPQRSTUVWXYZ,containsany=!@#$%^&*,containsany=abcdefghijklmnopqrstuvwxyz,containsany=0123456789" bson:"password"`
 }
 
@@ -22,6 +24,8 @@ func (req *Register) ToDomain() *users.Domain {
 		Email:       req.Email,
 		UserName:    req.UserName,
 		DisplayName: req.DisplayName,
+		Biodata:     req.Biodata,
+		SocialMedia: req.SocialMedia,
 		Password:    req.Password,
 	}
 }
@@ -104,6 +108,8 @@ type Update struct {
 	Email       string `json:"email" validate:"required,email" bson:"email"`
 	UserName    string `json:"userName" validate:"required" bson:"userName"`
 	DisplayName string `json:"displayName" validate:"required" bson:"displayName"`
+	Biodata     string `json:"biodata" bson:"biodata"`
+	SocialMedia string `json:"socialMedia" bson:"socialMedia"`
 }
 
 func (req *Update) ToDomain() *users.Domain {
@@ -111,6 +117,8 @@ func (req *Update) ToDomain() *users.Domain {
 		Email:       req.Email,
 		UserName:    req.UserName,
 		DisplayName: req.DisplayName,
+		Biodata:     req.Biodata,
+		SocialMedia: req.SocialMedia,
 	}
 }
 

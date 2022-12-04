@@ -7,6 +7,8 @@ type Domain struct {
 	Email       string             `json:"email" bson:"email"`
 	UserName    string             `json:"userName" bson:"userName"`
 	DisplayName string             `json:"displayName" bson:"displayName"`
+	Biodata     string             `json:"biodata" bson:"biodata"`
+	SocialMedia string             `json:"socialMedia" bson:"socialMedia"`
 	Password    string             `json:"-"`
 	IsActive    bool               `json:"isActive" bson:"isActive"`
 	Role        string             `json:"role" bson:"role"`
