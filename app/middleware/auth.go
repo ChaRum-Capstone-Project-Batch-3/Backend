@@ -35,6 +35,14 @@ func (rm RoleMiddleware) Check(next echo.HandlerFunc) echo.HandlerFunc {
 			})
 		}
 
+		if !user.IsActive {
+			return echo.NewHTTPError(http.StatusBadRequest, helper.BaseResponse{
+				Status:  http.StatusBadRequest,
+				Message: "user is suspended",
+				Data:    nil,
+			})
+		}
+
 		for _, role := range rm.Role {
 			if user.Role == role {
 				return next(c)
