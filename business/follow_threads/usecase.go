@@ -157,10 +157,6 @@ func (ftu *FollowThreadUseCase) Delete(domain *Domain) (Domain, error) {
 		return Domain{}, errors.New("follow thread not found")
 	}
 
-	if result.UserID != domain.UserID {
-		return Domain{}, errors.New("user are not the owner of this follow thread")
-	}
-
 	err = ftu.followThreadRepository.Delete(result.Id)
 	if err != nil {
 		return Domain{}, errors.New("failed to unfollow thread")

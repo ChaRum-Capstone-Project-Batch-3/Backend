@@ -66,7 +66,6 @@ func (cr *commentRepository) GetByThreadID(threadID primitive.ObjectID) ([]comme
 	defer cancel()
 
 	var result []Model
-	// get commment by thread id sorted by createdAt descending
 	cursor, err := cr.collection.Find(ctx, bson.M{
 		"threadID": threadID,
 	}, &options.FindOptions{

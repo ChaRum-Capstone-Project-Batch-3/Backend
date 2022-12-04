@@ -84,7 +84,7 @@ func (tu *ThreadUseCase) GetByID(id primitive.ObjectID) (Domain, error) {
 func (tu *ThreadUseCase) DomainToResponse(domain Domain) (dto.ResponseThread, error) {
 	creator, err := tu.userRepository.GetByID(domain.CreatorID)
 	if err != nil {
-		return dto.ResponseThread{}, errors.New("failed to get creator data")
+		return dto.ResponseThread{}, errors.New("failed to get creator")
 	}
 
 	likes := []dto.Like{}

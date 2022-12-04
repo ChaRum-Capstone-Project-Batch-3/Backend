@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	comments "charum/business/comments"
+	follow_threads "charum/business/follow_threads"
 
 	mock "github.com/stretchr/testify/mock"
 
@@ -37,18 +37,18 @@ func (_m *Repository) CountByThreadID(threadID primitive.ObjectID) (int, error) 
 }
 
 // Create provides a mock function with given fields: domain
-func (_m *Repository) Create(domain *comments.Domain) (comments.Domain, error) {
+func (_m *Repository) Create(domain *follow_threads.Domain) (follow_threads.Domain, error) {
 	ret := _m.Called(domain)
 
-	var r0 comments.Domain
-	if rf, ok := ret.Get(0).(func(*comments.Domain) comments.Domain); ok {
+	var r0 follow_threads.Domain
+	if rf, ok := ret.Get(0).(func(*follow_threads.Domain) follow_threads.Domain); ok {
 		r0 = rf(domain)
 	} else {
-		r0 = ret.Get(0).(comments.Domain)
+		r0 = ret.Get(0).(follow_threads.Domain)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*comments.Domain) error); ok {
+	if rf, ok := ret.Get(1).(func(*follow_threads.Domain) error); ok {
 		r1 = rf(domain)
 	} else {
 		r1 = ret.Error(1)
@@ -71,15 +71,38 @@ func (_m *Repository) Delete(id primitive.ObjectID) error {
 	return r0
 }
 
+// GetAllByUserID provides a mock function with given fields: userID
+func (_m *Repository) GetAllByUserID(userID primitive.ObjectID) ([]follow_threads.Domain, error) {
+	ret := _m.Called(userID)
+
+	var r0 []follow_threads.Domain
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID) []follow_threads.Domain); ok {
+		r0 = rf(userID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]follow_threads.Domain)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(primitive.ObjectID) error); ok {
+		r1 = rf(userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetByID provides a mock function with given fields: id
-func (_m *Repository) GetByID(id primitive.ObjectID) (comments.Domain, error) {
+func (_m *Repository) GetByID(id primitive.ObjectID) (follow_threads.Domain, error) {
 	ret := _m.Called(id)
 
-	var r0 comments.Domain
-	if rf, ok := ret.Get(0).(func(primitive.ObjectID) comments.Domain); ok {
+	var r0 follow_threads.Domain
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID) follow_threads.Domain); ok {
 		r0 = rf(id)
 	} else {
-		r0 = ret.Get(0).(comments.Domain)
+		r0 = ret.Get(0).(follow_threads.Domain)
 	}
 
 	var r1 error
@@ -92,43 +115,20 @@ func (_m *Repository) GetByID(id primitive.ObjectID) (comments.Domain, error) {
 	return r0, r1
 }
 
-// GetByThreadID provides a mock function with given fields: threadID
-func (_m *Repository) GetByThreadID(threadID primitive.ObjectID) ([]comments.Domain, error) {
-	ret := _m.Called(threadID)
+// GetByUserIDAndThreadID provides a mock function with given fields: userID, threadID
+func (_m *Repository) GetByUserIDAndThreadID(userID primitive.ObjectID, threadID primitive.ObjectID) (follow_threads.Domain, error) {
+	ret := _m.Called(userID, threadID)
 
-	var r0 []comments.Domain
-	if rf, ok := ret.Get(0).(func(primitive.ObjectID) []comments.Domain); ok {
-		r0 = rf(threadID)
+	var r0 follow_threads.Domain
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID, primitive.ObjectID) follow_threads.Domain); ok {
+		r0 = rf(userID, threadID)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]comments.Domain)
-		}
+		r0 = ret.Get(0).(follow_threads.Domain)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(primitive.ObjectID) error); ok {
-		r1 = rf(threadID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// Update provides a mock function with given fields: domain
-func (_m *Repository) Update(domain *comments.Domain) (comments.Domain, error) {
-	ret := _m.Called(domain)
-
-	var r0 comments.Domain
-	if rf, ok := ret.Get(0).(func(*comments.Domain) comments.Domain); ok {
-		r0 = rf(domain)
-	} else {
-		r0 = ret.Get(0).(comments.Domain)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*comments.Domain) error); ok {
-		r1 = rf(domain)
+	if rf, ok := ret.Get(1).(func(primitive.ObjectID, primitive.ObjectID) error); ok {
+		r1 = rf(userID, threadID)
 	} else {
 		r1 = ret.Error(1)
 	}

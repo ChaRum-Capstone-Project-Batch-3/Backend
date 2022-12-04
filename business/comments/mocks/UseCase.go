@@ -16,6 +16,27 @@ type UseCase struct {
 	mock.Mock
 }
 
+// CountByThreadID provides a mock function with given fields: threadID
+func (_m *UseCase) CountByThreadID(threadID primitive.ObjectID) (int, error) {
+	ret := _m.Called(threadID)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID) int); ok {
+		r0 = rf(threadID)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(primitive.ObjectID) error); ok {
+		r1 = rf(threadID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Create provides a mock function with given fields: domain
 func (_m *UseCase) Create(domain *comments.Domain) (comments.Domain, error) {
 	ret := _m.Called(domain)
