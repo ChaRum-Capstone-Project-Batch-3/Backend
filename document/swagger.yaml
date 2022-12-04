@@ -134,7 +134,7 @@ paths:
       tags:
         - User
       summary: Logs user into the system
-      description: Get token for user and user's data
+      description: Get token for user and user's data with email or username on key
       operationId: Login
       requestBody:
         content:
@@ -142,7 +142,7 @@ paths:
             schema:
               type: object
               properties:
-                email:
+                key:
                   type: string
                   example: user@charum.com
                 password:
@@ -285,6 +285,142 @@ paths:
                   message:
                     type: string
                     example: email is not registered
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: string
+                    example: null
+    put:
+      tags:
+        - User
+      summary: Update user profile
+      description: Update user's profile data
+      operationId: UserUpdate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: user@charum.com
+                userName:
+                  type: string
+                  example: charum-user
+                displayName:
+                  type: string
+                  example: charum user
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to update
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: invalid id
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: string
+                    example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: unauthorized
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: string
+                    example: null
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: failed to get user
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: string
+                    example: null
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 409
+                  message:
+                    type: string
+                    example: email is already used
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: string
+                    example: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to update user
                   data:
                     type: string
                     example: null
@@ -1096,7 +1232,7 @@ paths:
         - Admin
       summary: Update user profile
       description: Update user's profile data
-      operationId: Update
+      operationId: AdminUpdate
       parameters:
         - in: path
           name: id
@@ -1120,9 +1256,6 @@ paths:
                 displayName:
                   type: string
                   example: charum user
-                isActive:
-                  type: boolean
-                  example: false
         required: true
       responses:
         '200':
