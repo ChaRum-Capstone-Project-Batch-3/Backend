@@ -15,6 +15,20 @@ type Repository struct {
 	mock.Mock
 }
 
+// AddOneNotification provides a mock function with given fields: threadID
+func (_m *Repository) AddOneNotification(threadID primitive.ObjectID) error {
+	ret := _m.Called(threadID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID) error); ok {
+		r0 = rf(threadID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // CountByThreadID provides a mock function with given fields: threadID
 func (_m *Repository) CountByThreadID(threadID primitive.ObjectID) (int, error) {
 	ret := _m.Called(threadID)
@@ -134,6 +148,20 @@ func (_m *Repository) GetByUserIDAndThreadID(userID primitive.ObjectID, threadID
 	}
 
 	return r0, r1
+}
+
+// ResetNotification provides a mock function with given fields: threadID, userID
+func (_m *Repository) ResetNotification(threadID primitive.ObjectID, userID primitive.ObjectID) error {
+	ret := _m.Called(threadID, userID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID, primitive.ObjectID) error); ok {
+		r0 = rf(threadID, userID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 type mockConstructorTestingTNewRepository interface {

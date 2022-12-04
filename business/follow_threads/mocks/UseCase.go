@@ -146,6 +146,34 @@ func (_m *UseCase) GetAllByUserID(userID primitive.ObjectID) ([]follow_threads.D
 	return r0, r1
 }
 
+// ResetNotification provides a mock function with given fields: threadID, userID
+func (_m *UseCase) ResetNotification(threadID primitive.ObjectID, userID primitive.ObjectID) error {
+	ret := _m.Called(threadID, userID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID, primitive.ObjectID) error); ok {
+		r0 = rf(threadID, userID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdateNotification provides a mock function with given fields: threadID
+func (_m *UseCase) UpdateNotification(threadID primitive.ObjectID) error {
+	ret := _m.Called(threadID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID) error); ok {
+		r0 = rf(threadID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 type mockConstructorTestingTNewUseCase interface {
 	mock.TestingT
 	Cleanup(func())

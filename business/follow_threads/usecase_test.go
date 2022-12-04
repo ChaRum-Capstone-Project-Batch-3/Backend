@@ -304,6 +304,42 @@ func TestDomainToResponseArray(t *testing.T) {
 	})
 }
 
+func TestUpdateNotification(t *testing.T) {
+	t.Run("Test Case 1 | Valid Update Notification", func(t *testing.T) {
+		followThreadRepositoryMock.On("AddOneNotification", followThreadDomain.Id).Return(nil).Once()
+
+		err := followThreadUseCase.UpdateNotification(followThreadDomain.Id)
+
+		assert.Nil(t, err)
+	})
+
+	t.Run("Test Case 2 | Invalid Update Notification", func(t *testing.T) {
+		followThreadRepositoryMock.On("AddOneNotification", followThreadDomain.Id).Return(errors.New("unexpected error")).Once()
+
+		err := followThreadUseCase.UpdateNotification(followThreadDomain.Id)
+
+		assert.NotNil(t, err)
+	})
+}
+
+func TestResetNotification(t *testing.T) {
+	t.Run("Test Case 1 | Valid Reset Notification", func(t *testing.T) {
+		followThreadRepositoryMock.On("ResetNotification", followThreadDomain.ThreadID, followThreadDomain.UserID).Return(nil).Once()
+
+		err := followThreadUseCase.ResetNotification(followThreadDomain.ThreadID, followThreadDomain.UserID)
+
+		assert.Nil(t, err)
+	})
+
+	t.Run("Test Case 2 | Invalid Reset Notification", func(t *testing.T) {
+		followThreadRepositoryMock.On("ResetNotification", followThreadDomain.ThreadID, followThreadDomain.UserID).Return(errors.New("unexpected error")).Once()
+
+		err := followThreadUseCase.ResetNotification(followThreadDomain.ThreadID, followThreadDomain.UserID)
+
+		assert.NotNil(t, err)
+	})
+}
+
 func TestDelete(t *testing.T) {
 	t.Run("Test Case 1 | Valid Delete", func(t *testing.T) {
 		userRepositoryMock.On("GetByID", followThreadDomain.UserID).Return(userDomain, nil).Once()
