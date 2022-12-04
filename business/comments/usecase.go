@@ -172,3 +172,12 @@ func (cu *CommentUseCase) Delete(id primitive.ObjectID, userID primitive.ObjectI
 
 	return comment, nil
 }
+
+func (cu *CommentUseCase) DeleteAllByUserID(userID primitive.ObjectID) error {
+	err := cu.commentRepository.DeleteAllByUserID(userID)
+	if err != nil {
+		return errors.New("failed to delete user's comments")
+	}
+
+	return nil
+}

@@ -140,3 +140,17 @@ func (cr *commentRepository) Delete(id primitive.ObjectID) error {
 
 	return nil
 }
+
+func (cr *commentRepository) DeleteAllByUserID(userID primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	_, err := cr.collection.DeleteMany(ctx, bson.M{
+		"userID": userID,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

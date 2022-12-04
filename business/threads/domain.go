@@ -32,6 +32,7 @@ type Repository interface {
 	GetByID(id primitive.ObjectID) (Domain, error)
 	// Update
 	Update(domain *Domain) (Domain, error)
+	SuspendByUserID(domain *Domain) error
 	// Delete
 	Delete(id primitive.ObjectID) error
 }
@@ -46,6 +47,7 @@ type UseCase interface {
 	DomainsToResponseArray(domains []Domain) ([]dto.ResponseThread, error)
 	// Update
 	Update(domain *Domain) (Domain, error)
+	SuspendByUserID(userID primitive.ObjectID) error
 	// Delete
 	Delete(userID primitive.ObjectID, threadID primitive.ObjectID) (Domain, error)
 }

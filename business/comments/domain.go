@@ -26,6 +26,7 @@ type Repository interface {
 	Update(domain *Domain) (Domain, error)
 	// Delete
 	Delete(id primitive.ObjectID) error
+	DeleteAllByUserID(userID primitive.ObjectID) error
 }
 
 type UseCase interface {
@@ -40,4 +41,5 @@ type UseCase interface {
 	Update(domain *Domain) (Domain, error)
 	// Delete
 	Delete(id primitive.ObjectID, userID primitive.ObjectID) (Domain, error)
+	DeleteAllByUserID(userID primitive.ObjectID) error
 }

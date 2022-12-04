@@ -170,6 +170,21 @@ func (tu *ThreadUseCase) Update(domain *Domain) (Domain, error) {
 	return updatedThread, nil
 }
 
+func (tu *ThreadUseCase) SuspendByUserID(userID primitive.ObjectID) error {
+	domain := Domain{
+		CreatorID:     userID,
+		SuspendStatus: "user suspend",
+		SuspendDetail: "user is violate the rules",
+	}
+
+	err := tu.threadRepository.SuspendByUserID(&domain)
+	if err != nil {
+		return errors.New("failed to suspend user threads")
+	}
+
+	return nil
+}
+
 /*
 Delete
 */

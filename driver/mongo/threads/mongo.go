@@ -117,6 +117,25 @@ func (tr *threadRepository) Update(domain *threads.Domain) (threads.Domain, erro
 	return result, nil
 }
 
+func (tr *threadRepository) SuspendByUserID(domain *threads.Domain) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	_, err := tr.collection.UpdateMany(ctx, bson.M{
+		"creatorId": domain.CreatorID,
+	}, bson.M{
+		"$set": bson.M{
+			"suspendStatus": domain.SuspendStatus,
+			"suspendDetail": domain.SuspendDetail,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 /*
 Delete
 */

@@ -1,6 +1,8 @@
 package users
 
 import (
+	"charum/business/comments"
+	"charum/business/threads"
 	"charum/business/users"
 	"charum/controller/users/request"
 	"charum/controller/users/response"
@@ -15,12 +17,16 @@ import (
 )
 
 type UserController struct {
-	userUseCase users.UseCase
+	userUseCase    users.UseCase
+	threadUseCase  threads.UseCase
+	commentUseCase comments.UseCase
 }
 
-func NewUserController(userUC users.UseCase) *UserController {
+func NewUserController(userUC users.UseCase, threadUC threads.UseCase, commentUC comments.UseCase) *UserController {
 	return &UserController{
-		userUseCase: userUC,
+		userUseCase:    userUC,
+		threadUseCase:  threadUC,
+		commentUseCase: commentUC,
 	}
 }
 
@@ -328,6 +334,24 @@ func (userCtrl *UserController) Suspend(c echo.Context) error {
 		})
 	}
 
+	err = userCtrl.threadUseCase.SuspendByUserID(userID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	err = userCtrl.commentUseCase.DeleteAllByUserID(userID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
 		Message: "success to suspend user",
@@ -395,6 +419,15 @@ func (userCtrl *UserController) Delete(c echo.Context) error {
 
 		return c.JSON(statusCode, helper.BaseResponse{
 			Status:  statusCode,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	err = userCtrl.commentUseCase.DeleteAllByUserID(userID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
 			Message: err.Error(),
 			Data:    nil,
 		})
