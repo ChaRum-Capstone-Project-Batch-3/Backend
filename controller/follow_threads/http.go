@@ -50,7 +50,7 @@ func (ftc *FollowThreadController) Create(c echo.Context) error {
 
 	thread, err := ftc.followThreadUseCase.Create(&domain)
 	if err != nil {
-		statusCode := http.StatusBadRequest
+		statusCode := http.StatusNotFound
 		if err.Error() == "user already follow this thread" {
 			statusCode = http.StatusConflict
 		}
@@ -163,15 +163,15 @@ func (ftc *FollowThreadController) GetFollowedThreadByToken(c echo.Context) erro
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, helper.BaseResponse{
 			Status:  http.StatusUnauthorized,
-			Message: "unauthorized",
+			Message: err.Error(),
 			Data:    nil,
 		})
 	}
 
 	domains, err := ftc.followThreadUseCase.GetAllByUserID(userID)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
+		return c.JSON(http.StatusNotFound, helper.BaseResponse{
+			Status:  http.StatusNotFound,
 			Message: err.Error(),
 			Data:    nil,
 		})
@@ -238,8 +238,8 @@ func (ftc *FollowThreadController) Delete(c echo.Context) error {
 
 	responseThread, err := ftc.followThreadUseCase.DomainToResponse(result)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
+		return c.JSON(http.StatusNotFound, helper.BaseResponse{
+			Status:  http.StatusNotFound,
 			Message: err.Error(),
 			Data:    nil,
 		})

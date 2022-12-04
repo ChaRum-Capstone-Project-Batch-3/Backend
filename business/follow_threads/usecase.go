@@ -41,12 +41,12 @@ func (ftu *FollowThreadUseCase) Create(domain *Domain) (Domain, error) {
 
 	_, err = ftu.userRepository.GetByID(domain.UserID)
 	if err != nil {
-		return Domain{}, err
+		return Domain{}, errors.New("failed to get user")
 	}
 
 	_, err = ftu.threadRepository.GetByID(domain.ThreadID)
 	if err != nil {
-		return Domain{}, err
+		return Domain{}, errors.New("failed to get thread")
 	}
 
 	domain.Id = primitive.NewObjectID()
@@ -69,7 +69,7 @@ Read
 func (ftu *FollowThreadUseCase) GetAllByUserID(userID primitive.ObjectID) ([]Domain, error) {
 	result, err := ftu.followThreadRepository.GetAllByUserID(userID)
 	if err != nil {
-		return []Domain{}, err
+		return []Domain{}, errors.New("failed to get follow threads")
 	}
 
 	return result, nil
@@ -154,7 +154,7 @@ func (ftu *FollowThreadUseCase) Delete(domain *Domain) (Domain, error) {
 
 	result, err := ftu.followThreadRepository.GetByUserIDAndThreadID(domain.UserID, domain.ThreadID)
 	if err != nil {
-		return Domain{}, errors.New("follow thread not found")
+		return Domain{}, errors.New("failed to get follow thread")
 	}
 
 	err = ftu.followThreadRepository.Delete(result.Id)
