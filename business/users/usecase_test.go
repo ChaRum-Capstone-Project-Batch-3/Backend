@@ -183,7 +183,7 @@ func TestUpdate(t *testing.T) {
 		userRepository.On("GetByUsername", copyDomain.UserName).Return(users.Domain{}, errors.New("not found")).Once()
 		userRepository.On("Update", mock.Anything).Return(copyDomain, nil).Once()
 
-		actualUser, actualErr := userUseCase.Update(copyDomain.Id, &copyDomain)
+		actualUser, actualErr := userUseCase.Update(&copyDomain)
 
 		assert.NotNil(t, actualUser)
 		assert.Nil(t, actualErr)
@@ -193,7 +193,7 @@ func TestUpdate(t *testing.T) {
 		expectedErr := errors.New("failed to get user")
 		userRepository.On("GetByID", userDomain.Id).Return(users.Domain{}, expectedErr).Once()
 
-		actualUser, actualErr := userUseCase.Update(userDomain.Id, &userDomain)
+		actualUser, actualErr := userUseCase.Update(&userDomain)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Equal(t, expectedErr, actualErr)
@@ -204,7 +204,7 @@ func TestUpdate(t *testing.T) {
 		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
 		userRepository.On("Update", mock.Anything).Return(users.Domain{}, expectedErr).Once()
 
-		actualUser, actualErr := userUseCase.Update(userDomain.Id, &userDomain)
+		actualUser, actualErr := userUseCase.Update(&userDomain)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Equal(t, expectedErr, actualErr)
@@ -217,7 +217,7 @@ func TestUpdate(t *testing.T) {
 		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
 		userRepository.On("GetByEmail", copyDomain.Email).Return(copyDomain, nil).Once()
 
-		actualUser, actualErr := userUseCase.Update(userDomain.Id, &copyDomain)
+		actualUser, actualErr := userUseCase.Update(&copyDomain)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Equal(t, expectedErr, actualErr)
@@ -231,7 +231,7 @@ func TestUpdate(t *testing.T) {
 		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
 		userRepository.On("GetByUsername", copyDomain.UserName).Return(copyDomain, nil).Once()
 
-		actualUser, actualErr := userUseCase.Update(userDomain.Id, &copyDomain)
+		actualUser, actualErr := userUseCase.Update(&copyDomain)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Equal(t, expectedErr, actualErr)
