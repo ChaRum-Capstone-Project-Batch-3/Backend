@@ -37,6 +37,12 @@ paths:
                 displayName:
                   type: string
                   example: charum user
+                biodata:
+                  type: string
+                  example: halo aku user
+                socialMedia:
+                  type: string
+                  example: instagram @anon
                 password:
                   type: string
                   example: secretpassword
@@ -312,6 +318,12 @@ paths:
                 displayName:
                   type: string
                   example: charum user
+                biodata:
+                  type: string
+                  example: halo aku user
+                socialMedia:
+                  type: string
+                  example: instagram @anon
         required: true
       responses:
         '200':
@@ -1256,6 +1268,12 @@ paths:
                 displayName:
                   type: string
                   example: charum user
+                biodata:
+                  type: string
+                  example: halo aku user
+                socialMedia:
+                  type: string
+                  example: instagram @anon
         required: true
       responses:
         '200':
