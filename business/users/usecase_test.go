@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 	userDomain = users.Domain{
 		Id:        primitive.NewObjectID(),
 		Email:     "test@charum.com",
-		Password:  "test123",
+		Password:  "!Test123",
 		UserName:  "tester",
 		Role:      "user",
 		IsActive:  true,
@@ -91,36 +91,51 @@ func TestLogin(t *testing.T) {
 		copyDomain := userDomain
 		encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte(copyDomain.Password), bcrypt.DefaultCost)
 		copyDomain.Password = string(encryptedPassword)
+		userRepository.On("GetByEmail", copyDomain.Email).Return(copyDomain, nil).Once()
 
+		actualUser, token, err := userUseCase.Login(&userDomain)
+
+		assert.NotNil(t, actualUser)
+		assert.NotEmpty(t, token)
+		assert.Nil(t, err)
+	})
+
+	t.Run("Test Case 2 | Invalid Login | Wrong Password", func(t *testing.T) {
+		expectedErr := errors.New("wrong password")
+		copyDomain := userDomain
+		copyDomain.Password = "wrong password"
+		userRepository.On("GetByEmail", copyDomain.Email).Return(copyDomain, nil).Once()
+
+		actualUser, token, err := userUseCase.Login(&userDomain)
+
+		assert.Equal(t, users.Domain{}, actualUser)
+		assert.Empty(t, token)
+		assert.Equal(t, expectedErr, err)
+	})
+
+	t.Run("Test Case 3 | Invalid Login | Email or username is not registered", func(t *testing.T) {
+		expectedErr := errors.New("email or username is not registered")
+		userRepository.On("GetByEmail", userDomain.Email).Return(users.Domain{}, expectedErr).Once()
+		userRepository.On("GetByUsername", userDomain.Email).Return(users.Domain{}, expectedErr).Once()
+
+		actualUser, token, err := userUseCase.Login(&userDomain)
+
+		assert.Equal(t, users.Domain{}, actualUser)
+		assert.Empty(t, token)
+		assert.Equal(t, expectedErr, err)
+	})
+
+	t.Run("Test Case 4 | Invalid Login | User is suspended", func(t *testing.T) {
+		expectedErr := errors.New("user is suspended")
+		copyDomain := userDomain
+		copyDomain.IsActive = false
 		userRepository.On("GetByEmail", userDomain.Email).Return(copyDomain, nil).Once()
 
-		actualUsers, token, actualErr := userUseCase.Login(&userDomain)
+		actualUser, token, err := userUseCase.Login(&userDomain)
 
-		assert.NotNil(t, actualUsers)
-		assert.NotEmpty(t, token)
-		assert.Nil(t, actualErr)
-	})
-
-	t.Run("Test Case 2 | Invalid Login | Email not found", func(t *testing.T) {
-		expectedErr := errors.New("email is not registered")
-		userRepository.On("GetByEmail", userDomain.Email).Return(users.Domain{}, expectedErr).Once()
-
-		actualUsers, token, err := userUseCase.Login(&userDomain)
-
-		assert.Equal(t, users.Domain{}, actualUsers)
+		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Empty(t, token)
-		assert.Equal(t, err, expectedErr)
-	})
-
-	t.Run("Test Case 3 | Invalid Login | Wrong password", func(t *testing.T) {
-		expectedErr := errors.New("wrong password")
-		userRepository.On("GetByEmail", userDomain.Email).Return(userDomain, nil).Once()
-
-		actualUsers, token, actualErr := userUseCase.Login(&userDomain)
-
-		assert.Equal(t, users.Domain{}, actualUsers)
-		assert.Empty(t, token)
-		assert.Equal(t, actualErr, expectedErr)
+		assert.Equal(t, expectedErr, err)
 	})
 }
 
