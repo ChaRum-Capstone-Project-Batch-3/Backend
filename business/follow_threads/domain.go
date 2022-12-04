@@ -24,6 +24,8 @@ type Repository interface {
 	GetByUserIDAndThreadID(userID primitive.ObjectID, threadID primitive.ObjectID) (Domain, error)
 	CountByThreadID(threadID primitive.ObjectID) (int, error)
 	// Update
+	AddOneNotification(threadID primitive.ObjectID) error
+	ResetNotification(threadID primitive.ObjectID, userID primitive.ObjectID) error
 	// Delete
 	Delete(id primitive.ObjectID) error
 }
@@ -37,6 +39,8 @@ type UseCase interface {
 	DomainToResponseArray(domain []Domain) ([]dto.ResponseFollowThread, error)
 	CountByThreadID(threadID primitive.ObjectID) (int, error)
 	// Update
+	UpdateNotification(threadID primitive.ObjectID) error
+	ResetNotification(threadID primitive.ObjectID, userID primitive.ObjectID) error
 	// Delete
 	Delete(domain *Domain) (Domain, error)
 }

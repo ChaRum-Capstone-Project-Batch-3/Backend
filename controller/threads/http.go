@@ -252,6 +252,18 @@ func (tc *ThreadController) GetByID(c echo.Context) error {
 		})
 	}
 
+	uid, err := util.GetUIDFromToken(c)
+	if err == nil {
+		err = tc.followThreadUseCase.ResetNotification(threadID, uid)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+				Status:  http.StatusInternalServerError,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
+	}
+
 	responseThread.TotalComment = len(responseComment)
 	responseThread.TotalFollow = totalFollow
 

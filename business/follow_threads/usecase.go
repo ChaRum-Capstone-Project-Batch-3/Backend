@@ -108,11 +108,12 @@ func (ftu *FollowThreadUseCase) DomainToResponse(domain Domain) (dto.ResponseFol
 	responseThread.TotalComment = totalComment
 
 	response := dto.ResponseFollowThread{
-		Id:        domain.Id,
-		User:      user,
-		Thread:    responseThread,
-		CreatedAt: domain.CreatedAt.Time(),
-		UpdatedAt: domain.UpdatedAt.Time(),
+		Id:           domain.Id,
+		User:         user,
+		Thread:       responseThread,
+		Notification: domain.Notification,
+		CreatedAt:    domain.CreatedAt.Time(),
+		UpdatedAt:    domain.UpdatedAt.Time(),
 	}
 
 	return response, nil
@@ -136,6 +137,24 @@ func (ftu *FollowThreadUseCase) DomainToResponseArray(domains []Domain) ([]dto.R
 /*
 Update
 */
+
+func (ftu *FollowThreadUseCase) UpdateNotification(threadID primitive.ObjectID) error {
+	err := ftu.followThreadRepository.AddOneNotification(threadID)
+	if err != nil {
+		return errors.New("failed to update notification")
+	}
+
+	return nil
+}
+
+func (ftu *FollowThreadUseCase) ResetNotification(threadID primitive.ObjectID, userID primitive.ObjectID) error {
+	err := ftu.followThreadRepository.ResetNotification(threadID, userID)
+	if err != nil {
+		return errors.New("failed to reset notification")
+	}
+
+	return nil
+}
 
 /*
 Delete

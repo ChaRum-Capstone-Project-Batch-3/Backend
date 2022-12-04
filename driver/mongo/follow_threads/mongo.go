@@ -114,6 +114,45 @@ func (ftr *followThreadRepository) CountByThreadID(threadID primitive.ObjectID) 
 Update
 */
 
+func (ftr *followThreadRepository) AddOneNotification(threadID primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	// update all by thread id
+	_, err := ftr.collection.UpdateMany(ctx, bson.M{
+		"threadID": threadID,
+	}, bson.M{
+		"$inc": bson.M{
+			"notification": 1,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (ftr *followThreadRepository) ResetNotification(threadID primitive.ObjectID, userID primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	// update all by thread id
+	_, err := ftr.collection.UpdateOne(ctx, bson.M{
+		"userID":   userID,
+		"threadID": threadID,
+	}, bson.M{
+		"$set": bson.M{
+			"notification": 0,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 /*
 Delete
 */
