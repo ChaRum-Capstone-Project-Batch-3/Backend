@@ -61,9 +61,14 @@ Read
 */
 
 func (uu *UserUseCase) Login(domain *Domain) (Domain, string, error) {
+	var user Domain
+
 	user, err := uu.userRepository.GetByEmail(domain.Email)
 	if err != nil {
-		return Domain{}, "", errors.New("email is not registered")
+		user, err = uu.userRepository.GetByUsername(domain.Email)
+		if err != nil {
+			return Domain{}, "", errors.New("email or username is not registered")
+		}
 	}
 
 	if !user.IsActive {

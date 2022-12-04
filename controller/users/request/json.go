@@ -58,13 +58,13 @@ func (req *Register) Validate() []helper.ValidationError {
 }
 
 type Login struct {
-	Email    string `json:"email" validate:"required,email" bson:"email"`
+	Key      string `json:"key" validate:"required" bson:"key"`
 	Password string `json:"password" validate:"required,min=8,containsany=ABCDEFGHIJKLMNOPQRSTUVWXYZ,containsany=!@#$%^&*,containsany=abcdefghijklmnopqrstuvwxyz,containsany=0123456789" bson:"password"`
 }
 
 func (req *Login) ToDomain() *users.Domain {
 	return &users.Domain{
-		Email:    req.Email,
+		Email:    req.Key,
 		Password: req.Password,
 	}
 }
