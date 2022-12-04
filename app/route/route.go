@@ -40,6 +40,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	user.POST("/register", cl.UserController.Register)
 	user.POST("/login", cl.UserController.Login)
 	user.GET("/profile", cl.UserController.GetProfile, authMiddleware.Check)
+	user.PUT("/profile", cl.UserController.UserUpdate, authMiddleware.Check)
 
 	thread := apiV1.Group("/thread")
 	thread.POST("", cl.ThreadController.Create, authMiddleware.Check)
@@ -70,7 +71,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 
 	adminUserID := adminUser.Group("/id")
 	adminUserID.GET("/:id", cl.UserController.GetByID)
-	adminUserID.PUT("/:id", cl.UserController.Update)
+	adminUserID.PUT("/:id", cl.UserController.AdminUpdate)
 	adminUserID.DELETE("/:id", cl.UserController.Delete)
 
 	adminTopic := admin.Group("/topic")

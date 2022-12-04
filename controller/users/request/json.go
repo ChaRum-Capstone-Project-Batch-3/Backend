@@ -104,7 +104,6 @@ type Update struct {
 	Email       string `json:"email" validate:"required,email" bson:"email"`
 	UserName    string `json:"userName" validate:"required" bson:"userName"`
 	DisplayName string `json:"displayName" validate:"required" bson:"displayName"`
-	IsActive    bool   `json:"isActive" bson:"isActive"`
 }
 
 func (req *Update) ToDomain() *users.Domain {
@@ -112,7 +111,6 @@ func (req *Update) ToDomain() *users.Domain {
 		Email:       req.Email,
 		UserName:    req.UserName,
 		DisplayName: req.DisplayName,
-		IsActive:    req.IsActive,
 	}
 }
 

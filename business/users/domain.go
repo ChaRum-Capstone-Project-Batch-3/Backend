@@ -36,7 +36,7 @@ type UseCase interface {
 	GetWithSortAndOrder(page int, limit int, sort string, order string) ([]Domain, int, int, error)
 	GetByID(id primitive.ObjectID) (Domain, error)
 	// Update
-	Update(id primitive.ObjectID, domain *Domain) (Domain, error)
+	Update(domain *Domain) (Domain, error)
 	Suspend(id primitive.ObjectID) (Domain, error)
 	Unsuspend(id primitive.ObjectID) (Domain, error)
 	// Delete

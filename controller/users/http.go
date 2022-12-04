@@ -255,7 +255,7 @@ func (userCtrl *UserController) GetProfile(c echo.Context) error {
 Update
 */
 
-func (userCtrl *UserController) Update(c echo.Context) error {
+func (userCtrl *UserController) AdminUpdate(c echo.Context) error {
 	userID, err := primitive.ObjectIDFromHex(c.Param("id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
@@ -282,7 +282,64 @@ func (userCtrl *UserController) Update(c echo.Context) error {
 		})
 	}
 
-	user, err := userCtrl.userUseCase.Update(userID, userInput.ToDomain())
+	userDomain := userInput.ToDomain()
+	userDomain.Id = userID
+	user, err := userCtrl.userUseCase.Update(userDomain)
+
+	statusCode := http.StatusInternalServerError
+	if err == errors.New("failed to get user") {
+		statusCode = http.StatusNotFound
+	} else if !(err == errors.New("username is already used") || err == errors.New("email is already used")) {
+		statusCode = http.StatusConflict
+	}
+
+	if err != nil {
+		return c.JSON(statusCode, helper.BaseResponse{
+			Status:  statusCode,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success to update user",
+		Data: map[string]interface{}{
+			"user": response.FromDomain(user),
+		},
+	})
+}
+
+func (userCtrl *UserController) UserUpdate(c echo.Context) error {
+	userID, err := util.GetUIDFromToken(c)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, helper.BaseResponse{
+			Status:  http.StatusUnauthorized,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	userInput := request.Update{}
+	if c.Bind(&userInput) != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "fill all the required fields and make sure data type is correct",
+			Data:    nil,
+		})
+	}
+
+	if err := userInput.Validate(); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "validation failed",
+			Data:    err,
+		})
+	}
+
+	userDomain := userInput.ToDomain()
+	userDomain.Id = userID
+	user, err := userCtrl.userUseCase.Update(userDomain)
 
 	statusCode := http.StatusInternalServerError
 	if err == errors.New("failed to get user") {
