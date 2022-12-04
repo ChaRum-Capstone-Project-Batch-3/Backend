@@ -66,6 +66,10 @@ func (uu *UserUseCase) Login(domain *Domain) (Domain, string, error) {
 		return Domain{}, "", errors.New("email is not registered")
 	}
 
+	if !user.IsActive {
+		return Domain{}, "", errors.New("user is suspended")
+	}
+
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(domain.Password))
 	if err != nil {
 		return Domain{}, "", errors.New("wrong password")
@@ -107,8 +111,8 @@ func (uu *UserUseCase) GetByID(id primitive.ObjectID) (Domain, error) {
 Update
 */
 
-func (uu *UserUseCase) Update(id primitive.ObjectID, domain *Domain) (Domain, error) {
-	user, err := uu.userRepository.GetByID(id)
+func (uu *UserUseCase) Update(domain *Domain) (Domain, error) {
+	user, err := uu.userRepository.GetByID(domain.Id)
 	if err != nil {
 		return Domain{}, errors.New("failed to get user")
 	}
