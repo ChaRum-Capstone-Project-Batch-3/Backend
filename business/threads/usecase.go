@@ -81,6 +81,15 @@ func (tu *ThreadUseCase) GetByID(id primitive.ObjectID) (Domain, error) {
 	return thread, nil
 }
 
+func (tu *ThreadUseCase) GetAllByTopicID(topicID primitive.ObjectID) ([]Domain, error) {
+	threads, err := tu.threadRepository.GetAllByTopicID(topicID)
+	if err != nil {
+		return []Domain{}, errors.New("failed to get threads")
+	}
+
+	return threads, nil
+}
+
 func (tu *ThreadUseCase) DomainToResponse(domain Domain) (dto.ResponseThread, error) {
 	creator, err := tu.userRepository.GetByID(domain.CreatorID)
 	if err != nil {
@@ -202,6 +211,38 @@ func (tu *ThreadUseCase) Delete(userID primitive.ObjectID, threadID primitive.Ob
 
 	if user.Role != "admin" && thread.CreatorID != userID {
 		return Domain{}, errors.New("user are not the thread creator")
+	}
+
+	err = tu.threadRepository.Delete(threadID)
+	if err != nil {
+		return Domain{}, errors.New("failed to delete thread")
+	}
+
+	return thread, nil
+}
+
+func (tu *ThreadUseCase) DeleteAllByUserID(userID primitive.ObjectID) error {
+	err := tu.threadRepository.DeleteAllByUserID(userID)
+	if err != nil {
+		return errors.New("failed to delete user threads")
+	}
+
+	return nil
+}
+
+func (tu *ThreadUseCase) DeleteByThreadID(threadID primitive.ObjectID) error {
+	err := tu.threadRepository.Delete(threadID)
+	if err != nil {
+		return errors.New("failed to delete thread")
+	}
+
+	return nil
+}
+
+func (tu *ThreadUseCase) AdminDelete(threadID primitive.ObjectID) (Domain, error) {
+	thread, err := tu.threadRepository.GetByID(threadID)
+	if err != nil {
+		return Domain{}, errors.New("failed to get thread")
 	}
 
 	err = tu.threadRepository.Delete(threadID)

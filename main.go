@@ -47,8 +47,8 @@ func main() {
 	commentUsecase := _commentUseCase.NewCommentUseCase(commentRepository, threadRepository, userRepository)
 	followThreadUsecase := _followThreadUseCase.NewFollowThreadUseCase(followThreadRepository, userRepository, threadRepository, commentRepository, threadUsecase)
 
-	userController := _userController.NewUserController(userUsecase, threadUsecase, commentUsecase)
-	topicController := _topicController.NewTopicController(topicUsecase)
+	userController := _userController.NewUserController(userUsecase, threadUsecase, commentUsecase, followThreadUsecase)
+	topicController := _topicController.NewTopicController(topicUsecase, threadUsecase, commentUsecase, followThreadUsecase)
 	threadController := _threadController.NewThreadController(threadUsecase, commentUsecase, followThreadUsecase)
 	commentController := _commentController.NewCommentController(commentUsecase, followThreadUsecase)
 	followThreadController := _followThreadController.NewFollowThreadController(followThreadUsecase)

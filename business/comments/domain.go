@@ -27,6 +27,7 @@ type Repository interface {
 	// Delete
 	Delete(id primitive.ObjectID) error
 	DeleteAllByUserID(userID primitive.ObjectID) error
+	DeleteAllByThreadID(threadID primitive.ObjectID) error
 }
 
 type UseCase interface {
@@ -42,4 +43,5 @@ type UseCase interface {
 	// Delete
 	Delete(id primitive.ObjectID, userID primitive.ObjectID) (Domain, error)
 	DeleteAllByUserID(userID primitive.ObjectID) error
+	DeleteAllByThreadID(threadID primitive.ObjectID) error
 }

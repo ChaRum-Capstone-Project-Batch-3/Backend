@@ -183,3 +183,21 @@ func (ftu *FollowThreadUseCase) Delete(domain *Domain) (Domain, error) {
 
 	return result, nil
 }
+
+func (ftu *FollowThreadUseCase) DeleteAllByUserID(userID primitive.ObjectID) error {
+	err := ftu.followThreadRepository.DeleteAllByUserID(userID)
+	if err != nil {
+		return errors.New("failed to delete all follow thread")
+	}
+
+	return nil
+}
+
+func (ftu *FollowThreadUseCase) DeleteAllByThreadID(threadID primitive.ObjectID) error {
+	err := ftu.followThreadRepository.DeleteAllByThreadID(threadID)
+	if err != nil {
+		return errors.New("failed to delete all follow thread")
+	}
+
+	return nil
+}

@@ -28,6 +28,8 @@ type Repository interface {
 	ResetNotification(threadID primitive.ObjectID, userID primitive.ObjectID) error
 	// Delete
 	Delete(id primitive.ObjectID) error
+	DeleteAllByUserID(id primitive.ObjectID) error
+	DeleteAllByThreadID(threadID primitive.ObjectID) error
 }
 
 type UseCase interface {
@@ -43,4 +45,6 @@ type UseCase interface {
 	ResetNotification(threadID primitive.ObjectID, userID primitive.ObjectID) error
 	// Delete
 	Delete(domain *Domain) (Domain, error)
+	DeleteAllByUserID(id primitive.ObjectID) error
+	DeleteAllByThreadID(threadID primitive.ObjectID) error
 }

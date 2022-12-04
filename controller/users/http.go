@@ -2,6 +2,7 @@ package users
 
 import (
 	"charum/business/comments"
+	followThreads "charum/business/follow_threads"
 	"charum/business/threads"
 	"charum/business/users"
 	"charum/controller/users/request"
@@ -17,16 +18,18 @@ import (
 )
 
 type UserController struct {
-	userUseCase    users.UseCase
-	threadUseCase  threads.UseCase
-	commentUseCase comments.UseCase
+	userUseCase         users.UseCase
+	threadUseCase       threads.UseCase
+	commentUseCase      comments.UseCase
+	followThreadUseCase followThreads.UseCase
 }
 
-func NewUserController(userUC users.UseCase, threadUC threads.UseCase, commentUC comments.UseCase) *UserController {
+func NewUserController(userUC users.UseCase, threadUC threads.UseCase, commentUC comments.UseCase, followThreadUC followThreads.UseCase) *UserController {
 	return &UserController{
-		userUseCase:    userUC,
-		threadUseCase:  threadUC,
-		commentUseCase: commentUC,
+		userUseCase:         userUC,
+		threadUseCase:       threadUC,
+		commentUseCase:      commentUC,
+		followThreadUseCase: followThreadUC,
 	}
 }
 
@@ -196,7 +199,7 @@ func (userCtrl *UserController) GetManyWithPagination(c echo.Context) error {
 }
 
 func (userCtrl *UserController) GetByID(c echo.Context) error {
-	userID, err := primitive.ObjectIDFromHex(c.Param("id"))
+	userID, err := primitive.ObjectIDFromHex(c.Param("user-id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
@@ -256,7 +259,7 @@ Update
 */
 
 func (userCtrl *UserController) AdminUpdate(c echo.Context) error {
-	userID, err := primitive.ObjectIDFromHex(c.Param("id"))
+	userID, err := primitive.ObjectIDFromHex(c.Param("user-id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
@@ -366,7 +369,7 @@ func (userCtrl *UserController) UserUpdate(c echo.Context) error {
 }
 
 func (userCtrl *UserController) Suspend(c echo.Context) error {
-	userID, err := primitive.ObjectIDFromHex(c.Param("id"))
+	userID, err := primitive.ObjectIDFromHex(c.Param("user-id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
@@ -409,6 +412,15 @@ func (userCtrl *UserController) Suspend(c echo.Context) error {
 		})
 	}
 
+	err = userCtrl.followThreadUseCase.DeleteAllByUserID(userID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
 		Message: "success to suspend user",
@@ -419,7 +431,7 @@ func (userCtrl *UserController) Suspend(c echo.Context) error {
 }
 
 func (userCtrl *UserController) Unsuspend(c echo.Context) error {
-	userID, err := primitive.ObjectIDFromHex(c.Param("id"))
+	userID, err := primitive.ObjectIDFromHex(c.Param("user-id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
@@ -458,7 +470,7 @@ Delete
 */
 
 func (userCtrl *UserController) Delete(c echo.Context) error {
-	userID, err := primitive.ObjectIDFromHex(c.Param("id"))
+	userID, err := primitive.ObjectIDFromHex(c.Param("user-id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
@@ -482,6 +494,24 @@ func (userCtrl *UserController) Delete(c echo.Context) error {
 	}
 
 	err = userCtrl.commentUseCase.DeleteAllByUserID(userID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	err = userCtrl.followThreadUseCase.DeleteAllByUserID(userID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	err = userCtrl.threadUseCase.DeleteAllByUserID(userID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,

@@ -170,3 +170,31 @@ func (ftr *followThreadRepository) Delete(id primitive.ObjectID) error {
 
 	return nil
 }
+
+func (ftr *followThreadRepository) DeleteAllByUserID(userID primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	_, err := ftr.collection.DeleteMany(ctx, bson.M{
+		"userID": userID,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (ftr *followThreadRepository) DeleteAllByThreadID(threadID primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	_, err := ftr.collection.DeleteMany(ctx, bson.M{
+		"threadID": threadID,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

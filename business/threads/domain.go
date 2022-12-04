@@ -30,11 +30,13 @@ type Repository interface {
 	// Read
 	GetWithSortAndOrder(skip int, limit int, sort string, order int) ([]Domain, int, error)
 	GetByID(id primitive.ObjectID) (Domain, error)
+	GetAllByTopicID(topicID primitive.ObjectID) ([]Domain, error)
 	// Update
 	Update(domain *Domain) (Domain, error)
 	SuspendByUserID(domain *Domain) error
 	// Delete
 	Delete(id primitive.ObjectID) error
+	DeleteAllByUserID(id primitive.ObjectID) error
 }
 
 type UseCase interface {
@@ -43,6 +45,7 @@ type UseCase interface {
 	// Read
 	GetWithSortAndOrder(page int, limit int, sort string, order string) ([]Domain, int, int, error)
 	GetByID(id primitive.ObjectID) (Domain, error)
+	GetAllByTopicID(topicID primitive.ObjectID) ([]Domain, error)
 	DomainToResponse(domain Domain) (dto.ResponseThread, error)
 	DomainsToResponseArray(domains []Domain) ([]dto.ResponseThread, error)
 	// Update
@@ -50,4 +53,7 @@ type UseCase interface {
 	SuspendByUserID(userID primitive.ObjectID) error
 	// Delete
 	Delete(userID primitive.ObjectID, threadID primitive.ObjectID) (Domain, error)
+	DeleteAllByUserID(id primitive.ObjectID) error
+	DeleteByThreadID(threadID primitive.ObjectID) error
+	AdminDelete(threadID primitive.ObjectID) (Domain, error)
 }

@@ -154,3 +154,17 @@ func (cr *commentRepository) DeleteAllByUserID(userID primitive.ObjectID) error 
 
 	return nil
 }
+
+func (cr *commentRepository) DeleteAllByThreadID(threadID primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	_, err := cr.collection.DeleteMany(ctx, bson.M{
+		"threadID": threadID,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

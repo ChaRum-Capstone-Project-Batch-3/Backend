@@ -181,3 +181,12 @@ func (cu *CommentUseCase) DeleteAllByUserID(userID primitive.ObjectID) error {
 
 	return nil
 }
+
+func (cu *CommentUseCase) DeleteAllByThreadID(threadID primitive.ObjectID) error {
+	err := cu.commentRepository.DeleteAllByThreadID(threadID)
+	if err != nil {
+		return errors.New("failed to delete thread's comments")
+	}
+
+	return nil
+}

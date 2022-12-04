@@ -67,6 +67,20 @@ func (tc *ThreadController) Create(c echo.Context) error {
 
 	result, err := tc.threadUseCase.Create(threadDomain)
 	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if strings.Contains(err.Error(), "failed to get") {
+			statusCode = http.StatusNotFound
+		}
+
+		return c.JSON(statusCode, helper.BaseResponse{
+			Status:  statusCode,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	responseThread, err := tc.threadUseCase.DomainToResponse(result)
+	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,
 			Message: err.Error(),
@@ -78,7 +92,7 @@ func (tc *ThreadController) Create(c echo.Context) error {
 		Status:  http.StatusCreated,
 		Message: "success to create thread",
 		Data: map[string]interface{}{
-			"thread": result,
+			"thread": responseThread,
 		},
 	})
 }
@@ -198,7 +212,7 @@ func (tc *ThreadController) GetManyWithPagination(c echo.Context) error {
 }
 
 func (tc *ThreadController) GetByID(c echo.Context) error {
-	threadID, err := primitive.ObjectIDFromHex(c.Param("id"))
+	threadID, err := primitive.ObjectIDFromHex(c.Param("thread-id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
@@ -281,7 +295,7 @@ func (tc *ThreadController) GetByID(c echo.Context) error {
 Update
 */
 
-func (tc *ThreadController) Update(c echo.Context) error {
+func (tc *ThreadController) UserUpdate(c echo.Context) error {
 	userID, err := util.GetUIDFromToken(c)
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, helper.BaseResponse{
@@ -291,7 +305,7 @@ func (tc *ThreadController) Update(c echo.Context) error {
 		})
 	}
 
-	threadID, err := primitive.ObjectIDFromHex(c.Param("id"))
+	threadID, err := primitive.ObjectIDFromHex(c.Param("thread-id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
@@ -342,11 +356,64 @@ func (tc *ThreadController) Update(c echo.Context) error {
 		})
 	}
 
+	responseThread, err := tc.threadUseCase.DomainToResponse(result)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
 		Message: "success to update thread",
 		Data: map[string]interface{}{
-			"thread": result,
+			"thread": responseThread,
+		},
+	})
+}
+
+func (tc *ThreadController) AdminUpdate(c echo.Context) error {
+	threadID, err := primitive.ObjectIDFromHex(c.Param("thread-id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "invalid thread id",
+			Data:    nil,
+		})
+	}
+
+	deletedThread, err := tc.threadUseCase.AdminDelete(threadID)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if strings.Contains(err.Error(), "failed to get") {
+			statusCode = http.StatusNotFound
+		} else if strings.Contains(err.Error(), "user are not the thread creator") {
+			statusCode = http.StatusForbidden
+		}
+
+		return c.JSON(statusCode, helper.BaseResponse{
+			Status:  statusCode,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	responseThread, err := tc.threadUseCase.DomainToResponse(deletedThread)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success to delete thread",
+		Data: map[string]interface{}{
+			"thread": responseThread,
 		},
 	})
 }
@@ -355,7 +422,7 @@ func (tc *ThreadController) Update(c echo.Context) error {
 Delete
 */
 
-func (tc *ThreadController) Delete(c echo.Context) error {
+func (tc *ThreadController) UserDelete(c echo.Context) error {
 	userID, err := util.GetUIDFromToken(c)
 	if err != nil {
 		return c.JSON(http.StatusForbidden, helper.BaseResponse{
@@ -365,7 +432,7 @@ func (tc *ThreadController) Delete(c echo.Context) error {
 		})
 	}
 
-	threadID, err := primitive.ObjectIDFromHex(c.Param("id"))
+	threadID, err := primitive.ObjectIDFromHex(c.Param("thread-id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
@@ -390,11 +457,100 @@ func (tc *ThreadController) Delete(c echo.Context) error {
 		})
 	}
 
+	responseThread, err := tc.threadUseCase.DomainToResponse(deletedThread)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	err = tc.commentUseCase.DeleteAllByThreadID(threadID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	err = tc.followThreadUseCase.DeleteAllByThreadID(threadID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
 		Message: "success to delete thread",
 		Data: map[string]interface{}{
-			"thread": deletedThread,
+			"thread": responseThread,
+		},
+	})
+}
+
+func (tc *ThreadController) AdminDelete(c echo.Context) error {
+	threadID, err := primitive.ObjectIDFromHex(c.Param("thread-id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "invalid thread id",
+			Data:    nil,
+		})
+	}
+
+	deletedThread, err := tc.threadUseCase.AdminDelete(threadID)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if strings.Contains(err.Error(), "failed to get") {
+			statusCode = http.StatusNotFound
+		} else if strings.Contains(err.Error(), "user are not the thread creator") {
+			statusCode = http.StatusForbidden
+		}
+
+		return c.JSON(statusCode, helper.BaseResponse{
+			Status:  statusCode,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	responseThread, err := tc.threadUseCase.DomainToResponse(deletedThread)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	err = tc.commentUseCase.DeleteAllByThreadID(threadID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	err = tc.followThreadUseCase.DeleteAllByThreadID(threadID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success to delete thread",
+		Data: map[string]interface{}{
+			"thread": responseThread,
 		},
 	})
 }
