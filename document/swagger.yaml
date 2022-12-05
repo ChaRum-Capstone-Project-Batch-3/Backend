@@ -660,7 +660,7 @@ paths:
                     type: string
                     example: null
   /thread/{page}:
-    get:
+    post:
       tags:
         - Thread
       summary: Get thread list
@@ -698,6 +698,18 @@ paths:
             type: string
             example: desc
             default: desc
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                topicID:
+                  type: string
+                  example: 6379fe8dad33ec4251700ded
+                title:
+                  type: string
+                  example: NextJS 13
       responses:
         '200':
           description: OK
@@ -1142,7 +1154,7 @@ paths:
                     type: string
                     example: null
   /admin/user/{page}:
-    get:
+    post:
       tags:
         - Admin
       summary: Get user list
@@ -1180,6 +1192,21 @@ paths:
             type: string
             example: desc
             default: desc
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                Email:
+                  type: string
+                  example: user@charum.com
+                userName:
+                  type: string
+                  example: charumuser
+                displayName:
+                  type: string
+                  example: charum user
       responses:
         '200':
           description: OK
@@ -2384,7 +2411,7 @@ paths:
     delete:
       tags:
         - Thread
-      summary: Dlete commment from thread
+      summary: Delete commment from thread
       description: Delete commment by comment id
       operationId: DeleteComment
       parameters:
@@ -2892,7 +2919,7 @@ paths:
                     type: string
                     example: null
   /admin/thread/{page}:
-    get:
+    post:
       tags:
         - Admin
       summary: Get thread list
@@ -2930,6 +2957,18 @@ paths:
             type: string
             example: desc
             default: desc
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                topicID:
+                  type: string
+                  example: 6379fe8dad33ec4251700ded
+                title:
+                  type: string
+                  example: NextJS 13
       responses:
         '200':
           description: OK
