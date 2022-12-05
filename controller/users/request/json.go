@@ -152,3 +152,17 @@ func (req *Update) Validate() []helper.ValidationError {
 
 	return nil
 }
+
+type Filter struct {
+	Email       string `json:"email" bson:"email"`
+	UserName    string `json:"userName" bson:"userName"`
+	DisplayName string `json:"displayName" bson:"displayName"`
+}
+
+func (req *Filter) ToDomain() *users.Domain {
+	return &users.Domain{
+		Email:       req.Email,
+		UserName:    req.UserName,
+		DisplayName: req.DisplayName,
+	}
+}

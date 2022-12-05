@@ -4,7 +4,7 @@ import (
 	"charum/business/comments"
 	"charum/business/threads"
 	"charum/business/users"
-	"charum/dto"
+	dtoFollowThread "charum/dto/follow_threads"
 	"errors"
 	"time"
 
@@ -84,30 +84,30 @@ func (ftu *FollowThreadUseCase) CountByThreadID(threadID primitive.ObjectID) (in
 	return result, nil
 }
 
-func (ftu *FollowThreadUseCase) DomainToResponse(domain Domain) (dto.ResponseFollowThread, error) {
+func (ftu *FollowThreadUseCase) DomainToResponse(domain Domain) (dtoFollowThread.Response, error) {
 	user, err := ftu.userRepository.GetByID(domain.UserID)
 	if err != nil {
-		return dto.ResponseFollowThread{}, errors.New("failed to get user")
+		return dtoFollowThread.Response{}, errors.New("failed to get user")
 	}
 
 	thread, err := ftu.threadRepository.GetByID(domain.ThreadID)
 	if err != nil {
-		return dto.ResponseFollowThread{}, errors.New("failed to get thread")
+		return dtoFollowThread.Response{}, errors.New("failed to get thread")
 	}
 
 	responseThread, err := ftu.threadUseCase.DomainToResponse(thread)
 	if err != nil {
-		return dto.ResponseFollowThread{}, errors.New("failed to get response thread")
+		return dtoFollowThread.Response{}, errors.New("failed to get response thread")
 	}
 
 	totalComment, err := ftu.commentRepository.CountByThreadID(domain.ThreadID)
 	if err != nil {
-		return dto.ResponseFollowThread{}, errors.New("failed to get total comment")
+		return dtoFollowThread.Response{}, errors.New("failed to get total comment")
 	}
 
 	responseThread.TotalComment = totalComment
 
-	response := dto.ResponseFollowThread{
+	response := dtoFollowThread.Response{
 		Id:           domain.Id,
 		User:         user,
 		Thread:       responseThread,
@@ -119,13 +119,13 @@ func (ftu *FollowThreadUseCase) DomainToResponse(domain Domain) (dto.ResponseFol
 	return response, nil
 }
 
-func (ftu *FollowThreadUseCase) DomainToResponseArray(domains []Domain) ([]dto.ResponseFollowThread, error) {
-	var responses []dto.ResponseFollowThread
+func (ftu *FollowThreadUseCase) DomainToResponseArray(domains []Domain) ([]dtoFollowThread.Response, error) {
+	var responses []dtoFollowThread.Response
 
 	for _, domain := range domains {
 		response, err := ftu.DomainToResponse(domain)
 		if err != nil {
-			return []dto.ResponseFollowThread{}, err
+			return []dtoFollowThread.Response{}, err
 		}
 
 		responses = append(responses, response)

@@ -1,4 +1,4 @@
-package dto
+package comments
 
 import (
 	"charum/business/users"
@@ -6,7 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type ResponseComment struct {
+type Response struct {
 	Id        primitive.ObjectID `json:"_id"`
 	ThreadID  primitive.ObjectID `json:"threadID"`
 	User      users.Domain       `json:"user"`

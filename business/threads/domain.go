@@ -1,7 +1,9 @@
 package threads
 
 import (
-	"charum/dto"
+	dtoPagination "charum/dto/pagination"
+	dtoQuery "charum/dto/query"
+	dtoThread "charum/dto/threads"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -28,9 +30,10 @@ type Repository interface {
 	// Create
 	Create(domain *Domain) (Domain, error)
 	// Read
-	GetWithSortAndOrder(skip int, limit int, sort string, order int) ([]Domain, int, error)
+	GetManyWithPagination(query dtoQuery.Request, domain *Domain) ([]Domain, int, error)
 	GetByID(id primitive.ObjectID) (Domain, error)
 	GetAllByTopicID(topicID primitive.ObjectID) ([]Domain, error)
+	GetAllByUserID(userID primitive.ObjectID) ([]Domain, error)
 	// Update
 	Update(domain *Domain) (Domain, error)
 	SuspendByUserID(domain *Domain) error
@@ -43,13 +46,15 @@ type UseCase interface {
 	// Create
 	Create(domain *Domain) (Domain, error)
 	// Read
-	GetWithSortAndOrder(page int, limit int, sort string, order string) ([]Domain, int, int, error)
+	GetManyWithPagination(pagination dtoPagination.Request, domain *Domain) ([]Domain, int, int, error)
 	GetByID(id primitive.ObjectID) (Domain, error)
 	GetAllByTopicID(topicID primitive.ObjectID) ([]Domain, error)
-	DomainToResponse(domain Domain) (dto.ResponseThread, error)
-	DomainsToResponseArray(domains []Domain) ([]dto.ResponseThread, error)
+	GetAllByUserID(userID primitive.ObjectID) ([]Domain, error)
+	DomainToResponse(domain Domain) (dtoThread.Response, error)
+	DomainsToResponseArray(domains []Domain) ([]dtoThread.Response, error)
 	// Update
-	Update(domain *Domain) (Domain, error)
+	UserUpdate(domain *Domain) (Domain, error)
+	AdminUpdate(domain *Domain) (Domain, error)
 	SuspendByUserID(userID primitive.ObjectID) error
 	// Delete
 	Delete(userID primitive.ObjectID, threadID primitive.ObjectID) (Domain, error)

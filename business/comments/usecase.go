@@ -3,7 +3,7 @@ package comments
 import (
 	"charum/business/threads"
 	"charum/business/users"
-	"charum/dto"
+	dtoComment "charum/dto/comments"
 	"errors"
 	"time"
 
@@ -69,12 +69,12 @@ func (cu *CommentUseCase) GetByThreadID(threadID primitive.ObjectID) ([]Domain, 
 	return comments, nil
 }
 
-func (cu *CommentUseCase) DomainToResponse(comment Domain) (dto.ResponseComment, error) {
-	responseComment := dto.ResponseComment{}
+func (cu *CommentUseCase) DomainToResponse(comment Domain) (dtoComment.Response, error) {
+	responseComment := dtoComment.Response{}
 
 	user, err := cu.userRepository.GetByID(comment.UserID)
 	if err != nil {
-		return dto.ResponseComment{}, errors.New("failed to get user")
+		return dtoComment.Response{}, errors.New("failed to get user")
 	}
 
 	responseComment.Id = comment.Id
@@ -87,13 +87,13 @@ func (cu *CommentUseCase) DomainToResponse(comment Domain) (dto.ResponseComment,
 	return responseComment, nil
 }
 
-func (cu *CommentUseCase) DomainToResponseArray(comments []Domain) ([]dto.ResponseComment, error) {
-	responseComments := []dto.ResponseComment{}
+func (cu *CommentUseCase) DomainToResponseArray(comments []Domain) ([]dtoComment.Response, error) {
+	responseComments := []dtoComment.Response{}
 
 	for _, comment := range comments {
 		responseComment, err := cu.DomainToResponse(comment)
 		if err != nil {
-			return []dto.ResponseComment{}, errors.New("failed to get response comment")
+			return []dtoComment.Response{}, errors.New("failed to get response comment")
 		}
 
 		responseComments = append(responseComments, responseComment)

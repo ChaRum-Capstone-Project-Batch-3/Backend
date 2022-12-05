@@ -9,6 +9,8 @@ servers:
 tags:
   - name: User
     description: Operations about user
+  - name: Topic
+    description: Operations about topic
   - name: Thread
     description: Operation about thread
   - name: Admin
@@ -69,9 +71,6 @@ paths:
                         example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2Mzc5ZmU4ZGFkMzNlYzQyNTE3MDBkZWQiLCJyb2xlIjoidXNlciIsImlzcyI6ImNoYXJ1bSIsImV4cCI6MTY2ODk0Nzg3NiwibmJmIjoxNjY4OTQ0Mjc2LCJpYXQiOjE2Njg5NDQyNzZ9._hk2Y2pt6tADTN0aHTukPNd2O_wRdHsgn3Vo4jIX_zc
                       user:
                         $ref: '#/components/schemas/User'
-                  pagination:
-                    type: string
-                    example: null
         '400':
           description: Bad Request
           content:
@@ -94,9 +93,6 @@ paths:
                       message:
                         type: string
                         example: This field must be at least 8 characters
-                  pagination:
-                    type: string
-                    example: null
         '409':
           description: Conflict
           content:
@@ -113,9 +109,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '500':
           description: Internal Server Error
           content:
@@ -130,9 +123,6 @@ paths:
                     type: string
                     example: failed to register user
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
   /user/login:
@@ -177,9 +167,6 @@ paths:
                         example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2Mzc5ZmU4ZGFkMzNlYzQyNTE3MDBkZWQiLCJyb2xlIjoidXNlciIsImlzcyI6ImNoYXJ1bSIsImV4cCI6MTY2ODk0Nzg3NiwibmJmIjoxNjY4OTQ0Mjc2LCJpYXQiOjE2Njg5NDQyNzZ9._hk2Y2pt6tADTN0aHTukPNd2O_wRdHsgn3Vo4jIX_zc
                       user:
                         $ref: '#/components/schemas/User'
-                  pagination:
-                    type: string
-                    example: null
         '400':
           description: Bad Request
           content:
@@ -202,9 +189,6 @@ paths:
                       message:
                         type: string
                         example: This field must be at least 8 characters
-                  pagination:
-                    type: string
-                    example: null
         '401':
           description: Unauthorized
           content:
@@ -219,9 +203,6 @@ paths:
                     type: string
                     example: email is not registered
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
   /user/profile:
@@ -275,9 +256,6 @@ paths:
                       message:
                         type: string
                         example: This field must be at least 8 characters
-                  pagination:
-                    type: string
-                    example: null
         '401':
           description: Unauthorized
           content:
@@ -292,9 +270,6 @@ paths:
                     type: string
                     example: email is not registered
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
     put:
@@ -360,9 +335,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '401':
           description: Unauthorized
           content:
@@ -377,9 +349,6 @@ paths:
                     type: string
                     example: unauthorized
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
         '404':
@@ -398,9 +367,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '409':
           description: Conflict
           content:
@@ -415,9 +381,6 @@ paths:
                     type: string
                     example: email is already used
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
         '500':
@@ -436,10 +399,172 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
+  /topic:
+    get:
+      tags:
+        - Topic
+      summary: Get all topic
+      description: Get all topic
+      operationId: GetAllTopic
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to get user by id
+                  data:
+                    type: object
+                    properties:
+                      topic:
+                        $ref: '#/components/schemas/Topic'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: failed to get topic
+                  data:
+                    type: string
+                    example: null
+  /topic/{topic-id}:
+    get:
+      tags:
+        - Topic
+      summary: Get topic data
+      description: Get topic data by id
+      operationId: GetTopicByTopicID
+      parameters:
+        - in: path
+          name: topic-id
+          description: topic ID
+          required: true
+          schema:
+            type: string
+            example: 637dfc9bb09d0bdd7a2fe3de
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to get topic by id
+                  data:
+                    type: object
+                    properties:
+                      topic:
+                        $ref: '#/components/schemas/Topic'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: invalid id
+                  data:
+                    type: string
+                    example: null
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: failed to get topic
+                  data:
                     type: string
                     example: null
   /thread:
+    get:
+      tags:
+        - Thread
+      summary: Get Thread by Token
+      description: Get user's thread by token
+      operationId: GetManyThreadByToken
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 201
+                  message:
+                    type: string
+                    example: success to create thread
+                  data:
+                    type: object
+                    properties:
+                      thread:
+                       $ref: '#/components/schemas/Thread'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: invalid token
+                  data:
+                    type: string
+                    example: null
+        '500':
+          description: Internal Server Error 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to get threads
+                  data:
+                    type: string
+                    example: null
     post:
       tags:
         - Thread
@@ -452,9 +577,9 @@ paths:
             schema:
               type: object
               properties:
-                topic:
+                topicID:
                   type: string
-                  example: Technology
+                  example: 6379fe8dad33ec4251700ded
                 title:
                   type: string
                   example: NextJS 13
@@ -480,9 +605,6 @@ paths:
                     properties:
                       thread:
                        $ref: '#/components/schemas/Thread'
-                  pagination:
-                    type: string
-                    example: null
         '400':
           description: Bad Request
           content:
@@ -505,9 +627,6 @@ paths:
                       message:
                         type: string
                         example: This field is required
-                  pagination:
-                    type: string
-                    example: null
         '401':
           description: Unauthorized
           content:
@@ -522,9 +641,6 @@ paths:
                     type: string
                     example: invalid token
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
         '500':
@@ -543,14 +659,12 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
   /thread/{page}:
     get:
       tags:
         - Thread
-      summary: Get thread list with pagination and sorting
+      summary: Get thread list
+      description: Get thread list with filter, pagination, and sorting
       operationId: GetThreadsWithPagnation
       parameters:
         - in: path
@@ -640,8 +754,20 @@ paths:
                     type: string
                     example: null
                   pagination:
-                    type: string
-                    example: null
+                    type: object
+                    properties:
+                      size:
+                        type: integer
+                        example: 0
+                      totalData:
+                        type: integer
+                        example: 0
+                      totalPage:
+                        type: integer
+                        example: 0
+                      currentPage:
+                        type: integer
+                        example: 0
         '500':
           description: Internal Server Error
           content:
@@ -659,9 +785,21 @@ paths:
                     type: string
                     example: null
                   pagination:
-                    type: string
-                    example: null
-  /thread/id/{id}:
+                    type: object
+                    properties:
+                      size:
+                        type: integer
+                        example: 0
+                      totalData:
+                        type: integer
+                        example: 0
+                      totalPage:
+                        type: integer
+                        example: 0
+                      currentPage:
+                        type: integer
+                        example: 0
+  /thread/id/{thread-id}:
     get:
       tags:
         - Thread
@@ -670,7 +808,7 @@ paths:
       operationId: GetThreadByID
       parameters:
         - in: path
-          name: id
+          name: thread-id
           description: thread id
           required: true
           schema:
@@ -730,9 +868,6 @@ paths:
                       type: array
                       items:
                         $ref: '#/components/schemas/Comment'
-                  pagination:
-                    type: string
-                    example: null
         '400':
           description: Bad Request
           content:
@@ -749,9 +884,6 @@ paths:
                   data:
                    type: string
                    example: null
-                  pagination:
-                    type: string
-                    example: null
         '404':
           description: Not Found
           content:
@@ -768,9 +900,6 @@ paths:
                   data:
                    type: string
                    example: null
-                  pagination:
-                    type: string
-                    example: null
     put:
       tags:
         - Thread
@@ -779,7 +908,7 @@ paths:
       operationId: updateThread
       parameters:
         - in: path
-          name: id
+          name: thread-id
           description: thread id
           required: true
           schema:
@@ -819,9 +948,6 @@ paths:
                     properties:
                       thread:
                        $ref: '#/components/schemas/Thread'
-                  pagination:
-                    type: string
-                    example: null
         '400':
           description: bad Request
           content:
@@ -836,9 +962,6 @@ paths:
                     type: string
                     example: invalid thread id
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
         '401':
@@ -857,9 +980,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '403':
           description: Forbidden
           content:
@@ -875,10 +995,7 @@ paths:
                     example: user are not the thread creator
                   data:
                     type: string
-                    example: null
-                  pagination:
-                    type: string
-                    example: null                    
+                    example: null              
         '404':
           description: Not Found
           content:
@@ -893,9 +1010,6 @@ paths:
                     type: string
                     example: failed to get topic
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
         '500':
@@ -914,9 +1028,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
     delete:
       tags:
         - Thread
@@ -925,7 +1036,7 @@ paths:
       operationId: DeleteThread
       parameters:
         - in: path
-          name: id
+          name: thread-id
           description: thread id
           required: true
           schema:
@@ -950,9 +1061,6 @@ paths:
                     properties:
                       thread:
                        $ref: '#/components/schemas/Thread'
-                  pagination:
-                    type: string
-                    example: null
         '400':
           description: bad Request
           content:
@@ -967,9 +1075,6 @@ paths:
                     type: string
                     example: invalid thread id
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
         '401':
@@ -988,9 +1093,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '403':
           description: Forbidden
           content:
@@ -1005,9 +1107,6 @@ paths:
                     type: string
                     example: user are not the thread creator
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
         '404':
@@ -1026,9 +1125,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '500':
           description: Internal Server Error
           content:
@@ -1045,16 +1141,12 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
-  
   /admin/user/{page}:
     get:
       tags:
         - Admin
       summary: Get user list
-      description: Get user list with pagination and sorting
+      description: Get user list with filter, pagination and sorting
       operationId: GetUsersWithPagination
       parameters:
         - in: path
@@ -1144,9 +1236,20 @@ paths:
                     type: string
                     example: null
                   pagination:
-                    type: string
-                    example: null
-
+                    type: object
+                    properties:
+                      size:
+                        type: integer
+                        example: 0
+                      totalData:
+                        type: integer
+                        example: 0
+                      totalPage:
+                        type: integer
+                        example: 0
+                      currentPage:
+                        type: integer
+                        example: 0
         '500':
           description: Internal Server Error
           content:
@@ -1164,9 +1267,21 @@ paths:
                     type: string
                     example: null
                   pagination:
-                    type: string
-                    example: null
-  /admin/user/id/{id}:
+                    type: object
+                    properties:
+                      size:
+                        type: integer
+                        example: 0
+                      totalData:
+                        type: integer
+                        example: 0
+                      totalPage:
+                        type: integer
+                        example: 0
+                      currentPage:
+                        type: integer
+                        example: 0
+  /admin/user/id/{user-id}:
     get:
       tags:
         - Admin
@@ -1175,7 +1290,7 @@ paths:
       operationId: GetUserByID
       parameters:
         - in: path
-          name: id
+          name: user-id
           description: user ID
           required: true
           schema:
@@ -1216,10 +1331,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
-
         '404':
           description: Not Found
           content:
@@ -1236,9 +1347,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
     put:
       tags:
         - Admin
@@ -1247,7 +1355,7 @@ paths:
       operationId: AdminUpdate
       parameters:
         - in: path
-          name: id
+          name: user-id
           description: user ID
           required: true
           schema:
@@ -1310,9 +1418,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '401':
           description: Unauthorized
           content:
@@ -1327,9 +1432,6 @@ paths:
                     type: string
                     example: unauthorized
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
         '404':
@@ -1348,9 +1450,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '409':
           description: Conflict
           content:
@@ -1365,9 +1464,6 @@ paths:
                     type: string
                     example: email is already used
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
         '500':
@@ -1386,9 +1482,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
     delete:
       tags:
         - Admin
@@ -1397,7 +1490,7 @@ paths:
       operationId: Delete
       parameters:
         - in: path
-          name: id
+          name: user-id
           description: user ID
           required: true
           schema:
@@ -1438,9 +1531,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '401':
           description: Unauthorized
           content:
@@ -1455,9 +1545,6 @@ paths:
                     type: string
                     example: unauthorized
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
         '404':
@@ -1476,9 +1563,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '500':
           description: Internal Server Error
           content:
@@ -1495,10 +1579,7 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
-  /admin/user/suspend/{id}:
+  /admin/user/suspend/{user-id}:
     put:
       tags:
         - Admin
@@ -1507,7 +1588,7 @@ paths:
       operationId: Suspend
       parameters:
         - in: path
-          name: id
+          name: user-id
           description: user ID
           required: true
           schema:
@@ -1548,9 +1629,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '404':
           description: Not Found
           content:
@@ -1565,9 +1643,6 @@ paths:
                     type: string
                     example: failed to get user
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
         '409':
@@ -1586,9 +1661,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '500':
           description: Internal Server Error
           content:
@@ -1605,10 +1677,7 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
-  /admin/user/unsuspend/{id}:
+  /admin/user/unsuspend/{user-id}:
     put:
       tags:
         - Admin
@@ -1617,7 +1686,7 @@ paths:
       operationId: Unsuspend
       parameters:
         - in: path
-          name: id
+          name: user-id
           description: user ID
           required: true
           schema:
@@ -1658,9 +1727,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '404':
           description: Not Found
           content:
@@ -1675,9 +1741,6 @@ paths:
                     type: string
                     example: failed to get user
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
         '409':
@@ -1696,9 +1759,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '500':
           description: Internal Server Error
           content:
@@ -1715,10 +1775,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
-
   /admin/topic:
     get:
       tags:
@@ -1758,9 +1814,6 @@ paths:
                     type: string
                     example: failed to get topic
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
     post:
@@ -1839,9 +1892,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '500':
           description: Internal Server Error
           content:
@@ -1858,11 +1908,7 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
-
-  /admin/topic/{id}:
+  /admin/topic/{topic-id}:
     get:
       tags:
         - Admin
@@ -1871,7 +1917,7 @@ paths:
       operationId: GetTopicByID
       parameters:
         - in: path
-          name: id
+          name: topic-id
           description: topic ID
           required: true
           schema:
@@ -1912,10 +1958,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
-
         '404':
           description: Not Found
           content:
@@ -1932,10 +1974,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
-
     put:
       tags:
         - Admin
@@ -1944,7 +1982,7 @@ paths:
       operationId: UpdateTopic
       parameters:
         - in: path
-          name: id
+          name: topic-id
           description: topic ID
           required: true
           schema:
@@ -1998,9 +2036,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '409':
           description: Conflict
           content:
@@ -2015,9 +2050,6 @@ paths:
                     type: string
                     example: topic already exist
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
         '500':
@@ -2036,9 +2068,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
     delete:
       tags:
         - Admin
@@ -2047,7 +2076,7 @@ paths:
       operationId: DeleteTopic
       parameters:
         - in: path
-          name: id
+          name: topic-id
           description: topic ID
           required: true
           schema:
@@ -2088,9 +2117,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '401':
           description: Unauthorized
           content:
@@ -2107,9 +2133,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '500':
           description: Internal Server Error
           content:
@@ -2124,9 +2147,6 @@ paths:
                     type: string
                     example: failed to delete topic
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
   /thread/comment/{thread-id}:
@@ -2181,9 +2201,6 @@ paths:
                           updatedAt:
                             type: string
                             example: 2022-11-26T23:05:11.806+07:00
-                  pagination:
-                    type: string
-                    example: null
         '400':
           description: Bad Request
           content:
@@ -2198,9 +2215,6 @@ paths:
                     type: string
                     example: invalid thread id
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
         '401':
@@ -2219,9 +2233,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '404':
           description: Not Found
           content:
@@ -2238,9 +2249,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '500':
           description: Internal Server Error
           content:
@@ -2255,9 +2263,6 @@ paths:
                     type: string
                     example: failed to create comment
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
   /thread/comment/{comment-id}:
@@ -2312,9 +2317,6 @@ paths:
                           updatedAt:
                             type: string
                             example: 2022-11-26T23:05:11.806+07:00
-                  pagination:
-                    type: string
-                    example: null
         '400':
           description: Bad Request
           content:
@@ -2329,9 +2331,6 @@ paths:
                     type: string
                     example: invalid comment id
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
         '401':
@@ -2350,9 +2349,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '404':
           description: Not Found
           content:
@@ -2369,9 +2365,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '500':
           description: Internal Server Error
           content:
@@ -2386,9 +2379,6 @@ paths:
                     type: string
                     example: failed to delete comment
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
     delete:
@@ -2442,9 +2432,6 @@ paths:
                           updatedAt:
                             type: string
                             example: 2022-11-26T23:05:11.806+07:00
-                  pagination:
-                    type: string
-                    example: null
         '400':
           description: Bad Request
           content:
@@ -2459,9 +2446,6 @@ paths:
                     type: string
                     example: invalid comment id
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
         '401':
@@ -2480,9 +2464,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '404':
           description: Not Found
           content:
@@ -2499,9 +2480,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '500':
           description: Internal Server Error
           content:
@@ -2516,9 +2494,6 @@ paths:
                     type: string
                     example: failed to delete comment
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
   /thread/follow:
@@ -2561,9 +2536,6 @@ paths:
                           updatedAt:
                             type: string
                             example: 2022-11-26T23:05:11.806+07:00
-                  pagination:
-                    type: string
-                    example: null
         '400':
           description: Bad Request
           content:
@@ -2578,9 +2550,6 @@ paths:
                     type: string
                     example: invalid thread id
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
         '401':
@@ -2599,9 +2568,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '404':
           description: Not Found
           content:
@@ -2616,9 +2582,6 @@ paths:
                     type: string
                     example: failed to get follow threads
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
   /thread/follow/{user-id}:
@@ -2653,25 +2616,25 @@ paths:
                   data:
                     type: object
                     properties:
-                      comment:
+                      followThreads:
                         type: object
                         properties:
                           _id:
                             type: string
                             example: 6379fe8dad33ec4251700ded
-                          thread:
-                            $ref: '#/components/schemas/Thread'
                           user:
                             $ref: '#/components/schemas/User'
+                          thread:
+                            $ref: '#/components/schemas/Thread'
+                          notification:
+                            type: integer
+                            example: 1
                           createdAt:
                             type: string
                             example: 2022-11-26T23:05:11.806+07:00
                           updatedAt:
                             type: string
                             example: 2022-11-26T23:05:11.806+07:00
-                  pagination:
-                    type: string
-                    example: null
         '400':
           description: Bad Request
           content:
@@ -2686,9 +2649,6 @@ paths:
                     type: string
                     example: invalid thread id
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
         '401':
@@ -2707,9 +2667,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '404':
           description: Not Found
           content:
@@ -2724,9 +2681,6 @@ paths:
                     type: string
                     example: failed to get follow threads
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
   /thread/follow/{thread-id}:
@@ -2777,9 +2731,6 @@ paths:
                           updatedAt:
                             type: string
                             example: 2022-11-26T23:05:11.806+07:00
-                  pagination:
-                    type: string
-                    example: null
         '400':
           description: Bad Request
           content:
@@ -2794,9 +2745,6 @@ paths:
                     type: string
                     example: invalid thread id
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
         '401':
@@ -2815,9 +2763,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '404':
           description: Not Found
           content:
@@ -2834,9 +2779,6 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
         '409':
           description: Conflict
           content:
@@ -2851,9 +2793,6 @@ paths:
                     type: string
                     example: user already follow this thread
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
     delete:
@@ -2903,9 +2842,6 @@ paths:
                           updatedAt:
                             type: string
                             example: 2022-11-26T23:05:11.806+07:00
-                  pagination:
-                    type: string
-                    example: null
         '400':
           description: Bad Request
           content:
@@ -2920,9 +2856,6 @@ paths:
                     type: string
                     example: invalid thread id
                   data:
-                    type: string
-                    example: null
-                  pagination:
                     type: string
                     example: null
         '401':
@@ -2941,9 +2874,7 @@ paths:
                   data:
                     type: string
                     example: null
-                  pagination:
-                    type: string
-                    example: null
+                  
         '404':
           description: Not Found
           content:
@@ -2960,9 +2891,457 @@ paths:
                   data:
                     type: string
                     example: null
+  /admin/thread/{page}:
+    get:
+      tags:
+        - Admin
+      summary: Get thread list
+      description: Get thread list with filter, pagination, and sorting
+      operationId: GetThreadsWithPagnationByAdmin
+      parameters:
+        - in: path
+          name: page
+          description: page displayed
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: limit
+          description: user limitation for per page
+          required: false
+          schema:
+            type: integer
+            example: 25
+            default: 25
+        - in: query
+          name: sort
+          description: define parameter for sorting. available options = id, title, createdAt, or updatedAt
+          required: false
+          schema:
+            type: string
+            example: createdAt
+            default: createdAt
+        - in: query
+          name: order
+          description: define the order of the selected sort. available options = asc or desc
+          required: false
+          schema:
+            type: string
+            example: desc
+            default: desc
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to get user by id
+                  data:
+                    type: object
+                    properties:
+                      totalPage:
+                        type: integer
+                        example: 2
+                      threads:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Thread'
                   pagination:
+                    type: object
+                    properties:
+                      size:
+                        type: integer
+                        example: 1
+                      totalData:
+                        type: integer
+                        example: 1
+                      totalPage:
+                        type: integer
+                        example: 1
+                      currentPage:
+                        type: integer
+                        example: 1
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: page must be a number
+                  data:
                     type: string
                     example: null
+                  pagination:
+                    type: object
+                    properties:
+                      size:
+                        type: integer
+                        example: 0
+                      totalData:
+                        type: integer
+                        example: 0
+                      totalPage:
+                        type: integer
+                        example: 0
+                      currentPage:
+                        type: integer
+                        example: 0
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to get threads
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: object
+                    properties:
+                      size:
+                        type: integer
+                        example: 0
+                      totalData:
+                        type: integer
+                        example: 0
+                      totalPage:
+                        type: integer
+                        example: 0
+                      currentPage:
+                        type: integer
+                        example: 0
+  /admin/thread/id/{thread-id}:
+    get:
+      tags:
+        - Admin
+      summary: Get thread by id
+      description: get thread's data by id
+      operationId: GetThreadByIDByAdmin
+      parameters:
+        - in: path
+          name: thread-id
+          description: thread id
+          required: true
+          schema:
+            type: string
+            example: 6379fe8dad33ec4251700ded
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                   type: integer
+                   example: 200
+                  message:
+                    type: string
+                    example: success to get thread
+                  data:
+                   type: object
+                   properties:
+                    thread:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                          example: 6379fe8dad33ec4251700ded
+                        topic:
+                          $ref: '#/components/schemas/Topic'
+                        creator:
+                          $ref: '#/components/schemas/User'
+                        title:
+                          type: string
+                          example: NextJS 13
+                        description:
+                          type: string
+                          example: Best NextJS update ever
+                        likes:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              userID:
+                                type: string
+                                example: 6379fe8dad33ec4251700ded
+                              createdAt:
+                                type: string
+                                example: 2022-11-26T23:05:11.806+07:00
+                        createdAt:
+                          type: string
+                          example: 2022-11-26T23:05:11.806+07:00
+                        updatedAt:
+                          type: string
+                          example: 2022-11-26T23:05:11.806+07:00
+                    comments:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Comment'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                   type: integer
+                   example: 400
+                  message:
+                    type: string
+                    example: invalid thread id
+                  data:
+                   type: string
+                   example: null
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                   type: integer
+                   example: 404
+                  message:
+                    type: string
+                    example: failed to get thread
+                  data:
+                   type: string
+                   example: null
+    put:
+      tags:
+        - Admin
+      summary: Update thread by id
+      description: update user own thread or update thread by admin
+      operationId: updateThreadByAdmin
+      parameters:
+        - in: path
+          name: thread-id
+          description: thread id
+          required: true
+          schema:
+            type: string
+            example: 6379fe8dad33ec4251700ded
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                topic:
+                  type: string
+                  example: Technology
+                title:
+                  type: string
+                  example: NextJS 13
+                description:
+                  type: string
+                  example: Best NextJS update ever
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to update thread
+                  data:
+                    type: object
+                    properties:
+                      thread:
+                       $ref: '#/components/schemas/Thread'
+        '400':
+          description: bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: invalid thread id
+                  data:
+                    type: string
+                    example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: unauthorized
+                  data:
+                    type: string
+                    example: null
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: failed to get topic
+                  data:
+                    type: string
+                    example: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to update thread
+                  data:
+                    type: string
+                    example: null
+    delete:
+      tags:
+        - Admin
+      summary: Delete thread
+      description: creator and admin can delete thread
+      operationId: DeleteThreadByAdmin
+      parameters:
+        - in: path
+          name: thread-id
+          description: thread id
+          required: true
+          schema:
+            type: string
+            example: 6379fe8dad33ec4251700ded
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to delete thread
+                  data:
+                    type: object
+                    properties:
+                      thread:
+                       $ref: '#/components/schemas/Thread'
+        '400':
+          description: bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: invalid thread id
+                  data:
+                    type: string
+                    example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: unauthorized
+                  data:
+                    type: string
+                    example: null   
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: failed to get thread
+                  data:
+                    type: string
+                    example: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to delete thread
+                  data:
+                    type: string
+                    example: null
+
 components:
   securitySchemes:
     bearerAuth:

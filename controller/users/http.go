@@ -7,6 +7,7 @@ import (
 	"charum/business/users"
 	"charum/controller/users/request"
 	"charum/controller/users/response"
+	dtoPagination "charum/dto/pagination"
 	"charum/helper"
 	"charum/util"
 	"errors"
@@ -126,16 +127,18 @@ func (userCtrl *UserController) Login(c echo.Context) error {
 func (userCtrl *UserController) GetManyWithPagination(c echo.Context) error {
 	page, err := strconv.Atoi(c.Param("page"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "page must be a number",
-			Data:    nil,
+		return c.JSON(http.StatusBadRequest, helper.BaseResponseWithPagination{
+			Status:     http.StatusBadRequest,
+			Message:    "page must be a number",
+			Data:       nil,
+			Pagination: helper.Page{},
 		})
 	} else if page < 1 {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "page must be greater than 0",
-			Data:    nil,
+		return c.JSON(http.StatusBadRequest, helper.BaseResponseWithPagination{
+			Status:     http.StatusBadRequest,
+			Message:    "page must be greater than 0",
+			Data:       nil,
+			Pagination: helper.Page{},
 		})
 	}
 
@@ -145,10 +148,11 @@ func (userCtrl *UserController) GetManyWithPagination(c echo.Context) error {
 	}
 	limitNumber, err := strconv.Atoi(limit)
 	if err != nil || limitNumber < 1 {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "limit must be a number and greater than 0",
-			Data:    nil,
+		return c.JSON(http.StatusBadRequest, helper.BaseResponseWithPagination{
+			Status:     http.StatusBadRequest,
+			Message:    "limit must be a number and greater than 0",
+			Data:       nil,
+			Pagination: helper.Page{},
 		})
 	}
 
@@ -156,10 +160,11 @@ func (userCtrl *UserController) GetManyWithPagination(c echo.Context) error {
 	if sort == "" {
 		sort = "createdAt"
 	} else if !(sort == "id" || sort == "email" || sort == "userName" || sort == "displayName" || sort == "createdAt" || sort == "updatedAt") {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "sort must be id, email, userName, displayName, createdAt, or updatedAt",
-			Data:    nil,
+		return c.JSON(http.StatusBadRequest, helper.BaseResponseWithPagination{
+			Status:     http.StatusBadRequest,
+			Message:    "sort must be id, email, userName, displayName, createdAt, or updatedAt",
+			Data:       nil,
+			Pagination: helper.Page{},
 		})
 	}
 
@@ -167,23 +172,34 @@ func (userCtrl *UserController) GetManyWithPagination(c echo.Context) error {
 	if order == "" {
 		order = "desc"
 	} else if !(order == "asc" || order == "desc") {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "order must be asc or desc",
-			Data:    nil,
+		return c.JSON(http.StatusBadRequest, helper.BaseResponseWithPagination{
+			Status:     http.StatusBadRequest,
+			Message:    "order must be asc or desc",
+			Data:       nil,
+			Pagination: helper.Page{},
 		})
 	}
 
-	users, totalPage, totalData, err := userCtrl.userUseCase.GetWithSortAndOrder(page, limitNumber, sort, order)
+	userInput := request.Filter{}
+	c.Bind(&userInput)
+
+	pagination := dtoPagination.Request{
+		Page:  page,
+		Limit: limitNumber,
+		Sort:  sort,
+		Order: order,
+	}
+
+	users, totalPage, totalData, err := userCtrl.userUseCase.GetManyWithPagination(pagination, userInput.ToDomain())
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
 			Status:  http.StatusInternalServerError,
 			Message: err.Error(),
 			Data:    nil,
 		})
 	}
 
-	return c.JSON(http.StatusOK, helper.BaseResponse{
+	return c.JSON(http.StatusOK, helper.BaseResponseWithPagination{
 		Status:  http.StatusOK,
 		Message: "success to get all users",
 		Data: map[string]interface{}{

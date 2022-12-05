@@ -4,7 +4,7 @@ package mocks
 
 import (
 	comments "charum/business/comments"
-	dto "charum/dto"
+	dtocomments "charum/dto/comments"
 
 	mock "github.com/stretchr/testify/mock"
 
@@ -79,6 +79,20 @@ func (_m *UseCase) Delete(id primitive.ObjectID, userID primitive.ObjectID) (com
 	return r0, r1
 }
 
+// DeleteAllByThreadID provides a mock function with given fields: threadID
+func (_m *UseCase) DeleteAllByThreadID(threadID primitive.ObjectID) error {
+	ret := _m.Called(threadID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID) error); ok {
+		r0 = rf(threadID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // DeleteAllByUserID provides a mock function with given fields: userID
 func (_m *UseCase) DeleteAllByUserID(userID primitive.ObjectID) error {
 	ret := _m.Called(userID)
@@ -94,14 +108,14 @@ func (_m *UseCase) DeleteAllByUserID(userID primitive.ObjectID) error {
 }
 
 // DomainToResponse provides a mock function with given fields: comment
-func (_m *UseCase) DomainToResponse(comment comments.Domain) (dto.ResponseComment, error) {
+func (_m *UseCase) DomainToResponse(comment comments.Domain) (dtocomments.Response, error) {
 	ret := _m.Called(comment)
 
-	var r0 dto.ResponseComment
-	if rf, ok := ret.Get(0).(func(comments.Domain) dto.ResponseComment); ok {
+	var r0 dtocomments.Response
+	if rf, ok := ret.Get(0).(func(comments.Domain) dtocomments.Response); ok {
 		r0 = rf(comment)
 	} else {
-		r0 = ret.Get(0).(dto.ResponseComment)
+		r0 = ret.Get(0).(dtocomments.Response)
 	}
 
 	var r1 error
@@ -115,15 +129,15 @@ func (_m *UseCase) DomainToResponse(comment comments.Domain) (dto.ResponseCommen
 }
 
 // DomainToResponseArray provides a mock function with given fields: _a0
-func (_m *UseCase) DomainToResponseArray(_a0 []comments.Domain) ([]dto.ResponseComment, error) {
+func (_m *UseCase) DomainToResponseArray(_a0 []comments.Domain) ([]dtocomments.Response, error) {
 	ret := _m.Called(_a0)
 
-	var r0 []dto.ResponseComment
-	if rf, ok := ret.Get(0).(func([]comments.Domain) []dto.ResponseComment); ok {
+	var r0 []dtocomments.Response
+	if rf, ok := ret.Get(0).(func([]comments.Domain) []dtocomments.Response); ok {
 		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]dto.ResponseComment)
+			r0 = ret.Get(0).([]dtocomments.Response)
 		}
 	}
 

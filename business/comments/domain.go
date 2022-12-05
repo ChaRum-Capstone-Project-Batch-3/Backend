@@ -1,7 +1,7 @@
 package comments
 
 import (
-	"charum/dto"
+	dtoComment "charum/dto/comments"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -35,8 +35,8 @@ type UseCase interface {
 	Create(domain *Domain) (Domain, error)
 	// Read
 	GetByThreadID(threadID primitive.ObjectID) ([]Domain, error)
-	DomainToResponse(comment Domain) (dto.ResponseComment, error)
-	DomainToResponseArray(comments []Domain) ([]dto.ResponseComment, error)
+	DomainToResponse(comment Domain) (dtoComment.Response, error)
+	DomainToResponseArray(comments []Domain) ([]dtoComment.Response, error)
 	CountByThreadID(threadID primitive.ObjectID) (int, error)
 	// Update
 	Update(domain *Domain) (Domain, error)
