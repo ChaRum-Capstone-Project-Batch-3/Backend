@@ -49,7 +49,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	thread := apiV1.Group("/thread")
 	thread.GET("", cl.ThreadController.GetManyByToken, authMiddleware.Check)
 	thread.POST("", cl.ThreadController.Create, authMiddleware.Check)
-	thread.GET("/:page", cl.ThreadController.GetManyWithPagination)
+	thread.POST("/:page", cl.ThreadController.GetManyWithPagination)
 
 	threadID := thread.Group("/id")
 	threadID.GET("/:thread-id", cl.ThreadController.GetByID)
@@ -70,7 +70,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	admin := apiV1.Group("/admin", adminMiddleware.Check)
 
 	adminUser := admin.Group("/user")
-	adminUser.GET("/:page", cl.UserController.GetManyWithPagination)
+	adminUser.POST("/:page", cl.UserController.GetManyWithPagination)
 	adminUser.PUT("/suspend/:user-id", cl.UserController.Suspend)
 	adminUser.PUT("/unsuspend/:user-id", cl.UserController.Unsuspend)
 
@@ -87,7 +87,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	adminTopic.DELETE("/:topic-id", cl.TopicController.Delete)
 
 	adminThread := admin.Group("/thread")
-	adminThread.GET("/:page", cl.ThreadController.GetManyWithPagination)
+	adminThread.POST("/:page", cl.ThreadController.GetManyWithPagination)
 	adminThread.GET("/id/:thread-id", cl.ThreadController.GetByID)
 	adminThread.PUT("/id/:thread-id", cl.ThreadController.AdminUpdate)
 	adminThread.DELETE("/id/:thread-id", cl.ThreadController.AdminDelete)
