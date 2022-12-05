@@ -59,13 +59,13 @@ func (_m *UseCase) GetByID(id primitive.ObjectID) (users.Domain, error) {
 	return r0, r1
 }
 
-// GetWithSortAndOrder provides a mock function with given fields: _a0
-func (_m *UseCase) GetWithSortAndOrder(_a0 pagination.Request) ([]users.Domain, int, int, error) {
-	ret := _m.Called(_a0)
+// GetManyWithPagination provides a mock function with given fields: _a0, domain
+func (_m *UseCase) GetManyWithPagination(_a0 pagination.Request, domain *users.Domain) ([]users.Domain, int, int, error) {
+	ret := _m.Called(_a0, domain)
 
 	var r0 []users.Domain
-	if rf, ok := ret.Get(0).(func(pagination.Request) []users.Domain); ok {
-		r0 = rf(_a0)
+	if rf, ok := ret.Get(0).(func(pagination.Request, *users.Domain) []users.Domain); ok {
+		r0 = rf(_a0, domain)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]users.Domain)
@@ -73,22 +73,22 @@ func (_m *UseCase) GetWithSortAndOrder(_a0 pagination.Request) ([]users.Domain, 
 	}
 
 	var r1 int
-	if rf, ok := ret.Get(1).(func(pagination.Request) int); ok {
-		r1 = rf(_a0)
+	if rf, ok := ret.Get(1).(func(pagination.Request, *users.Domain) int); ok {
+		r1 = rf(_a0, domain)
 	} else {
 		r1 = ret.Get(1).(int)
 	}
 
 	var r2 int
-	if rf, ok := ret.Get(2).(func(pagination.Request) int); ok {
-		r2 = rf(_a0)
+	if rf, ok := ret.Get(2).(func(pagination.Request, *users.Domain) int); ok {
+		r2 = rf(_a0, domain)
 	} else {
 		r2 = ret.Get(2).(int)
 	}
 
 	var r3 error
-	if rf, ok := ret.Get(3).(func(pagination.Request) error); ok {
-		r3 = rf(_a0)
+	if rf, ok := ret.Get(3).(func(pagination.Request, *users.Domain) error); ok {
+		r3 = rf(_a0, domain)
 	} else {
 		r3 = ret.Error(3)
 	}

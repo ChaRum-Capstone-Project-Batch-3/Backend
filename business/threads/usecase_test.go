@@ -7,6 +7,8 @@ import (
 	_topicMock "charum/business/topics/mocks"
 	"charum/business/users"
 	_userMock "charum/business/users/mocks"
+	dtoPagination "charum/dto/pagination"
+	dtoQuery "charum/dto/query"
 	dtoThread "charum/dto/threads"
 	"errors"
 	"testing"
@@ -100,11 +102,25 @@ func TestCreate(t *testing.T) {
 	})
 }
 
-func TestGetWithSortAndOrder(t *testing.T) {
+func TestGetManyWithPagination(t *testing.T) {
 	t.Run("Test case 1 | Valid get thread with sort and order", func(t *testing.T) {
-		threadRepository.On("GetWithSortAndOrder", 0, 2, "createdAt", -1).Return([]threads.Domain{threadDomain}, 1, nil).Once()
+		pagination := dtoPagination.Request{
+			Page:  1,
+			Limit: 2,
+			Sort:  "createdAt",
+			Order: "desc",
+		}
 
-		result, totalPage, totalData, err := threadUseCase.GetWithSortAndOrder(1, 2, "createdAt", "desc")
+		query := dtoQuery.Request{
+			Skip:  0,
+			Limit: 2,
+			Sort:  "createdAt",
+			Order: -1,
+		}
+		topicRepository.On("GetByID", threadDomain.TopicID).Return(topicDomain, nil).Once()
+		threadRepository.On("GetManyWithPagination", query, &threadDomain).Return([]threads.Domain{threadDomain}, 1, nil).Once()
+
+		result, totalPage, totalData, err := threadUseCase.GetManyWithPagination(pagination, &threadDomain)
 
 		assert.NotNil(t, result)
 		assert.NotZero(t, totalPage)
@@ -114,9 +130,44 @@ func TestGetWithSortAndOrder(t *testing.T) {
 
 	t.Run("Test case 2 | Invalid get thread with sort and order | Error when getting thread", func(t *testing.T) {
 		expectedErr := errors.New("failed to get threads")
-		threadRepository.On("GetWithSortAndOrder", 0, 2, "createdAt", 1).Return([]threads.Domain{}, 0, expectedErr).Once()
 
-		result, totalPage, totalData, err := threadUseCase.GetWithSortAndOrder(1, 2, "createdAt", "asc")
+		pagination := dtoPagination.Request{
+			Page:  1,
+			Limit: 2,
+			Sort:  "createdAt",
+			Order: "asc",
+		}
+
+		query := dtoQuery.Request{
+			Skip:  0,
+			Limit: 2,
+			Sort:  "createdAt",
+			Order: 1,
+		}
+		topicRepository.On("GetByID", threadDomain.TopicID).Return(topicDomain, nil).Once()
+		threadRepository.On("GetManyWithPagination", query, &threadDomain).Return([]threads.Domain{}, 0, expectedErr).Once()
+
+		result, totalPage, totalData, err := threadUseCase.GetManyWithPagination(pagination, &threadDomain)
+
+		assert.Equal(t, []threads.Domain{}, result)
+		assert.Zero(t, totalPage)
+		assert.Zero(t, totalData)
+		assert.Equal(t, err, expectedErr)
+	})
+
+	t.Run("Test case 3 | Invalid get thread with sort and order | Topic Not Exist", func(t *testing.T) {
+		expectedErr := errors.New("failed to get topic")
+
+		pagination := dtoPagination.Request{
+			Page:  1,
+			Limit: 2,
+			Sort:  "createdAt",
+			Order: "asc",
+		}
+
+		topicRepository.On("GetByID", threadDomain.TopicID).Return(topics.Domain{}, expectedErr).Once()
+
+		result, totalPage, totalData, err := threadUseCase.GetManyWithPagination(pagination, &threadDomain)
 
 		assert.Equal(t, []threads.Domain{}, result)
 		assert.Zero(t, totalPage)
@@ -142,6 +193,48 @@ func TestGetByID(t *testing.T) {
 		result, err := threadUseCase.GetByID(threadDomain.Id)
 
 		assert.Equal(t, threads.Domain{}, result)
+		assert.Equal(t, err, expectedErr)
+	})
+}
+
+func TestGetAllByTopicID(t *testing.T) {
+	t.Run("Test case 1 | Valid get all thread by topic id", func(t *testing.T) {
+		threadRepository.On("GetAllByTopicID", threadDomain.TopicID).Return([]threads.Domain{threadDomain}, nil).Once()
+
+		result, err := threadUseCase.GetAllByTopicID(threadDomain.TopicID)
+
+		assert.NotNil(t, result)
+		assert.Nil(t, err)
+	})
+
+	t.Run("Test case 2 | Invalid get all thread by topic id | Error when getting thread", func(t *testing.T) {
+		expectedErr := errors.New("failed to get threads")
+		threadRepository.On("GetAllByTopicID", threadDomain.TopicID).Return([]threads.Domain{}, expectedErr).Once()
+
+		result, err := threadUseCase.GetAllByTopicID(threadDomain.TopicID)
+
+		assert.Equal(t, []threads.Domain{}, result)
+		assert.Equal(t, err, expectedErr)
+	})
+}
+
+func TestGetAllByUserID(t *testing.T) {
+	t.Run("Test case 1 | Valid get all thread by user id", func(t *testing.T) {
+		threadRepository.On("GetAllByUserID", threadDomain.CreatorID).Return([]threads.Domain{threadDomain}, nil).Once()
+
+		result, err := threadUseCase.GetAllByUserID(threadDomain.CreatorID)
+
+		assert.NotNil(t, result)
+		assert.Nil(t, err)
+	})
+
+	t.Run("Test case 2 | Invalid get all thread by user id | Error when getting thread", func(t *testing.T) {
+		expectedErr := errors.New("failed to get threads")
+		threadRepository.On("GetAllByUserID", threadDomain.CreatorID).Return([]threads.Domain{}, expectedErr).Once()
+
+		result, err := threadUseCase.GetAllByUserID(threadDomain.CreatorID)
+
+		assert.Equal(t, []threads.Domain{}, result)
 		assert.Equal(t, err, expectedErr)
 	})
 }
@@ -201,78 +294,110 @@ func TestDomainToResponseArray(t *testing.T) {
 	})
 }
 
-func TestUpdate(t *testing.T) {
-	t.Run("Test case 1 | Valid update thread", func(t *testing.T) {
+func TestUserUpdate(t *testing.T) {
+	t.Run("Test case 1 | Valid user update thread", func(t *testing.T) {
 		topicRepository.On("GetByID", threadDomain.TopicID).Return(topicDomain, nil).Once()
 		threadRepository.On("GetByID", threadDomain.Id).Return(threadDomain, nil).Once()
-		userRepository.On("GetByID", threadDomain.CreatorID).Return(userDomain, nil).Once()
 		threadRepository.On("Update", mock.Anything).Return(threadDomain, nil).Once()
 
-		result, err := threadUseCase.Update(&threadDomain)
+		result, err := threadUseCase.UserUpdate(&threadDomain)
 
 		assert.NotNil(t, result)
 		assert.Nil(t, err)
 	})
 
-	t.Run("Test case 2 | Invalid update thread | Error when updating thread", func(t *testing.T) {
+	t.Run("Test case 2 | Invalid user update thread | Error when updating thread", func(t *testing.T) {
 		expectedErr := errors.New("failed to update thread")
 		topicRepository.On("GetByID", threadDomain.TopicID).Return(topicDomain, nil).Once()
 		threadRepository.On("GetByID", threadDomain.Id).Return(threadDomain, nil).Once()
-		userRepository.On("GetByID", threadDomain.CreatorID).Return(userDomain, nil).Once()
 		threadRepository.On("Update", mock.Anything).Return(threads.Domain{}, expectedErr).Once()
 
-		result, err := threadUseCase.Update(&threadDomain)
+		result, err := threadUseCase.UserUpdate(&threadDomain)
 
 		assert.Equal(t, threads.Domain{}, result)
 		assert.Equal(t, err, expectedErr)
 	})
 
-	t.Run("Test case 3 | Invalid update thread | Topic Not Exist", func(t *testing.T) {
+	t.Run("Test case 3 | Invalid user update thread | Topic Not Exist", func(t *testing.T) {
 		copyTopic := topicDomain
 		copyTopic.Topic = "topic not exist"
 		expectedErr := errors.New("failed to get topic")
 		topicRepository.On("GetByID", threadDomain.TopicID).Return(topics.Domain{}, expectedErr).Once()
 
-		result, err := threadUseCase.Update(&threadDomain)
+		result, err := threadUseCase.UserUpdate(&threadDomain)
 
 		assert.Equal(t, threads.Domain{}, result)
 		assert.Equal(t, err, expectedErr)
 	})
 
-	t.Run("Test case 4 | Invalid update thread | Thread Not Exist", func(t *testing.T) {
+	t.Run("Test case 4 | Invalid user update thread | Thread Not Exist", func(t *testing.T) {
 		expectedErr := errors.New("failed to get thread")
 		topicRepository.On("GetByID", threadDomain.TopicID).Return(topicDomain, nil).Once()
 		threadRepository.On("GetByID", threadDomain.Id).Return(threads.Domain{}, expectedErr).Once()
 
-		result, err := threadUseCase.Update(&threadDomain)
+		result, err := threadUseCase.UserUpdate(&threadDomain)
 
 		assert.Equal(t, threads.Domain{}, result)
 		assert.Equal(t, err, expectedErr)
 	})
 
-	t.Run("Test case 5 | Invalid update thread | User Not Exist", func(t *testing.T) {
-		expectedErr := errors.New("failed to get user")
-
-		topicRepository.On("GetByID", threadDomain.TopicID).Return(topicDomain, nil).Once()
-		threadRepository.On("GetByID", threadDomain.Id).Return(threadDomain, nil).Once()
-		userRepository.On("GetByID", threadDomain.CreatorID).Return(users.Domain{}, expectedErr).Once()
-
-		result, err := threadUseCase.Update(&threadDomain)
-
-		assert.Equal(t, threads.Domain{}, result)
-		assert.Equal(t, err, expectedErr)
-	})
-
-	t.Run("Test case 6 | Invalid update thread | User Not Creator", func(t *testing.T) {
+	t.Run("Test case 5 | Invalid user update thread | User Not Creator", func(t *testing.T) {
 		copyThread := threadDomain
 		copyThread.CreatorID = primitive.NewObjectID()
 		expectedErr := errors.New("user are not the thread creator")
 
 		topicRepository.On("GetByID", threadDomain.TopicID).Return(topicDomain, nil).Once()
 		threadRepository.On("GetByID", threadDomain.Id).Return(copyThread, nil).Once()
-		userRepository.On("GetByID", threadDomain.CreatorID).Return(userDomain, nil).Once()
 
-		result, err := threadUseCase.Update(&threadDomain)
+		result, err := threadUseCase.UserUpdate(&threadDomain)
+
+		assert.Equal(t, threads.Domain{}, result)
+		assert.Equal(t, err, expectedErr)
+	})
+}
+
+func TestAdminUpdate(t *testing.T) {
+	t.Run("Test case 1 | Valid admin update thread", func(t *testing.T) {
+		topicRepository.On("GetByID", threadDomain.TopicID).Return(topicDomain, nil).Once()
+		threadRepository.On("GetByID", threadDomain.Id).Return(threadDomain, nil).Once()
+		threadRepository.On("Update", mock.Anything).Return(threadDomain, nil).Once()
+
+		result, err := threadUseCase.AdminUpdate(&threadDomain)
+
+		assert.NotNil(t, result)
+		assert.Nil(t, err)
+	})
+
+	t.Run("Test case 2 | Invalid admin update thread | Error when updating thread", func(t *testing.T) {
+		expectedErr := errors.New("failed to update thread")
+		topicRepository.On("GetByID", threadDomain.TopicID).Return(topicDomain, nil).Once()
+		threadRepository.On("GetByID", threadDomain.Id).Return(threadDomain, nil).Once()
+		threadRepository.On("Update", mock.Anything).Return(threads.Domain{}, expectedErr).Once()
+
+		result, err := threadUseCase.AdminUpdate(&threadDomain)
+
+		assert.Equal(t, threads.Domain{}, result)
+		assert.Equal(t, err, expectedErr)
+	})
+
+	t.Run("Test case 3 | Invalid admin update thread | Topic Not Exist", func(t *testing.T) {
+		copyTopic := topicDomain
+		copyTopic.Topic = "topic not exist"
+		expectedErr := errors.New("failed to get topic")
+		topicRepository.On("GetByID", threadDomain.TopicID).Return(topics.Domain{}, expectedErr).Once()
+
+		result, err := threadUseCase.AdminUpdate(&threadDomain)
+
+		assert.Equal(t, threads.Domain{}, result)
+		assert.Equal(t, err, expectedErr)
+	})
+
+	t.Run("Test case 4 | Invalid admin update thread | Thread Not Exist", func(t *testing.T) {
+		expectedErr := errors.New("failed to get thread")
+		topicRepository.On("GetByID", threadDomain.TopicID).Return(topicDomain, nil).Once()
+		threadRepository.On("GetByID", threadDomain.Id).Return(threads.Domain{}, expectedErr).Once()
+
+		result, err := threadUseCase.AdminUpdate(&threadDomain)
 
 		assert.Equal(t, threads.Domain{}, result)
 		assert.Equal(t, err, expectedErr)
@@ -350,6 +475,77 @@ func TestDelete(t *testing.T) {
 		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
 
 		thread, err := threadUseCase.Delete(userDomain.Id, threadDomain.Id)
+
+		assert.Equal(t, err, expectedErr)
+		assert.Equal(t, threads.Domain{}, thread)
+	})
+}
+
+func TestDeleteAllByUserID(t *testing.T) {
+	t.Run("Test case 1 | Valid delete all thread by user id", func(t *testing.T) {
+		threadRepository.On("DeleteAllByUserID", mock.Anything).Return(nil).Once()
+
+		err := threadUseCase.DeleteAllByUserID(threadDomain.CreatorID)
+
+		assert.Nil(t, err)
+	})
+
+	t.Run("Test case 2 | Invalid delete all thread by user id | Error when deleting thread by user id", func(t *testing.T) {
+		expectedErr := errors.New("failed to delete user threads")
+		threadRepository.On("DeleteAllByUserID", mock.Anything).Return(expectedErr).Once()
+
+		err := threadUseCase.DeleteAllByUserID(threadDomain.CreatorID)
+
+		assert.Equal(t, expectedErr, err)
+	})
+}
+
+func TestDeleteByThreadID(t *testing.T) {
+	t.Run("Test case 1 | Valid delete thread by thread id", func(t *testing.T) {
+		threadRepository.On("Delete", mock.Anything).Return(nil).Once()
+
+		err := threadUseCase.DeleteByThreadID(threadDomain.Id)
+
+		assert.Nil(t, err)
+	})
+
+	t.Run("Test case 2 | Invalid delete thread by thread id | Error when deleting thread by thread id", func(t *testing.T) {
+		expectedErr := errors.New("failed to delete thread")
+		threadRepository.On("Delete", mock.Anything).Return(expectedErr).Once()
+
+		err := threadUseCase.DeleteByThreadID(threadDomain.Id)
+
+		assert.Equal(t, expectedErr, err)
+	})
+}
+
+func TestAdminDelete(t *testing.T) {
+	t.Run("Test case 1 | Valid admin delete thread", func(t *testing.T) {
+		threadRepository.On("GetByID", threadDomain.Id).Return(threadDomain, nil).Once()
+		threadRepository.On("Delete", mock.Anything).Return(nil).Once()
+
+		thread, err := threadUseCase.AdminDelete(threadDomain.Id)
+
+		assert.Nil(t, err)
+		assert.Equal(t, threadDomain, thread)
+	})
+
+	t.Run("Test case 2 | Invalid admin delete thread | Error when deleting thread", func(t *testing.T) {
+		expectedErr := errors.New("failed to delete thread")
+		threadRepository.On("GetByID", threadDomain.Id).Return(threadDomain, nil).Once()
+		threadRepository.On("Delete", mock.Anything).Return(expectedErr).Once()
+
+		thread, err := threadUseCase.AdminDelete(threadDomain.Id)
+
+		assert.Equal(t, err, expectedErr)
+		assert.Equal(t, threads.Domain{}, thread)
+	})
+
+	t.Run("Test case 3 | Invalid admin delete thread | Thread Not Exist", func(t *testing.T) {
+		expectedErr := errors.New("failed to get thread")
+		threadRepository.On("GetByID", threadDomain.Id).Return(threads.Domain{}, expectedErr).Once()
+
+		thread, err := threadUseCase.AdminDelete(threadDomain.Id)
 
 		assert.Equal(t, err, expectedErr)
 		assert.Equal(t, threads.Domain{}, thread)

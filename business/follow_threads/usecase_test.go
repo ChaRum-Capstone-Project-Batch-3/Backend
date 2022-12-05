@@ -396,3 +396,39 @@ func TestDelete(t *testing.T) {
 		assert.Equal(t, result, followThreads.Domain{})
 	})
 }
+
+func TestDeleteAllByUserID(t *testing.T) {
+	t.Run("Test Case 1 | Valid Delete All By User ID", func(t *testing.T) {
+		followThreadRepositoryMock.On("DeleteAllByUserID", followThreadDomain.UserID).Return(nil).Once()
+
+		err := followThreadUseCase.DeleteAllByUserID(followThreadDomain.UserID)
+
+		assert.Nil(t, err)
+	})
+
+	t.Run("Test Case 2 | Invalid Delete All By User ID", func(t *testing.T) {
+		followThreadRepositoryMock.On("DeleteAllByUserID", followThreadDomain.UserID).Return(errors.New("unexpected error")).Once()
+
+		err := followThreadUseCase.DeleteAllByUserID(followThreadDomain.UserID)
+
+		assert.NotNil(t, err)
+	})
+}
+
+func TestDeleteAllByThreadID(t *testing.T) {
+	t.Run("Test Case 1 | Valid Delete All By Thread ID", func(t *testing.T) {
+		followThreadRepositoryMock.On("DeleteAllByThreadID", followThreadDomain.ThreadID).Return(nil).Once()
+
+		err := followThreadUseCase.DeleteAllByThreadID(followThreadDomain.ThreadID)
+
+		assert.Nil(t, err)
+	})
+
+	t.Run("Test Case 2 | Invalid Delete All By Thread ID", func(t *testing.T) {
+		followThreadRepositoryMock.On("DeleteAllByThreadID", followThreadDomain.ThreadID).Return(errors.New("unexpected error")).Once()
+
+		err := followThreadUseCase.DeleteAllByThreadID(followThreadDomain.ThreadID)
+
+		assert.NotNil(t, err)
+	})
+}

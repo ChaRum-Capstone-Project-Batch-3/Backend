@@ -322,3 +322,21 @@ func TestDeleteAllByUserID(t *testing.T) {
 		assert.NotNil(t, err)
 	})
 }
+
+func TestDeleteALlByThreadID(t *testing.T) {
+	t.Run("Test case 1 | Valid delete all by thread id", func(t *testing.T) {
+		commentRepository.On("DeleteAllByThreadID", commentDomain.ThreadID).Return(nil).Once()
+
+		err := commentUseCase.DeleteAllByThreadID(commentDomain.ThreadID)
+
+		assert.Nil(t, err)
+	})
+
+	t.Run("Test case 2 | Invalid delete all by thread id | Failed To Delete All Comment By Thread ID", func(t *testing.T) {
+		expectedErr := errors.New("failed to delete all comment by thread id")
+		commentRepository.On("DeleteAllByThreadID", commentDomain.ThreadID).Return(expectedErr).Once()
+
+		err := commentUseCase.DeleteAllByThreadID(commentDomain.ThreadID)
+		assert.NotNil(t, err)
+	})
+}

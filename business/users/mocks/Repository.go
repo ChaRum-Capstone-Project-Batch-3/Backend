@@ -114,13 +114,13 @@ func (_m *Repository) GetByUsername(username string) (users.Domain, error) {
 	return r0, r1
 }
 
-// GetWithSortAndOrder provides a mock function with given fields: _a0
-func (_m *Repository) GetWithSortAndOrder(_a0 query.Request) ([]users.Domain, int, error) {
-	ret := _m.Called(_a0)
+// GetManyWithPagination provides a mock function with given fields: _a0, domain
+func (_m *Repository) GetManyWithPagination(_a0 query.Request, domain *users.Domain) ([]users.Domain, int, error) {
+	ret := _m.Called(_a0, domain)
 
 	var r0 []users.Domain
-	if rf, ok := ret.Get(0).(func(query.Request) []users.Domain); ok {
-		r0 = rf(_a0)
+	if rf, ok := ret.Get(0).(func(query.Request, *users.Domain) []users.Domain); ok {
+		r0 = rf(_a0, domain)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]users.Domain)
@@ -128,15 +128,15 @@ func (_m *Repository) GetWithSortAndOrder(_a0 query.Request) ([]users.Domain, in
 	}
 
 	var r1 int
-	if rf, ok := ret.Get(1).(func(query.Request) int); ok {
-		r1 = rf(_a0)
+	if rf, ok := ret.Get(1).(func(query.Request, *users.Domain) int); ok {
+		r1 = rf(_a0, domain)
 	} else {
 		r1 = ret.Get(1).(int)
 	}
 
 	var r2 error
-	if rf, ok := ret.Get(2).(func(query.Request) error); ok {
-		r2 = rf(_a0)
+	if rf, ok := ret.Get(2).(func(query.Request, *users.Domain) error); ok {
+		r2 = rf(_a0, domain)
 	} else {
 		r2 = ret.Error(2)
 	}

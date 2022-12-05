@@ -149,7 +149,7 @@ func TestGetWithSortAndOrder(t *testing.T) {
 			Sort:  "createdAt",
 			Order: -1,
 		}
-		userRepository.On("GetWithSortAndOrder", query).Return([]users.Domain{userDomain}, 1, nil).Once()
+		userRepository.On("GetManyWithPagination", query, &userDomain).Return([]users.Domain{userDomain}, 1, nil).Once()
 
 		pagination := dtoPagination.Request{
 			Page:  1,
@@ -157,7 +157,7 @@ func TestGetWithSortAndOrder(t *testing.T) {
 			Sort:  "createdAt",
 			Order: "desc",
 		}
-		actualUsers, totalPage, totalData, actualErr := userUseCase.GetWithSortAndOrder(pagination)
+		actualUsers, totalPage, totalData, actualErr := userUseCase.GetManyWithPagination(pagination, &userDomain)
 
 		assert.NotZero(t, totalData)
 		assert.NotZero(t, totalPage)
@@ -174,7 +174,7 @@ func TestGetWithSortAndOrder(t *testing.T) {
 			Sort:  "createdAt",
 			Order: 1,
 		}
-		userRepository.On("GetWithSortAndOrder", query).Return([]users.Domain{}, 1, expectedErr).Once()
+		userRepository.On("GetManyWithPagination", query, &userDomain).Return([]users.Domain{}, 1, expectedErr).Once()
 
 		pagination := dtoPagination.Request{
 			Page:  1,
@@ -182,7 +182,7 @@ func TestGetWithSortAndOrder(t *testing.T) {
 			Sort:  "createdAt",
 			Order: "asc",
 		}
-		actualUsers, totalPage, totalData, actualErr := userUseCase.GetWithSortAndOrder(pagination)
+		actualUsers, totalPage, totalData, actualErr := userUseCase.GetManyWithPagination(pagination, &userDomain)
 
 		assert.Zero(t, totalData)
 		assert.Zero(t, totalPage)
