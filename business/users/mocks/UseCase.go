@@ -3,7 +3,10 @@
 package mocks
 
 import (
+	pagination "charum/dto/pagination"
+
 	mock "github.com/stretchr/testify/mock"
+
 	primitive "go.mongodb.org/mongo-driver/bson/primitive"
 
 	users "charum/business/users"
@@ -56,13 +59,13 @@ func (_m *UseCase) GetByID(id primitive.ObjectID) (users.Domain, error) {
 	return r0, r1
 }
 
-// GetWithSortAndOrder provides a mock function with given fields: page, limit, sort, order
-func (_m *UseCase) GetWithSortAndOrder(page int, limit int, sort string, order string) ([]users.Domain, int, int, error) {
-	ret := _m.Called(page, limit, sort, order)
+// GetWithSortAndOrder provides a mock function with given fields: _a0
+func (_m *UseCase) GetWithSortAndOrder(_a0 pagination.Request) ([]users.Domain, int, int, error) {
+	ret := _m.Called(_a0)
 
 	var r0 []users.Domain
-	if rf, ok := ret.Get(0).(func(int, int, string, string) []users.Domain); ok {
-		r0 = rf(page, limit, sort, order)
+	if rf, ok := ret.Get(0).(func(pagination.Request) []users.Domain); ok {
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]users.Domain)
@@ -70,22 +73,22 @@ func (_m *UseCase) GetWithSortAndOrder(page int, limit int, sort string, order s
 	}
 
 	var r1 int
-	if rf, ok := ret.Get(1).(func(int, int, string, string) int); ok {
-		r1 = rf(page, limit, sort, order)
+	if rf, ok := ret.Get(1).(func(pagination.Request) int); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(int)
 	}
 
 	var r2 int
-	if rf, ok := ret.Get(2).(func(int, int, string, string) int); ok {
-		r2 = rf(page, limit, sort, order)
+	if rf, ok := ret.Get(2).(func(pagination.Request) int); ok {
+		r2 = rf(_a0)
 	} else {
 		r2 = ret.Get(2).(int)
 	}
 
 	var r3 error
-	if rf, ok := ret.Get(3).(func(int, int, string, string) error); ok {
-		r3 = rf(page, limit, sort, order)
+	if rf, ok := ret.Get(3).(func(pagination.Request) error); ok {
+		r3 = rf(_a0)
 	} else {
 		r3 = ret.Error(3)
 	}

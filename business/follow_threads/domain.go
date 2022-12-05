@@ -1,7 +1,7 @@
 package follow_threads
 
 import (
-	"charum/dto"
+	dtoFollowThread "charum/dto/follow_threads"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -37,8 +37,8 @@ type UseCase interface {
 	Create(domain *Domain) (Domain, error)
 	// Read
 	GetAllByUserID(userID primitive.ObjectID) ([]Domain, error)
-	DomainToResponse(domain Domain) (dto.ResponseFollowThread, error)
-	DomainToResponseArray(domain []Domain) ([]dto.ResponseFollowThread, error)
+	DomainToResponse(domain Domain) (dtoFollowThread.Response, error)
+	DomainToResponseArray(domain []Domain) ([]dtoFollowThread.Response, error)
 	CountByThreadID(threadID primitive.ObjectID) (int, error)
 	// Update
 	UpdateNotification(threadID primitive.ObjectID) error

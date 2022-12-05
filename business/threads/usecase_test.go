@@ -7,7 +7,7 @@ import (
 	_topicMock "charum/business/topics/mocks"
 	"charum/business/users"
 	_userMock "charum/business/users/mocks"
-	"charum/dto"
+	dtoThread "charum/dto/threads"
 	"errors"
 	"testing"
 	"time"
@@ -163,7 +163,7 @@ func TestDomainToResponse(t *testing.T) {
 
 		result, actualErr := threadUseCase.DomainToResponse(threadDomain)
 
-		assert.Equal(t, dto.ResponseThread{}, result)
+		assert.Equal(t, dtoThread.Response{}, result)
 		assert.Equal(t, expectedErr, actualErr)
 	})
 
@@ -174,7 +174,7 @@ func TestDomainToResponse(t *testing.T) {
 
 		result, actualErr := threadUseCase.DomainToResponse(threadDomain)
 
-		assert.Equal(t, dto.ResponseThread{}, result)
+		assert.Equal(t, dtoThread.Response{}, result)
 		assert.Equal(t, expectedErr, actualErr)
 	})
 }
@@ -196,7 +196,7 @@ func TestDomainToResponseArray(t *testing.T) {
 
 		result, actualErr := threadUseCase.DomainsToResponseArray([]threads.Domain{threadDomain})
 
-		assert.Equal(t, []dto.ResponseThread{}, result)
+		assert.Equal(t, []dtoThread.Response{}, result)
 		assert.Equal(t, expectedErr, actualErr)
 	})
 }

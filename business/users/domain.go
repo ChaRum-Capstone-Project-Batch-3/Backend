@@ -1,6 +1,11 @@
 package users
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	dtoPagination "charum/dto/pagination"
+	dtoQuery "charum/dto/query"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type Domain struct {
 	Id          primitive.ObjectID `json:"_id" bson:"_id"`
@@ -23,7 +28,7 @@ type Repository interface {
 	GetByID(id primitive.ObjectID) (Domain, error)
 	GetByEmail(email string) (Domain, error)
 	GetByUsername(username string) (Domain, error)
-	GetWithSortAndOrder(skip int, limit int, sort string, order int) ([]Domain, int, error)
+	GetWithSortAndOrder(query dtoQuery.Request) ([]Domain, int, error)
 	// Update
 	Update(domain *Domain) (Domain, error)
 	// Delete
@@ -35,7 +40,7 @@ type UseCase interface {
 	Register(domain *Domain) (Domain, string, error)
 	// Read
 	Login(domain *Domain) (Domain, string, error)
-	GetWithSortAndOrder(page int, limit int, sort string, order string) ([]Domain, int, int, error)
+	GetWithSortAndOrder(pagination dtoPagination.Request) ([]Domain, int, int, error)
 	GetByID(id primitive.ObjectID) (Domain, error)
 	// Update
 	Update(domain *Domain) (Domain, error)

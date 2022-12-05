@@ -3,6 +3,8 @@ package users_test
 import (
 	"charum/business/users"
 	_userMock "charum/business/users/mocks"
+	dtoPagination "charum/dto/pagination"
+	dtoQuery "charum/dto/query"
 	"errors"
 	"testing"
 	"time"
@@ -141,9 +143,21 @@ func TestLogin(t *testing.T) {
 
 func TestGetWithSortAndOrder(t *testing.T) {
 	t.Run("Test Case 1 | Valid Get Users", func(t *testing.T) {
-		userRepository.On("GetWithSortAndOrder", 0, 1, "createdAt", -1).Return([]users.Domain{userDomain}, 1, nil).Once()
+		query := dtoQuery.Request{
+			Skip:  0,
+			Limit: 1,
+			Sort:  "createdAt",
+			Order: -1,
+		}
+		userRepository.On("GetWithSortAndOrder", query).Return([]users.Domain{userDomain}, 1, nil).Once()
 
-		actualUsers, totalPage, totalData, actualErr := userUseCase.GetWithSortAndOrder(1, 1, "createdAt", "desc")
+		pagination := dtoPagination.Request{
+			Page:  1,
+			Limit: 1,
+			Sort:  "createdAt",
+			Order: "desc",
+		}
+		actualUsers, totalPage, totalData, actualErr := userUseCase.GetWithSortAndOrder(pagination)
 
 		assert.NotZero(t, totalData)
 		assert.NotZero(t, totalPage)
@@ -153,9 +167,22 @@ func TestGetWithSortAndOrder(t *testing.T) {
 
 	t.Run("Test Case 2 | Invalid Get Users | Error when getting users", func(t *testing.T) {
 		expectedErr := errors.New("failed to get users")
-		userRepository.On("GetWithSortAndOrder", 0, 1, "createdAt", 1).Return([]users.Domain{}, 1, expectedErr).Once()
 
-		actualUsers, totalPage, totalData, actualErr := userUseCase.GetWithSortAndOrder(1, 1, "createdAt", "asc")
+		query := dtoQuery.Request{
+			Skip:  0,
+			Limit: 1,
+			Sort:  "createdAt",
+			Order: 1,
+		}
+		userRepository.On("GetWithSortAndOrder", query).Return([]users.Domain{}, 1, expectedErr).Once()
+
+		pagination := dtoPagination.Request{
+			Page:  1,
+			Limit: 1,
+			Sort:  "createdAt",
+			Order: "asc",
+		}
+		actualUsers, totalPage, totalData, actualErr := userUseCase.GetWithSortAndOrder(pagination)
 
 		assert.Zero(t, totalData)
 		assert.Zero(t, totalPage)

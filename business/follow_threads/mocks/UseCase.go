@@ -4,7 +4,7 @@ package mocks
 
 import (
 	follow_threads "charum/business/follow_threads"
-	dto "charum/dto"
+	dtofollow_threads "charum/dto/follow_threads"
 
 	mock "github.com/stretchr/testify/mock"
 
@@ -79,15 +79,43 @@ func (_m *UseCase) Delete(domain *follow_threads.Domain) (follow_threads.Domain,
 	return r0, r1
 }
 
+// DeleteAllByThreadID provides a mock function with given fields: threadID
+func (_m *UseCase) DeleteAllByThreadID(threadID primitive.ObjectID) error {
+	ret := _m.Called(threadID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID) error); ok {
+		r0 = rf(threadID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// DeleteAllByUserID provides a mock function with given fields: id
+func (_m *UseCase) DeleteAllByUserID(id primitive.ObjectID) error {
+	ret := _m.Called(id)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID) error); ok {
+		r0 = rf(id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // DomainToResponse provides a mock function with given fields: domain
-func (_m *UseCase) DomainToResponse(domain follow_threads.Domain) (dto.ResponseFollowThread, error) {
+func (_m *UseCase) DomainToResponse(domain follow_threads.Domain) (dtofollow_threads.Response, error) {
 	ret := _m.Called(domain)
 
-	var r0 dto.ResponseFollowThread
-	if rf, ok := ret.Get(0).(func(follow_threads.Domain) dto.ResponseFollowThread); ok {
+	var r0 dtofollow_threads.Response
+	if rf, ok := ret.Get(0).(func(follow_threads.Domain) dtofollow_threads.Response); ok {
 		r0 = rf(domain)
 	} else {
-		r0 = ret.Get(0).(dto.ResponseFollowThread)
+		r0 = ret.Get(0).(dtofollow_threads.Response)
 	}
 
 	var r1 error
@@ -101,15 +129,15 @@ func (_m *UseCase) DomainToResponse(domain follow_threads.Domain) (dto.ResponseF
 }
 
 // DomainToResponseArray provides a mock function with given fields: domain
-func (_m *UseCase) DomainToResponseArray(domain []follow_threads.Domain) ([]dto.ResponseFollowThread, error) {
+func (_m *UseCase) DomainToResponseArray(domain []follow_threads.Domain) ([]dtofollow_threads.Response, error) {
 	ret := _m.Called(domain)
 
-	var r0 []dto.ResponseFollowThread
-	if rf, ok := ret.Get(0).(func([]follow_threads.Domain) []dto.ResponseFollowThread); ok {
+	var r0 []dtofollow_threads.Response
+	if rf, ok := ret.Get(0).(func([]follow_threads.Domain) []dtofollow_threads.Response); ok {
 		r0 = rf(domain)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]dto.ResponseFollowThread)
+			r0 = ret.Get(0).([]dtofollow_threads.Response)
 		}
 	}
 

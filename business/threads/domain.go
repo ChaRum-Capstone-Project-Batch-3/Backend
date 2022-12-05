@@ -1,7 +1,7 @@
 package threads
 
 import (
-	"charum/dto"
+	dtoThread "charum/dto/threads"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -46,8 +46,8 @@ type UseCase interface {
 	GetWithSortAndOrder(page int, limit int, sort string, order string) ([]Domain, int, int, error)
 	GetByID(id primitive.ObjectID) (Domain, error)
 	GetAllByTopicID(topicID primitive.ObjectID) ([]Domain, error)
-	DomainToResponse(domain Domain) (dto.ResponseThread, error)
-	DomainsToResponseArray(domains []Domain) ([]dto.ResponseThread, error)
+	DomainToResponse(domain Domain) (dtoThread.Response, error)
+	DomainsToResponseArray(domains []Domain) ([]dtoThread.Response, error)
 	// Update
 	Update(domain *Domain) (Domain, error)
 	SuspendByUserID(userID primitive.ObjectID) error

@@ -53,3 +53,8 @@ func (req *Thread) Validate() []helper.ValidationError {
 
 	return nil
 }
+
+type Filter struct {
+	Topic string `json:"topic"`
+	Title string `json:"title"`
+}

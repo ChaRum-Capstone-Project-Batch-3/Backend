@@ -10,7 +10,8 @@ import (
 	"charum/business/topics"
 	"charum/business/users"
 	_userMock "charum/business/users/mocks"
-	"charum/dto"
+	dtoFollowThread "charum/dto/follow_threads"
+	dtoThreads "charum/dto/threads"
 	"errors"
 	"testing"
 	"time"
@@ -29,7 +30,7 @@ var (
 	followThreadUseCase        followThreads.UseCase
 	followThreadDomain         followThreads.Domain
 	topicDomain                topics.Domain
-	responseThread             dto.ResponseThread
+	responseThread             dtoThreads.Response
 	userDomain                 users.Domain
 	threadDomain               threads.Domain
 	commentDomain              comments.Domain
@@ -87,13 +88,13 @@ func TestMain(m *testing.M) {
 		UpdatedAt:   primitive.NewDateTimeFromTime(time.Now()),
 	}
 
-	responseThread = dto.ResponseThread{
+	responseThread = dtoThreads.Response{
 		Id:            threadDomain.Id,
 		Topic:         topicDomain,
 		Creator:       userDomain,
 		Title:         threadDomain.Title,
 		Description:   threadDomain.Description,
-		Likes:         []dto.Like{},
+		Likes:         []dtoThreads.Like{},
 		TotalFollow:   0,
 		TotalComment:  0,
 		TotalLike:     len(threadDomain.Likes),
@@ -222,7 +223,7 @@ func TestDomainToResponse(t *testing.T) {
 		result, err := followThreadUseCase.DomainToResponse(followThreadDomain)
 
 		assert.NotNil(t, err)
-		assert.Equal(t, result, dto.ResponseFollowThread{})
+		assert.Equal(t, result, dtoFollowThread.Response{})
 	})
 
 	t.Run("Test Case 3 | Invalid Domain To Response | Thread Not Found", func(t *testing.T) {
@@ -232,7 +233,7 @@ func TestDomainToResponse(t *testing.T) {
 		result, err := followThreadUseCase.DomainToResponse(followThreadDomain)
 
 		assert.NotNil(t, err)
-		assert.Equal(t, result, dto.ResponseFollowThread{})
+		assert.Equal(t, result, dtoFollowThread.Response{})
 	})
 
 	t.Run("Test Case 4 | Invalid Domain To Response | Comment Count Error", func(t *testing.T) {
@@ -244,18 +245,18 @@ func TestDomainToResponse(t *testing.T) {
 		result, err := followThreadUseCase.DomainToResponse(followThreadDomain)
 
 		assert.NotNil(t, err)
-		assert.Equal(t, result, dto.ResponseFollowThread{})
+		assert.Equal(t, result, dtoFollowThread.Response{})
 	})
 
 	t.Run("Test Case 5 | Invalid Domain To Response | Thread Use Case Error", func(t *testing.T) {
 		userRepositoryMock.On("GetByID", followThreadDomain.UserID).Return(userDomain, nil).Once()
 		threadRepositoryMock.On("GetByID", followThreadDomain.ThreadID).Return(threadDomain, nil).Once()
-		threadUseCaseMock.On("DomainToResponse", mock.Anything).Return(dto.ResponseThread{}, errors.New("unexpected error")).Once()
+		threadUseCaseMock.On("DomainToResponse", mock.Anything).Return(dtoThreads.Response{}, errors.New("unexpected error")).Once()
 
 		result, err := followThreadUseCase.DomainToResponse(followThreadDomain)
 
 		assert.NotNil(t, err)
-		assert.Equal(t, result, dto.ResponseFollowThread{})
+		assert.Equal(t, result, dtoFollowThread.Response{})
 	})
 }
 
@@ -278,7 +279,7 @@ func TestDomainToResponseArray(t *testing.T) {
 		result, err := followThreadUseCase.DomainToResponseArray([]followThreads.Domain{followThreadDomain})
 
 		assert.NotNil(t, err)
-		assert.Equal(t, result, []dto.ResponseFollowThread{})
+		assert.Equal(t, result, []dtoFollowThread.Response{})
 	})
 
 	t.Run("Test Case 3 | Invalid Domain To Response Array | Thread Not Found", func(t *testing.T) {
@@ -288,7 +289,7 @@ func TestDomainToResponseArray(t *testing.T) {
 		result, err := followThreadUseCase.DomainToResponseArray([]followThreads.Domain{followThreadDomain})
 
 		assert.NotNil(t, err)
-		assert.Equal(t, result, []dto.ResponseFollowThread{})
+		assert.Equal(t, result, []dtoFollowThread.Response{})
 	})
 
 	t.Run("Test Case 4 | Invalid Domain To Response Array | Comment Count Error", func(t *testing.T) {
@@ -300,7 +301,7 @@ func TestDomainToResponseArray(t *testing.T) {
 		result, err := followThreadUseCase.DomainToResponseArray([]followThreads.Domain{followThreadDomain})
 
 		assert.NotNil(t, err)
-		assert.Equal(t, result, []dto.ResponseFollowThread{})
+		assert.Equal(t, result, []dtoFollowThread.Response{})
 	})
 }
 

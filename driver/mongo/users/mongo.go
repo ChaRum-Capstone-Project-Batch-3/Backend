@@ -2,6 +2,7 @@ package users
 
 import (
 	"charum/business/users"
+	dtoQuery "charum/dto/query"
 	"context"
 	"time"
 
@@ -85,19 +86,19 @@ func (ur *userRepository) GetByUsername(username string) (users.Domain, error) {
 	return result.ToDomain(), err
 }
 
-func (ur *userRepository) GetWithSortAndOrder(skip int, limit int, sort string, order int) ([]users.Domain, int, error) {
+func (ur *userRepository) GetWithSortAndOrder(query dtoQuery.Request) ([]users.Domain, int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
-	skip64 := int64(skip)
-	limit64 := int64(limit)
+	skip64 := int64(query.Skip)
+	limit64 := int64(query.Limit)
 
 	var result []Model
 
 	cursor, err := ur.collection.Find(ctx, bson.M{}, &options.FindOptions{
 		Skip:  &skip64,
 		Limit: &limit64,
-		Sort:  bson.M{sort: order},
+		Sort:  bson.M{query.Sort: query.Order},
 	})
 	if err != nil {
 		return []users.Domain{}, 0, err

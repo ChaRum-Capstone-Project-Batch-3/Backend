@@ -7,6 +7,7 @@ import (
 	"charum/business/users"
 	"charum/controller/users/request"
 	"charum/controller/users/response"
+	dtoPagination "charum/dto/pagination"
 	"charum/helper"
 	"charum/util"
 	"errors"
@@ -174,7 +175,14 @@ func (userCtrl *UserController) GetManyWithPagination(c echo.Context) error {
 		})
 	}
 
-	users, totalPage, totalData, err := userCtrl.userUseCase.GetWithSortAndOrder(page, limitNumber, sort, order)
+	pagination := dtoPagination.Request{
+		Page:  page,
+		Limit: limitNumber,
+		Sort:  sort,
+		Order: order,
+	}
+
+	users, totalPage, totalData, err := userCtrl.userUseCase.GetWithSortAndOrder(pagination)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,

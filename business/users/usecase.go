@@ -1,6 +1,8 @@
 package users
 
 import (
+	dtoPagination "charum/dto/pagination"
+	dtoQuery "charum/dto/query"
 	"charum/util"
 	"errors"
 	"math"
@@ -84,22 +86,30 @@ func (uu *UserUseCase) Login(domain *Domain) (Domain, string, error) {
 	return user, token, nil
 }
 
-func (uu *UserUseCase) GetWithSortAndOrder(page int, limit int, sort string, order string) ([]Domain, int, int, error) {
-	skip := limit * (page - 1)
+func (uu *UserUseCase) GetWithSortAndOrder(pagination dtoPagination.Request) ([]Domain, int, int, error) {
+	skip := pagination.Limit * (pagination.Page - 1)
 	var orderInMongo int
 
-	if order == "asc" {
+	if pagination.Order == "asc" {
 		orderInMongo = 1
 	} else {
 		orderInMongo = -1
 	}
 
-	users, totalData, err := uu.userRepository.GetWithSortAndOrder(skip, limit, sort, orderInMongo)
+	query := dtoQuery.Request{
+		Skip:   skip,
+		Limit:  pagination.Limit,
+		Order:  orderInMongo,
+		Sort:   pagination.Sort,
+		Filter: pagination.Filter,
+	}
+
+	users, totalData, err := uu.userRepository.GetWithSortAndOrder(query)
 	if err != nil {
 		return []Domain{}, 0, 0, errors.New("failed to get users")
 	}
 
-	totalPage := math.Ceil(float64(totalData) / float64(limit))
+	totalPage := math.Ceil(float64(totalData) / float64(pagination.Limit))
 	return users, int(totalPage), totalData, nil
 }
 
