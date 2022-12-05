@@ -28,7 +28,7 @@ type Repository interface {
 	GetByID(id primitive.ObjectID) (Domain, error)
 	GetByEmail(email string) (Domain, error)
 	GetByUsername(username string) (Domain, error)
-	GetWithSortAndOrder(query dtoQuery.Request) ([]Domain, int, error)
+	GetManyWithPagination(query dtoQuery.Request, domain *Domain) ([]Domain, int, error)
 	// Update
 	Update(domain *Domain) (Domain, error)
 	// Delete
@@ -40,7 +40,7 @@ type UseCase interface {
 	Register(domain *Domain) (Domain, string, error)
 	// Read
 	Login(domain *Domain) (Domain, string, error)
-	GetWithSortAndOrder(pagination dtoPagination.Request) ([]Domain, int, int, error)
+	GetManyWithPagination(pagination dtoPagination.Request, domain *Domain) ([]Domain, int, int, error)
 	GetByID(id primitive.ObjectID) (Domain, error)
 	// Update
 	Update(domain *Domain) (Domain, error)

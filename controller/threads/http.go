@@ -5,6 +5,7 @@ import (
 	followThreads "charum/business/follow_threads"
 	"charum/business/threads"
 	"charum/controller/threads/request"
+	dtoPagination "charum/dto/pagination"
 	"charum/helper"
 	"charum/util"
 	"net/http"
@@ -152,9 +153,31 @@ func (tc *ThreadController) GetManyWithPagination(c echo.Context) error {
 		})
 	}
 
-	threads, totalPage, totalData, err := tc.threadUseCase.GetWithSortAndOrder(page, limitNumber, sort, order)
+	userInput := request.Filter{}
+	c.Bind(&userInput)
+
+	userInputDomain := userInput.ToDomain()
+	if userInput.TopicID != "" {
+		userInputDomain.TopicID, err = primitive.ObjectIDFromHex(userInput.TopicID)
+	}
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "invalid topic id",
+			Data:    nil,
+		})
+	}
+
+	pagination := dtoPagination.Request{
+		Page:  page,
+		Limit: limitNumber,
+		Sort:  sort,
+		Order: order,
+	}
+
+	threads, totalPage, totalData, err := tc.threadUseCase.GetManyWithPagination(pagination, userInputDomain)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
 			Status:     http.StatusInternalServerError,
 			Message:    err.Error(),
 			Data:       nil,
@@ -164,7 +187,7 @@ func (tc *ThreadController) GetManyWithPagination(c echo.Context) error {
 
 	responseThreads, err := tc.threadUseCase.DomainsToResponseArray(threads)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
 			Status:     http.StatusInternalServerError,
 			Message:    err.Error(),
 			Data:       nil,
@@ -175,7 +198,7 @@ func (tc *ThreadController) GetManyWithPagination(c echo.Context) error {
 	for i, thread := range responseThreads {
 		responseThreads[i].TotalFollow, err = tc.followThreadUseCase.CountByThreadID(thread.Id)
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
 				Status:     http.StatusInternalServerError,
 				Message:    err.Error(),
 				Data:       nil,
@@ -185,11 +208,76 @@ func (tc *ThreadController) GetManyWithPagination(c echo.Context) error {
 
 		responseThreads[i].TotalComment, err = tc.commentUseCase.CountByThreadID(thread.Id)
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
 				Status:     http.StatusInternalServerError,
 				Message:    err.Error(),
 				Data:       nil,
 				Pagination: helper.Page{},
+			})
+		}
+
+		responseThreads[i].TotalLike = len(thread.Likes)
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponseWithPagination{
+		Status:  http.StatusOK,
+		Message: "success to get threads",
+		Data: map[string]interface{}{
+			"threads": responseThreads,
+		},
+		Pagination: helper.Page{
+			Size:        limitNumber,
+			TotalData:   totalData,
+			TotalPage:   totalPage,
+			CurrentPage: page,
+		},
+	})
+}
+
+func (tc *ThreadController) GetManyByToken(c echo.Context) error {
+	uid, err := util.GetUIDFromToken(c)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, helper.BaseResponse{
+			Status:  http.StatusUnauthorized,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	threads, err := tc.threadUseCase.GetAllByUserID(uid)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	responseThreads, err := tc.threadUseCase.DomainsToResponseArray(threads)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	for i, thread := range responseThreads {
+		responseThreads[i].TotalFollow, err = tc.followThreadUseCase.CountByThreadID(thread.Id)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+				Status:  http.StatusInternalServerError,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
+
+		responseThreads[i].TotalComment, err = tc.commentUseCase.CountByThreadID(thread.Id)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+				Status:  http.StatusInternalServerError,
+				Message: err.Error(),
+				Data:    nil,
 			})
 		}
 
@@ -201,12 +289,6 @@ func (tc *ThreadController) GetManyWithPagination(c echo.Context) error {
 		Message: "success to get threads",
 		Data: map[string]interface{}{
 			"threads": responseThreads,
-		},
-		Pagination: helper.Page{
-			Size:        limitNumber,
-			TotalData:   totalData,
-			TotalPage:   totalPage,
-			CurrentPage: page,
 		},
 	})
 }
@@ -339,7 +421,7 @@ func (tc *ThreadController) UserUpdate(c echo.Context) error {
 	threadDomain.TopicID = topicID
 	threadDomain.CreatorID = userID
 
-	result, err := tc.threadUseCase.Update(threadDomain)
+	result, err := tc.threadUseCase.UserUpdate(threadDomain)
 
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -384,13 +466,35 @@ func (tc *ThreadController) AdminUpdate(c echo.Context) error {
 		})
 	}
 
-	deletedThread, err := tc.threadUseCase.AdminDelete(threadID)
+	threadInput := request.Thread{}
+	c.Bind(&threadInput)
+
+	if err := threadInput.Validate(); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "validation failed",
+			Data:    err,
+		})
+	}
+
+	topicID, err := primitive.ObjectIDFromHex(threadInput.TopicID)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "invalid topic id",
+			Data:    nil,
+		})
+	}
+
+	threadDomain := threadInput.ToDomain()
+	threadDomain.Id = threadID
+	threadDomain.TopicID = topicID
+
+	result, err := tc.threadUseCase.AdminUpdate(threadDomain)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if strings.Contains(err.Error(), "failed to get") {
 			statusCode = http.StatusNotFound
-		} else if strings.Contains(err.Error(), "user are not the thread creator") {
-			statusCode = http.StatusForbidden
 		}
 
 		return c.JSON(statusCode, helper.BaseResponse{
@@ -400,7 +504,7 @@ func (tc *ThreadController) AdminUpdate(c echo.Context) error {
 		})
 	}
 
-	responseThread, err := tc.threadUseCase.DomainToResponse(deletedThread)
+	responseThread, err := tc.threadUseCase.DomainToResponse(result)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,
@@ -411,7 +515,7 @@ func (tc *ThreadController) AdminUpdate(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
-		Message: "success to delete thread",
+		Message: "success to update thread",
 		Data: map[string]interface{}{
 			"thread": responseThread,
 		},

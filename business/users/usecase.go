@@ -86,7 +86,7 @@ func (uu *UserUseCase) Login(domain *Domain) (Domain, string, error) {
 	return user, token, nil
 }
 
-func (uu *UserUseCase) GetWithSortAndOrder(pagination dtoPagination.Request) ([]Domain, int, int, error) {
+func (uu *UserUseCase) GetManyWithPagination(pagination dtoPagination.Request, domain *Domain) ([]Domain, int, int, error) {
 	skip := pagination.Limit * (pagination.Page - 1)
 	var orderInMongo int
 
@@ -97,14 +97,13 @@ func (uu *UserUseCase) GetWithSortAndOrder(pagination dtoPagination.Request) ([]
 	}
 
 	query := dtoQuery.Request{
-		Skip:   skip,
-		Limit:  pagination.Limit,
-		Order:  orderInMongo,
-		Sort:   pagination.Sort,
-		Filter: pagination.Filter,
+		Skip:  skip,
+		Limit: pagination.Limit,
+		Order: orderInMongo,
+		Sort:  pagination.Sort,
 	}
 
-	users, totalData, err := uu.userRepository.GetWithSortAndOrder(query)
+	users, totalData, err := uu.userRepository.GetManyWithPagination(query, domain)
 	if err != nil {
 		return []Domain{}, 0, 0, errors.New("failed to get users")
 	}

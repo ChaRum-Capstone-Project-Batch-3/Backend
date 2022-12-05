@@ -55,6 +55,12 @@ func (req *Thread) Validate() []helper.ValidationError {
 }
 
 type Filter struct {
-	Topic string `json:"topic"`
-	Title string `json:"title"`
+	TopicID string `json:"topicID"`
+	Title   string `json:"title"`
+}
+
+func (req *Filter) ToDomain() *threads.Domain {
+	return &threads.Domain{
+		Title: req.Title,
+	}
 }

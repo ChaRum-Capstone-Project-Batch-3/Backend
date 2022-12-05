@@ -47,6 +47,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	topic.GET("/:topic-id", cl.TopicController.GetByID)
 
 	thread := apiV1.Group("/thread")
+	thread.GET("", cl.ThreadController.GetManyByToken, authMiddleware.Check)
 	thread.POST("", cl.ThreadController.Create, authMiddleware.Check)
 	thread.GET("/:page", cl.ThreadController.GetManyWithPagination)
 
