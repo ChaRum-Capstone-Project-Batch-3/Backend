@@ -6,16 +6,11 @@ import (
 )
 
 type Bookmark struct {
-	Id        primitive.ObjectID   `json:"_id" bson:"_id"`
-	UserID    primitive.ObjectID   `json:"userId" bson:"userId"`
-	Threads   []primitive.ObjectID `json:"threads" bson:"threads"`
-	CreatedAt primitive.DateTime   `json:"createdAt" bson:"createdAt"`
-	UpdatedAt primitive.DateTime   `json:"updatedAt" bson:"updatedAt"`
-}
-
-type ThreadReturn struct {
-	Id    primitive.ObjectID `json:"_id" bson:"_id"`
-	Title string             `json:"title" bson:"title"`
+	Id        primitive.ObjectID `json:"_id" bson:"_id"`
+	UserID    primitive.ObjectID `json:"userId" bson:"userId"`
+	Threads   []bookmarks.Thread `json:"threads" bson:"threads"`
+	CreatedAt primitive.DateTime `json:"createdAt" bson:"createdAt"`
+	UpdatedAt primitive.DateTime `json:"updatedAt" bson:"updatedAt"`
 }
 
 func FromDomain(domain *bookmarks.Domain) *Bookmark {
@@ -36,4 +31,12 @@ func (bookmark *Bookmark) ToDomain() bookmarks.Domain {
 		CreatedAt: bookmark.CreatedAt,
 		UpdatedAt: bookmark.UpdatedAt,
 	}
+}
+
+func ToArrayDomain(data []Bookmark) []bookmarks.Domain {
+	var result []bookmarks.Domain
+	for _, v := range data {
+		result = append(result, v.ToDomain())
+	}
+	return result
 }

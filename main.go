@@ -54,6 +54,10 @@ func main() {
 	bookmarkUsecase := _bookmarkUseCase.NewBookmarkUseCase(bookmarkRepository, threadRepository, userRepository)
 	bookmarkController := _bookmarkController.NewBookmarkController(bookmarkUsecase)
 
+	bookmarkRepository := _driver.NewBookmarkRepository(database)
+	bookmarkUsecase := _bookmarkUseCase.NewBookmarkUseCase(bookmarkRepository, threadRepository, userRepository)
+	bookmarkController := _bookmarkController.NewBookmarkController(bookmarkUsecase)
+
 	routeController := _route.ControllerList{
 		UserRepository:     userRepository,
 		CommentController:  commentController,

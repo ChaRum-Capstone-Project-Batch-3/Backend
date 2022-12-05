@@ -13,7 +13,7 @@ type bookmarkRepository struct {
 	collection *mongo.Collection
 }
 
-func NewMongoRepository(db *mongo.Database) *bookmarkRepository {
+func NewMongoRepository(db *mongo.Database) bookmarks.Repository {
 	return &bookmarkRepository{
 		collection: db.Collection("bookmarks"),
 	}
@@ -56,46 +56,6 @@ func (br *bookmarkRepository) GetByID(id primitive.ObjectID) (bookmarks.Domain, 
 	if err != nil {
 		return bookmarks.Domain{}, err
 	}
+
 	return result.ToDomain(), nil
-}
-
-// update
-func (br *bookmarkRepository) UpdateBookmark(domain *bookmarks.Domain) (bookmarks.Domain, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	defer cancel()
-
-	// only update threads & updatedAt
-	_, err := br.collection.UpdateOne(ctx, bson.M{
-		"_id": domain.Id,
-	}, bson.M{
-		"$set": FromDomain(domain),
-	})
-
-	if err != nil {
-		return bookmarks.Domain{}, err
-	}
-
-	// return data
-	result, err := br.GetByID(domain.UserID)
-	if err != nil {
-		return bookmarks.Domain{}, err
-	}
-
-	return result, err
-}
-
-// get all bookmark by user id
-func (br *bookmarkRepository) GetAllBookmark(userID primitive.ObjectID) ([]primitive.ObjectID, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	defer cancel()
-
-	var result Bookmark
-	err := br.collection.FindOne(ctx, bson.M{
-		"userId": userID,
-	}).Decode(&result)
-	if err != nil {
-		return []primitive.ObjectID{}, err
-	}
-
-	return result.Threads, nil
 }
