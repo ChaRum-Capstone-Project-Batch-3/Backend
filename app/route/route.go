@@ -3,7 +3,9 @@ package route
 import (
 	_middleware "charum/app/middleware"
 	"charum/controller/bookmarks"
+
 	_usersDomain "charum/business/users"
+
 	"charum/controller/comments"
 	"charum/controller/threads"
 	"charum/controller/topics"
@@ -14,17 +16,13 @@ import (
 )
 
 type ControllerList struct {
+	BookmarkController *bookmarks.BookmarkController
 	LoggerMiddleware   echo.MiddlewareFunc
+	UserRepository     _usersDomain.Repository
 	UserController     *users.UserController
 	TopicController    *topics.TopicController
 	ThreadController   *threads.ThreadController
-	BookmarkController *bookmarks.BookmarkController
-	LoggerMiddleware  echo.MiddlewareFunc
-	UserRepository    _usersDomain.Repository
-	UserController    *users.UserController
-	TopicController   *topics.TopicController
-	ThreadController  *threads.ThreadController
-	CommentController *comments.CommentController
+	CommentController  *comments.CommentController
 }
 
 func (cl *ControllerList) Init(e *echo.Echo) {

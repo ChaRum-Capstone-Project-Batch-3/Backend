@@ -22,8 +22,10 @@ import (
 
 	_bookmarkUseCase "charum/business/bookmarks"
 	_bookmarkController "charum/controller/bookmarks"
+
 	_commentUseCase "charum/business/comments"
 	_commentController "charum/controller/comments"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -48,20 +50,13 @@ func main() {
 	threadController := _threadController.NewThreadController(threadUsecase, commentUsecase)
 	commentController := _commentController.NewCommentController(commentUsecase)
 
-	threadRepository := _driver.NewThreadRepository(database)
-	threadUsecase := _threadUseCase.NewThreadUseCase(threadRepository, topicRepository, userRepository)
-	threadController := _threadController.NewThreadController(threadUsecase)
-
 	bookmarkRepository := _driver.NewBookmarkRepository(database)
 	bookmarkUsecase := _bookmarkUseCase.NewBookmarkUseCase(bookmarkRepository, threadRepository, userRepository)
 	bookmarkController := _bookmarkController.NewBookmarkController(bookmarkUsecase)
 
 	routeController := _route.ControllerList{
-		UserRepository:    userRepository,
-		UserController:    userController,
-		TopicController:   topicController,
-		ThreadController:  threadController,
-		CommentController: commentController,
+		UserRepository:     userRepository,
+		CommentController:  commentController,
 		UserController:     userController,
 		TopicController:    topicController,
 		ThreadController:   threadController,

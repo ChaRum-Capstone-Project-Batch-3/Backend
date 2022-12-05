@@ -41,7 +41,6 @@ func (uu *UserUseCase) Register(domain *Domain) (Domain, string, error) {
 
 	domain.Id = primitive.NewObjectID()
 	domain.Password = string(encryptedPassword)
-	domain.BookmarkID = primitive.NewObjectID()
 	domain.Role = "user"
 	domain.IsActive = true
 	domain.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
