@@ -3,7 +3,7 @@ package comments
 import (
 	"charum/business/threads"
 	"charum/business/users"
-	"charum/dto"
+	dtoComment "charum/dto/comments"
 	"errors"
 	"time"
 
@@ -69,12 +69,12 @@ func (cu *CommentUseCase) GetByThreadID(threadID primitive.ObjectID) ([]Domain, 
 	return comments, nil
 }
 
-func (cu *CommentUseCase) DomainToResponse(comment Domain) (dto.ResponseComment, error) {
-	responseComment := dto.ResponseComment{}
+func (cu *CommentUseCase) DomainToResponse(comment Domain) (dtoComment.Response, error) {
+	responseComment := dtoComment.Response{}
 
 	user, err := cu.userRepository.GetByID(comment.UserID)
 	if err != nil {
-		return dto.ResponseComment{}, errors.New("failed to get user")
+		return dtoComment.Response{}, errors.New("failed to get user")
 	}
 
 	responseComment.Id = comment.Id
@@ -87,19 +87,33 @@ func (cu *CommentUseCase) DomainToResponse(comment Domain) (dto.ResponseComment,
 	return responseComment, nil
 }
 
-func (cu *CommentUseCase) DomainToResponseArray(comments []Domain) ([]dto.ResponseComment, error) {
-	responseComments := []dto.ResponseComment{}
+func (cu *CommentUseCase) DomainToResponseArray(comments []Domain) ([]dtoComment.Response, error) {
+	responseComments := []dtoComment.Response{}
 
 	for _, comment := range comments {
 		responseComment, err := cu.DomainToResponse(comment)
 		if err != nil {
-			return []dto.ResponseComment{}, errors.New("failed to get response comment")
+			return []dtoComment.Response{}, errors.New("failed to get response comment")
 		}
 
 		responseComments = append(responseComments, responseComment)
 	}
 
 	return responseComments, nil
+}
+
+func (cu *CommentUseCase) CountByThreadID(threadID primitive.ObjectID) (int, error) {
+	_, err := cu.threadRepository.GetByID(threadID)
+	if err != nil {
+		return 0, errors.New("failed to get thread")
+	}
+
+	count, err := cu.commentRepository.CountByThreadID(threadID)
+	if err != nil {
+		return 0, errors.New("failed to count comments")
+	}
+
+	return count, nil
 }
 
 /*
@@ -113,7 +127,7 @@ func (cu *CommentUseCase) Update(domain *Domain) (Domain, error) {
 	}
 
 	if comment.UserID != domain.UserID {
-		return Domain{}, errors.New("you are not the owner of this comment")
+		return Domain{}, errors.New("user are not the owner of this comment")
 	}
 
 	_, err = cu.threadRepository.GetByID(comment.ThreadID)
@@ -143,7 +157,7 @@ func (cu *CommentUseCase) Delete(id primitive.ObjectID, userID primitive.ObjectI
 	}
 
 	if comment.UserID != userID {
-		return Domain{}, errors.New("you are not the owner of this comment")
+		return Domain{}, errors.New("user are not the owner of this comment")
 	}
 
 	_, err = cu.threadRepository.GetByID(comment.ThreadID)
@@ -157,4 +171,22 @@ func (cu *CommentUseCase) Delete(id primitive.ObjectID, userID primitive.ObjectI
 	}
 
 	return comment, nil
+}
+
+func (cu *CommentUseCase) DeleteAllByUserID(userID primitive.ObjectID) error {
+	err := cu.commentRepository.DeleteAllByUserID(userID)
+	if err != nil {
+		return errors.New("failed to delete user's comments")
+	}
+
+	return nil
+}
+
+func (cu *CommentUseCase) DeleteAllByThreadID(threadID primitive.ObjectID) error {
+	err := cu.commentRepository.DeleteAllByThreadID(threadID)
+	if err != nil {
+		return errors.New("failed to delete thread's comments")
+	}
+
+	return nil
 }

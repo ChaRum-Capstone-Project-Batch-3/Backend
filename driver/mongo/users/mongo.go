@@ -2,6 +2,7 @@ package users
 
 import (
 	"charum/business/users"
+	dtoQuery "charum/dto/query"
 	"context"
 	"time"
 
@@ -85,26 +86,39 @@ func (ur *userRepository) GetByUsername(username string) (users.Domain, error) {
 	return result.ToDomain(), err
 }
 
-func (ur *userRepository) GetWithSortAndOrder(skip int, limit int, sort string, order int) ([]users.Domain, int, error) {
+func (ur *userRepository) GetManyWithPagination(query dtoQuery.Request, domain *users.Domain) ([]users.Domain, int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
-	skip64 := int64(skip)
-	limit64 := int64(limit)
+	skip64 := int64(query.Skip)
+	limit64 := int64(query.Limit)
 
 	var result []Model
+	filter := bson.M{}
 
-	cursor, err := ur.collection.Find(ctx, bson.M{}, &options.FindOptions{
+	if domain.Email != "" {
+		filter["email"] = bson.M{"$regex": domain.Email}
+	}
+
+	if domain.UserName != "" {
+		filter["userName"] = bson.M{"$regex": domain.UserName}
+	}
+
+	if domain.DisplayName != "" {
+		filter["displayName"] = bson.M{"$regex": domain.DisplayName}
+	}
+
+	cursor, err := ur.collection.Find(ctx, filter, &options.FindOptions{
 		Skip:  &skip64,
 		Limit: &limit64,
-		Sort:  bson.M{sort: order},
+		Sort:  bson.M{query.Sort: query.Order},
 	})
 	if err != nil {
 		return []users.Domain{}, 0, err
 	}
 
 	// count total data in collection
-	totalData, err := ur.collection.CountDocuments(ctx, bson.M{})
+	totalData, err := ur.collection.CountDocuments(ctx, filter)
 	if err != nil {
 		return []users.Domain{}, 0, err
 	}

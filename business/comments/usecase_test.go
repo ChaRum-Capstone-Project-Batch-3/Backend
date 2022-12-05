@@ -225,6 +225,36 @@ func TestUpdate(t *testing.T) {
 	})
 }
 
+func TestCountByThreadID(t *testing.T) {
+	t.Run("Test case 1 | Valid count by thread id", func(t *testing.T) {
+		threadRepository.On("GetByID", commentDomain.ThreadID).Return(threadDomain, nil).Once()
+		commentRepository.On("CountByThreadID", commentDomain.ThreadID).Return(1, nil).Once()
+
+		actualComment, err := commentUseCase.CountByThreadID(commentDomain.ThreadID)
+
+		assert.Nil(t, err)
+		assert.NotZero(t, actualComment)
+	})
+
+	t.Run("Test case 2 | Invalid count by thread id | Failed To Get Thread", func(t *testing.T) {
+		expectedErr := errors.New("failed to get thread")
+		threadRepository.On("GetByID", commentDomain.ThreadID).Return(threads.Domain{}, expectedErr).Once()
+
+		actualComment, err := commentUseCase.CountByThreadID(commentDomain.ThreadID)
+		assert.NotNil(t, err)
+		assert.Zero(t, actualComment)
+	})
+
+	t.Run("Test case 3 | Invalid count by thread id | Failed To Count Comment", func(t *testing.T) {
+		expectedErr := errors.New("failed to count comment")
+		threadRepository.On("GetByID", commentDomain.ThreadID).Return(threadDomain, nil).Once()
+		commentRepository.On("CountByThreadID", commentDomain.ThreadID).Return(0, expectedErr).Once()
+
+		_, err := commentUseCase.CountByThreadID(commentDomain.ThreadID)
+		assert.NotNil(t, err)
+	})
+}
+
 func TestDelete(t *testing.T) {
 	t.Run("Test case 1 | Valid delete", func(t *testing.T) {
 		commentRepository.On("GetByID", commentDomain.Id).Return(commentDomain, nil).Once()
@@ -271,6 +301,42 @@ func TestDelete(t *testing.T) {
 		commentRepository.On("GetByID", commentDomain.Id).Return(commentDomain, nil).Once()
 
 		_, err := commentUseCase.Delete(commentDomain.Id, copyComment.UserID)
+		assert.NotNil(t, err)
+	})
+}
+
+func TestDeleteAllByUserID(t *testing.T) {
+	t.Run("Test case 1 | Valid delete all by user id", func(t *testing.T) {
+		commentRepository.On("DeleteAllByUserID", commentDomain.UserID).Return(nil).Once()
+
+		err := commentUseCase.DeleteAllByUserID(commentDomain.UserID)
+
+		assert.Nil(t, err)
+	})
+
+	t.Run("Test case 2 | Invalid delete all by user id | Failed To Delete All Comment By User ID", func(t *testing.T) {
+		expectedErr := errors.New("failed to delete all comment by user id")
+		commentRepository.On("DeleteAllByUserID", commentDomain.UserID).Return(expectedErr).Once()
+
+		err := commentUseCase.DeleteAllByUserID(commentDomain.UserID)
+		assert.NotNil(t, err)
+	})
+}
+
+func TestDeleteALlByThreadID(t *testing.T) {
+	t.Run("Test case 1 | Valid delete all by thread id", func(t *testing.T) {
+		commentRepository.On("DeleteAllByThreadID", commentDomain.ThreadID).Return(nil).Once()
+
+		err := commentUseCase.DeleteAllByThreadID(commentDomain.ThreadID)
+
+		assert.Nil(t, err)
+	})
+
+	t.Run("Test case 2 | Invalid delete all by thread id | Failed To Delete All Comment By Thread ID", func(t *testing.T) {
+		expectedErr := errors.New("failed to delete all comment by thread id")
+		commentRepository.On("DeleteAllByThreadID", commentDomain.ThreadID).Return(expectedErr).Once()
+
+		err := commentUseCase.DeleteAllByThreadID(commentDomain.ThreadID)
 		assert.NotNil(t, err)
 	})
 }

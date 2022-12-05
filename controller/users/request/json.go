@@ -14,6 +14,8 @@ type Register struct {
 	Email       string `json:"email" validate:"required,email" bson:"email"`
 	UserName    string `json:"userName" validate:"required" bson:"userName"`
 	DisplayName string `json:"displayName" validate:"required" bson:"displayName"`
+	Biodata     string `json:"biodata" bson:"biodata"`
+	SocialMedia string `json:"socialMedia" bson:"socialMedia"`
 	Password    string `json:"password" validate:"required,min=8,containsany=ABCDEFGHIJKLMNOPQRSTUVWXYZ,containsany=!@#$%^&*,containsany=abcdefghijklmnopqrstuvwxyz,containsany=0123456789" bson:"password"`
 }
 
@@ -22,6 +24,8 @@ func (req *Register) ToDomain() *users.Domain {
 		Email:       req.Email,
 		UserName:    req.UserName,
 		DisplayName: req.DisplayName,
+		Biodata:     req.Biodata,
+		SocialMedia: req.SocialMedia,
 		Password:    req.Password,
 	}
 }
@@ -58,13 +62,13 @@ func (req *Register) Validate() []helper.ValidationError {
 }
 
 type Login struct {
-	Email    string `json:"email" validate:"required,email" bson:"email"`
+	Key      string `json:"key" validate:"required" bson:"key"`
 	Password string `json:"password" validate:"required,min=8,containsany=ABCDEFGHIJKLMNOPQRSTUVWXYZ,containsany=!@#$%^&*,containsany=abcdefghijklmnopqrstuvwxyz,containsany=0123456789" bson:"password"`
 }
 
 func (req *Login) ToDomain() *users.Domain {
 	return &users.Domain{
-		Email:    req.Email,
+		Email:    req.Key,
 		Password: req.Password,
 	}
 }
@@ -104,7 +108,8 @@ type Update struct {
 	Email       string `json:"email" validate:"required,email" bson:"email"`
 	UserName    string `json:"userName" validate:"required" bson:"userName"`
 	DisplayName string `json:"displayName" validate:"required" bson:"displayName"`
-	IsActive    bool   `json:"isActive" bson:"isActive"`
+	Biodata     string `json:"biodata" bson:"biodata"`
+	SocialMedia string `json:"socialMedia" bson:"socialMedia"`
 }
 
 func (req *Update) ToDomain() *users.Domain {
@@ -112,7 +117,8 @@ func (req *Update) ToDomain() *users.Domain {
 		Email:       req.Email,
 		UserName:    req.UserName,
 		DisplayName: req.DisplayName,
-		IsActive:    req.IsActive,
+		Biodata:     req.Biodata,
+		SocialMedia: req.SocialMedia,
 	}
 }
 
@@ -145,4 +151,18 @@ func (req *Update) Validate() []helper.ValidationError {
 	}
 
 	return nil
+}
+
+type Filter struct {
+	Email       string `json:"email" bson:"email"`
+	UserName    string `json:"userName" bson:"userName"`
+	DisplayName string `json:"displayName" bson:"displayName"`
+}
+
+func (req *Filter) ToDomain() *users.Domain {
+	return &users.Domain{
+		Email:       req.Email,
+		UserName:    req.UserName,
+		DisplayName: req.DisplayName,
+	}
 }

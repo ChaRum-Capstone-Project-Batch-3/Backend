@@ -15,6 +15,27 @@ type Repository struct {
 	mock.Mock
 }
 
+// CountByThreadID provides a mock function with given fields: threadID
+func (_m *Repository) CountByThreadID(threadID primitive.ObjectID) (int, error) {
+	ret := _m.Called(threadID)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID) int); ok {
+		r0 = rf(threadID)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(primitive.ObjectID) error); ok {
+		r1 = rf(threadID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Create provides a mock function with given fields: domain
 func (_m *Repository) Create(domain *comments.Domain) (comments.Domain, error) {
 	ret := _m.Called(domain)
@@ -43,6 +64,34 @@ func (_m *Repository) Delete(id primitive.ObjectID) error {
 	var r0 error
 	if rf, ok := ret.Get(0).(func(primitive.ObjectID) error); ok {
 		r0 = rf(id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// DeleteAllByThreadID provides a mock function with given fields: threadID
+func (_m *Repository) DeleteAllByThreadID(threadID primitive.ObjectID) error {
+	ret := _m.Called(threadID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID) error); ok {
+		r0 = rf(threadID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// DeleteAllByUserID provides a mock function with given fields: userID
+func (_m *Repository) DeleteAllByUserID(userID primitive.ObjectID) error {
+	ret := _m.Called(userID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID) error); ok {
+		r0 = rf(userID)
 	} else {
 		r0 = ret.Error(0)
 	}

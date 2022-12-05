@@ -3,7 +3,9 @@ package threads
 import (
 	"charum/business/topics"
 	"charum/business/users"
-	"charum/dto"
+	dtoPagination "charum/dto/pagination"
+	dtoQuery "charum/dto/query"
+	dtoThread "charum/dto/threads"
 	"errors"
 	"math"
 	"time"
@@ -52,22 +54,36 @@ func (tu *ThreadUseCase) Create(domain *Domain) (Domain, error) {
 Read
 */
 
-func (tu *ThreadUseCase) GetWithSortAndOrder(page int, limit int, sort string, order string) ([]Domain, int, int, error) {
-	skip := limit * (page - 1)
+func (tu *ThreadUseCase) GetManyWithPagination(pagination dtoPagination.Request, domain *Domain) ([]Domain, int, int, error) {
+	skip := pagination.Limit * (pagination.Page - 1)
 	var orderInMongo int
 
-	if order == "asc" {
+	if pagination.Order == "asc" {
 		orderInMongo = 1
 	} else {
 		orderInMongo = -1
 	}
 
-	threads, totalData, err := tu.threadRepository.GetWithSortAndOrder(skip, limit, sort, orderInMongo)
+	query := dtoQuery.Request{
+		Skip:  skip,
+		Limit: pagination.Limit,
+		Order: orderInMongo,
+		Sort:  pagination.Sort,
+	}
+
+	if domain.TopicID != primitive.NilObjectID {
+		_, err := tu.topicRepository.GetByID(domain.TopicID)
+		if err != nil {
+			return []Domain{}, 0, 0, errors.New("failed to get topic")
+		}
+	}
+
+	threads, totalData, err := tu.threadRepository.GetManyWithPagination(query, domain)
 	if err != nil {
 		return []Domain{}, 0, 0, errors.New("failed to get threads")
 	}
 
-	totalPage := math.Ceil(float64(totalData) / float64(limit))
+	totalPage := math.Ceil(float64(totalData) / float64(pagination.Limit))
 
 	return threads, int(totalPage), totalData, nil
 }
@@ -81,20 +97,38 @@ func (tu *ThreadUseCase) GetByID(id primitive.ObjectID) (Domain, error) {
 	return thread, nil
 }
 
-func (tu *ThreadUseCase) DomainToResponse(domain Domain) (dto.ResponseThread, error) {
-	creator, err := tu.userRepository.GetByID(domain.CreatorID)
+func (tu *ThreadUseCase) GetAllByTopicID(topicID primitive.ObjectID) ([]Domain, error) {
+	threads, err := tu.threadRepository.GetAllByTopicID(topicID)
 	if err != nil {
-		return dto.ResponseThread{}, errors.New("failed to get creator")
+		return []Domain{}, errors.New("failed to get threads")
 	}
 
-	likes := []dto.Like{}
+	return threads, nil
+}
+
+func (tu *ThreadUseCase) GetAllByUserID(userID primitive.ObjectID) ([]Domain, error) {
+	threads, err := tu.threadRepository.GetAllByUserID(userID)
+	if err != nil {
+		return []Domain{}, errors.New("failed to get threads")
+	}
+
+	return threads, nil
+}
+
+func (tu *ThreadUseCase) DomainToResponse(domain Domain) (dtoThread.Response, error) {
+	creator, err := tu.userRepository.GetByID(domain.CreatorID)
+	if err != nil {
+		return dtoThread.Response{}, errors.New("failed to get creator")
+	}
+
+	likes := []dtoThread.Like{}
 	for _, like := range domain.Likes {
 		user, err := tu.userRepository.GetByID(like.UserID)
 		if err != nil {
-			return dto.ResponseThread{}, err
+			return dtoThread.Response{}, errors.New("failed to get user who like thread")
 		}
 
-		likes = append(likes, dto.Like{
+		likes = append(likes, dtoThread.Like{
 			User:      user,
 			CreatedAt: domain.CreatedAt,
 		})
@@ -102,10 +136,10 @@ func (tu *ThreadUseCase) DomainToResponse(domain Domain) (dto.ResponseThread, er
 
 	topic, err := tu.topicRepository.GetByID(domain.TopicID)
 	if err != nil {
-		return dto.ResponseThread{}, errors.New("failed to get topic")
+		return dtoThread.Response{}, errors.New("failed to get topic")
 	}
 
-	return dto.ResponseThread{
+	return dtoThread.Response{
 		Id:            domain.Id,
 		Topic:         topic,
 		Creator:       creator,
@@ -120,12 +154,12 @@ func (tu *ThreadUseCase) DomainToResponse(domain Domain) (dto.ResponseThread, er
 	}, nil
 }
 
-func (tu *ThreadUseCase) DomainsToResponseArray(domains []Domain) ([]dto.ResponseThread, error) {
-	var responses []dto.ResponseThread
+func (tu *ThreadUseCase) DomainsToResponseArray(domains []Domain) ([]dtoThread.Response, error) {
+	var responses []dtoThread.Response
 	for _, domain := range domains {
 		response, err := tu.DomainToResponse(domain)
 		if err != nil {
-			return []dto.ResponseThread{}, errors.New("failed to get thread")
+			return []dtoThread.Response{}, errors.New("failed to get thread")
 		}
 
 		responses = append(responses, response)
@@ -138,7 +172,7 @@ func (tu *ThreadUseCase) DomainsToResponseArray(domains []Domain) ([]dto.Respons
 Update
 */
 
-func (tu *ThreadUseCase) Update(domain *Domain) (Domain, error) {
+func (tu *ThreadUseCase) UserUpdate(domain *Domain) (Domain, error) {
 	_, err := tu.topicRepository.GetByID(domain.TopicID)
 	if err != nil {
 		return Domain{}, errors.New("failed to get topic")
@@ -149,15 +183,11 @@ func (tu *ThreadUseCase) Update(domain *Domain) (Domain, error) {
 		return Domain{}, errors.New("failed to get thread")
 	}
 
-	user, err := tu.userRepository.GetByID(domain.CreatorID)
-	if err != nil {
-		return Domain{}, errors.New("failed to get user")
+	if thread.CreatorID != domain.CreatorID {
+		return Domain{}, errors.New("user are not the thread creator")
 	}
 
-	if user.Role != "admin" && thread.CreatorID != domain.CreatorID {
-		return Domain{}, errors.New("you are not the thread creator")
-	}
-
+	thread.TopicID = domain.TopicID
 	thread.Title = domain.Title
 	thread.Description = domain.Description
 	thread.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
@@ -170,6 +200,45 @@ func (tu *ThreadUseCase) Update(domain *Domain) (Domain, error) {
 	return updatedThread, nil
 }
 
+func (tu *ThreadUseCase) AdminUpdate(domain *Domain) (Domain, error) {
+	_, err := tu.topicRepository.GetByID(domain.TopicID)
+	if err != nil {
+		return Domain{}, errors.New("failed to get topic")
+	}
+
+	thread, err := tu.threadRepository.GetByID(domain.Id)
+	if err != nil {
+		return Domain{}, errors.New("failed to get thread")
+	}
+
+	thread.TopicID = domain.TopicID
+	thread.Title = domain.Title
+	thread.Description = domain.Description
+	thread.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
+
+	updatedThread, err := tu.threadRepository.Update(&thread)
+	if err != nil {
+		return Domain{}, errors.New("failed to update thread")
+	}
+
+	return updatedThread, nil
+}
+
+func (tu *ThreadUseCase) SuspendByUserID(userID primitive.ObjectID) error {
+	domain := Domain{
+		CreatorID:     userID,
+		SuspendStatus: "user suspend",
+		SuspendDetail: "user is violate the rules",
+	}
+
+	err := tu.threadRepository.SuspendByUserID(&domain)
+	if err != nil {
+		return errors.New("failed to suspend user threads")
+	}
+
+	return nil
+}
+
 /*
 Delete
 */
@@ -180,13 +249,45 @@ func (tu *ThreadUseCase) Delete(userID primitive.ObjectID, threadID primitive.Ob
 		return Domain{}, errors.New("failed to get thread")
 	}
 
-	user, err := tu.userRepository.GetByID(userID)
+	_, err = tu.userRepository.GetByID(userID)
 	if err != nil {
 		return Domain{}, errors.New("failed to get user")
 	}
 
-	if user.Role != "admin" && thread.CreatorID != userID {
-		return Domain{}, errors.New("you are not the thread creator")
+	if thread.CreatorID != userID {
+		return Domain{}, errors.New("user are not the thread creator")
+	}
+
+	err = tu.threadRepository.Delete(threadID)
+	if err != nil {
+		return Domain{}, errors.New("failed to delete thread")
+	}
+
+	return thread, nil
+}
+
+func (tu *ThreadUseCase) DeleteAllByUserID(userID primitive.ObjectID) error {
+	err := tu.threadRepository.DeleteAllByUserID(userID)
+	if err != nil {
+		return errors.New("failed to delete user threads")
+	}
+
+	return nil
+}
+
+func (tu *ThreadUseCase) DeleteByThreadID(threadID primitive.ObjectID) error {
+	err := tu.threadRepository.Delete(threadID)
+	if err != nil {
+		return errors.New("failed to delete thread")
+	}
+
+	return nil
+}
+
+func (tu *ThreadUseCase) AdminDelete(threadID primitive.ObjectID) (Domain, error) {
+	thread, err := tu.threadRepository.GetByID(threadID)
+	if err != nil {
+		return Domain{}, errors.New("failed to get thread")
 	}
 
 	err = tu.threadRepository.Delete(threadID)

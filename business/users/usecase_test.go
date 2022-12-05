@@ -3,6 +3,8 @@ package users_test
 import (
 	"charum/business/users"
 	_userMock "charum/business/users/mocks"
+	dtoPagination "charum/dto/pagination"
+	dtoQuery "charum/dto/query"
 	"errors"
 	"testing"
 	"time"
@@ -25,7 +27,7 @@ func TestMain(m *testing.M) {
 	userDomain = users.Domain{
 		Id:        primitive.NewObjectID(),
 		Email:     "test@charum.com",
-		Password:  "test123",
+		Password:  "!Test123",
 		UserName:  "tester",
 		Role:      "user",
 		IsActive:  true,
@@ -91,57 +93,99 @@ func TestLogin(t *testing.T) {
 		copyDomain := userDomain
 		encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte(copyDomain.Password), bcrypt.DefaultCost)
 		copyDomain.Password = string(encryptedPassword)
+		userRepository.On("GetByEmail", copyDomain.Email).Return(copyDomain, nil).Once()
 
+		actualUser, token, err := userUseCase.Login(&userDomain)
+
+		assert.NotNil(t, actualUser)
+		assert.NotEmpty(t, token)
+		assert.Nil(t, err)
+	})
+
+	t.Run("Test Case 2 | Invalid Login | Wrong Password", func(t *testing.T) {
+		expectedErr := errors.New("wrong password")
+		copyDomain := userDomain
+		copyDomain.Password = "wrong password"
+		userRepository.On("GetByEmail", copyDomain.Email).Return(copyDomain, nil).Once()
+
+		actualUser, token, err := userUseCase.Login(&userDomain)
+
+		assert.Equal(t, users.Domain{}, actualUser)
+		assert.Empty(t, token)
+		assert.Equal(t, expectedErr, err)
+	})
+
+	t.Run("Test Case 3 | Invalid Login | Email or username is not registered", func(t *testing.T) {
+		expectedErr := errors.New("email or username is not registered")
+		userRepository.On("GetByEmail", userDomain.Email).Return(users.Domain{}, expectedErr).Once()
+		userRepository.On("GetByUsername", userDomain.Email).Return(users.Domain{}, expectedErr).Once()
+
+		actualUser, token, err := userUseCase.Login(&userDomain)
+
+		assert.Equal(t, users.Domain{}, actualUser)
+		assert.Empty(t, token)
+		assert.Equal(t, expectedErr, err)
+	})
+
+	t.Run("Test Case 4 | Invalid Login | User is suspended", func(t *testing.T) {
+		expectedErr := errors.New("user is suspended")
+		copyDomain := userDomain
+		copyDomain.IsActive = false
 		userRepository.On("GetByEmail", userDomain.Email).Return(copyDomain, nil).Once()
 
-		actualUsers, token, actualErr := userUseCase.Login(&userDomain)
+		actualUser, token, err := userUseCase.Login(&userDomain)
 
-		assert.NotNil(t, actualUsers)
-		assert.NotEmpty(t, token)
-		assert.Nil(t, actualErr)
-	})
-
-	t.Run("Test Case 2 | Invalid Login | Email not found", func(t *testing.T) {
-		expectedErr := errors.New("email is not registered")
-		userRepository.On("GetByEmail", userDomain.Email).Return(users.Domain{}, expectedErr).Once()
-
-		actualUsers, token, err := userUseCase.Login(&userDomain)
-
-		assert.Equal(t, users.Domain{}, actualUsers)
+		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Empty(t, token)
-		assert.Equal(t, err, expectedErr)
-	})
-
-	t.Run("Test Case 3 | Invalid Login | Wrong password", func(t *testing.T) {
-		expectedErr := errors.New("wrong password")
-		userRepository.On("GetByEmail", userDomain.Email).Return(userDomain, nil).Once()
-
-		actualUsers, token, actualErr := userUseCase.Login(&userDomain)
-
-		assert.Equal(t, users.Domain{}, actualUsers)
-		assert.Empty(t, token)
-		assert.Equal(t, actualErr, expectedErr)
+		assert.Equal(t, expectedErr, err)
 	})
 }
 
 func TestGetWithSortAndOrder(t *testing.T) {
 	t.Run("Test Case 1 | Valid Get Users", func(t *testing.T) {
-		userRepository.On("GetWithSortAndOrder", 0, 1, "createdAt", -1).Return([]users.Domain{userDomain}, 1, nil).Once()
+		query := dtoQuery.Request{
+			Skip:  0,
+			Limit: 1,
+			Sort:  "createdAt",
+			Order: -1,
+		}
+		userRepository.On("GetManyWithPagination", query, &userDomain).Return([]users.Domain{userDomain}, 1, nil).Once()
 
-		actualUsers, totalData, actualErr := userUseCase.GetWithSortAndOrder(1, 1, "createdAt", "desc")
+		pagination := dtoPagination.Request{
+			Page:  1,
+			Limit: 1,
+			Sort:  "createdAt",
+			Order: "desc",
+		}
+		actualUsers, totalPage, totalData, actualErr := userUseCase.GetManyWithPagination(pagination, &userDomain)
 
 		assert.NotZero(t, totalData)
+		assert.NotZero(t, totalPage)
 		assert.NotNil(t, actualUsers)
 		assert.Nil(t, actualErr)
 	})
 
 	t.Run("Test Case 2 | Invalid Get Users | Error when getting users", func(t *testing.T) {
 		expectedErr := errors.New("failed to get users")
-		userRepository.On("GetWithSortAndOrder", 0, 1, "createdAt", 1).Return([]users.Domain{}, 1, expectedErr).Once()
 
-		actualUsers, totalData, actualErr := userUseCase.GetWithSortAndOrder(1, 1, "createdAt", "asc")
+		query := dtoQuery.Request{
+			Skip:  0,
+			Limit: 1,
+			Sort:  "createdAt",
+			Order: 1,
+		}
+		userRepository.On("GetManyWithPagination", query, &userDomain).Return([]users.Domain{}, 1, expectedErr).Once()
+
+		pagination := dtoPagination.Request{
+			Page:  1,
+			Limit: 1,
+			Sort:  "createdAt",
+			Order: "asc",
+		}
+		actualUsers, totalPage, totalData, actualErr := userUseCase.GetManyWithPagination(pagination, &userDomain)
 
 		assert.Zero(t, totalData)
+		assert.Zero(t, totalPage)
 		assert.Equal(t, []users.Domain{}, actualUsers)
 		assert.Equal(t, expectedErr, actualErr)
 	})
@@ -181,7 +225,7 @@ func TestUpdate(t *testing.T) {
 		userRepository.On("GetByUsername", copyDomain.UserName).Return(users.Domain{}, errors.New("not found")).Once()
 		userRepository.On("Update", mock.Anything).Return(copyDomain, nil).Once()
 
-		actualUser, actualErr := userUseCase.Update(copyDomain.Id, &copyDomain)
+		actualUser, actualErr := userUseCase.Update(&copyDomain)
 
 		assert.NotNil(t, actualUser)
 		assert.Nil(t, actualErr)
@@ -191,7 +235,7 @@ func TestUpdate(t *testing.T) {
 		expectedErr := errors.New("failed to get user")
 		userRepository.On("GetByID", userDomain.Id).Return(users.Domain{}, expectedErr).Once()
 
-		actualUser, actualErr := userUseCase.Update(userDomain.Id, &userDomain)
+		actualUser, actualErr := userUseCase.Update(&userDomain)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Equal(t, expectedErr, actualErr)
@@ -202,7 +246,7 @@ func TestUpdate(t *testing.T) {
 		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
 		userRepository.On("Update", mock.Anything).Return(users.Domain{}, expectedErr).Once()
 
-		actualUser, actualErr := userUseCase.Update(userDomain.Id, &userDomain)
+		actualUser, actualErr := userUseCase.Update(&userDomain)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Equal(t, expectedErr, actualErr)
@@ -215,7 +259,7 @@ func TestUpdate(t *testing.T) {
 		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
 		userRepository.On("GetByEmail", copyDomain.Email).Return(copyDomain, nil).Once()
 
-		actualUser, actualErr := userUseCase.Update(userDomain.Id, &copyDomain)
+		actualUser, actualErr := userUseCase.Update(&copyDomain)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Equal(t, expectedErr, actualErr)
@@ -229,7 +273,7 @@ func TestUpdate(t *testing.T) {
 		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
 		userRepository.On("GetByUsername", copyDomain.UserName).Return(copyDomain, nil).Once()
 
-		actualUser, actualErr := userUseCase.Update(userDomain.Id, &copyDomain)
+		actualUser, actualErr := userUseCase.Update(&copyDomain)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Equal(t, expectedErr, actualErr)

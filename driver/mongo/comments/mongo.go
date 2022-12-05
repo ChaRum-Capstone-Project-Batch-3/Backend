@@ -66,7 +66,6 @@ func (cr *commentRepository) GetByThreadID(threadID primitive.ObjectID) ([]comme
 	defer cancel()
 
 	var result []Model
-	// get commment by thread id sorted by createdAt descending
 	cursor, err := cr.collection.Find(ctx, bson.M{
 		"threadID": threadID,
 	}, &options.FindOptions{
@@ -83,6 +82,20 @@ func (cr *commentRepository) GetByThreadID(threadID primitive.ObjectID) ([]comme
 	}
 
 	return ToDomainArray(result), nil
+}
+
+func (cr *commentRepository) CountByThreadID(threadID primitive.ObjectID) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	count, err := cr.collection.CountDocuments(ctx, bson.M{
+		"threadID": threadID,
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	return int(count), nil
 }
 
 /*
@@ -120,6 +133,34 @@ func (cr *commentRepository) Delete(id primitive.ObjectID) error {
 
 	_, err := cr.collection.DeleteOne(ctx, bson.M{
 		"_id": id,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (cr *commentRepository) DeleteAllByUserID(userID primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	_, err := cr.collection.DeleteMany(ctx, bson.M{
+		"userID": userID,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (cr *commentRepository) DeleteAllByThreadID(threadID primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	_, err := cr.collection.DeleteMany(ctx, bson.M{
+		"threadID": threadID,
 	})
 	if err != nil {
 		return err

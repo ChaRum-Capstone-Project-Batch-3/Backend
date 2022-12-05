@@ -2,6 +2,7 @@ package comments
 
 import (
 	"charum/business/comments"
+	followThreads "charum/business/follow_threads"
 	"charum/controller/comments/request"
 	"charum/helper"
 	"charum/util"
@@ -12,12 +13,14 @@ import (
 )
 
 type CommentController struct {
-	CommentUseCase comments.UseCase
+	CommentUseCase      comments.UseCase
+	FollowThreadUseCase followThreads.UseCase
 }
 
-func NewCommentController(commentUC comments.UseCase) *CommentController {
+func NewCommentController(commentUC comments.UseCase, followThreadUC followThreads.UseCase) *CommentController {
 	return &CommentController{
-		CommentUseCase: commentUC,
+		CommentUseCase:      commentUC,
+		FollowThreadUseCase: followThreadUC,
 	}
 }
 
@@ -66,6 +69,15 @@ func (cc *CommentController) Create(c echo.Context) error {
 
 		return c.JSON(statusCode, helper.BaseResponse{
 			Status:  statusCode,
+			Message: err.Error(),
+			Data:    err,
+		})
+	}
+
+	err = cc.FollowThreadUseCase.UpdateNotification(comment.ThreadID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
 			Message: err.Error(),
 			Data:    err,
 		})

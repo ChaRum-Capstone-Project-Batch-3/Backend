@@ -1,4 +1,4 @@
-package dto
+package threads
 
 import (
 	"charum/business/topics"
@@ -7,7 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type ResponseThread struct {
+type Response struct {
 	Id            primitive.ObjectID `json:"_id"`
 	Topic         topics.Domain      `json:"topic"`
 	Creator       users.Domain       `json:"creator"`
@@ -15,6 +15,7 @@ type ResponseThread struct {
 	Description   string             `json:"description"`
 	Likes         []Like             `json:"likes"`
 	TotalLike     int                `json:"totalLike"`
+	TotalFollow   int                `json:"totalFollow"`
 	TotalComment  int                `json:"totalComment"`
 	SuspendStatus string             `json:"suspendStatus,omitempty"`
 	SuspendDetail string             `json:"suspendDetail,omitempty"`

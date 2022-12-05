@@ -1,6 +1,8 @@
 package users
 
 import (
+	dtoPagination "charum/dto/pagination"
+	dtoQuery "charum/dto/query"
 	"charum/util"
 	"errors"
 	"math"
@@ -61,9 +63,18 @@ Read
 */
 
 func (uu *UserUseCase) Login(domain *Domain) (Domain, string, error) {
+	var user Domain
+
 	user, err := uu.userRepository.GetByEmail(domain.Email)
 	if err != nil {
-		return Domain{}, "", errors.New("email is not registered")
+		user, err = uu.userRepository.GetByUsername(domain.Email)
+		if err != nil {
+			return Domain{}, "", errors.New("email or username is not registered")
+		}
+	}
+
+	if !user.IsActive {
+		return Domain{}, "", errors.New("user is suspended")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(domain.Password))
@@ -75,23 +86,30 @@ func (uu *UserUseCase) Login(domain *Domain) (Domain, string, error) {
 	return user, token, nil
 }
 
-func (uu *UserUseCase) GetWithSortAndOrder(page int, limit int, sort string, order string) ([]Domain, int, error) {
-	skip := limit * (page - 1)
+func (uu *UserUseCase) GetManyWithPagination(pagination dtoPagination.Request, domain *Domain) ([]Domain, int, int, error) {
+	skip := pagination.Limit * (pagination.Page - 1)
 	var orderInMongo int
 
-	if order == "asc" {
+	if pagination.Order == "asc" {
 		orderInMongo = 1
 	} else {
 		orderInMongo = -1
 	}
 
-	users, totalData, err := uu.userRepository.GetWithSortAndOrder(skip, limit, sort, orderInMongo)
-	if err != nil {
-		return []Domain{}, 0, errors.New("failed to get users")
+	query := dtoQuery.Request{
+		Skip:  skip,
+		Limit: pagination.Limit,
+		Order: orderInMongo,
+		Sort:  pagination.Sort,
 	}
 
-	totalPage := math.Ceil(float64(totalData) / float64(limit))
-	return users, int(totalPage), nil
+	users, totalData, err := uu.userRepository.GetManyWithPagination(query, domain)
+	if err != nil {
+		return []Domain{}, 0, 0, errors.New("failed to get users")
+	}
+
+	totalPage := math.Ceil(float64(totalData) / float64(pagination.Limit))
+	return users, int(totalPage), totalData, nil
 }
 
 func (uu *UserUseCase) GetByID(id primitive.ObjectID) (Domain, error) {
@@ -107,8 +125,8 @@ func (uu *UserUseCase) GetByID(id primitive.ObjectID) (Domain, error) {
 Update
 */
 
-func (uu *UserUseCase) Update(id primitive.ObjectID, domain *Domain) (Domain, error) {
-	user, err := uu.userRepository.GetByID(id)
+func (uu *UserUseCase) Update(domain *Domain) (Domain, error) {
+	user, err := uu.userRepository.GetByID(domain.Id)
 	if err != nil {
 		return Domain{}, errors.New("failed to get user")
 	}
@@ -130,6 +148,8 @@ func (uu *UserUseCase) Update(id primitive.ObjectID, domain *Domain) (Domain, er
 	user.Email = domain.Email
 	user.UserName = domain.UserName
 	user.DisplayName = domain.DisplayName
+	user.Biodata = domain.Biodata
+	user.SocialMedia = domain.SocialMedia
 	user.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
 
 	updatedUser, err := uu.userRepository.Update(&user)

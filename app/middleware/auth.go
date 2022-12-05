@@ -21,7 +21,7 @@ func (rm RoleMiddleware) Check(next echo.HandlerFunc) echo.HandlerFunc {
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, helper.BaseResponse{
 				Status:  http.StatusBadRequest,
-				Message: "Invalid user id",
+				Message: "invalid token",
 				Data:    nil,
 			})
 		}
@@ -31,6 +31,14 @@ func (rm RoleMiddleware) Check(next echo.HandlerFunc) echo.HandlerFunc {
 			return echo.NewHTTPError(http.StatusBadRequest, helper.BaseResponse{
 				Status:  http.StatusBadRequest,
 				Message: err.Error(),
+				Data:    nil,
+			})
+		}
+
+		if !user.IsActive {
+			return echo.NewHTTPError(http.StatusBadRequest, helper.BaseResponse{
+				Status:  http.StatusBadRequest,
+				Message: "user is suspended",
 				Data:    nil,
 			})
 		}
