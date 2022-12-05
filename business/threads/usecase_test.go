@@ -266,7 +266,7 @@ func TestUpdate(t *testing.T) {
 	t.Run("Test case 6 | Invalid update thread | User Not Creator", func(t *testing.T) {
 		copyThread := threadDomain
 		copyThread.CreatorID = primitive.NewObjectID()
-		expectedErr := errors.New("you are not the thread creator")
+		expectedErr := errors.New("user are not the thread creator")
 
 		topicRepository.On("GetByID", threadDomain.TopicID).Return(topicDomain, nil).Once()
 		threadRepository.On("GetByID", threadDomain.Id).Return(copyThread, nil).Once()
@@ -276,6 +276,25 @@ func TestUpdate(t *testing.T) {
 
 		assert.Equal(t, threads.Domain{}, result)
 		assert.Equal(t, err, expectedErr)
+	})
+}
+
+func TestSuspendByUserID(t *testing.T) {
+	t.Run("Test case 1 | Valid suspend thread by user id", func(t *testing.T) {
+		threadRepository.On("SuspendByUserID", mock.Anything).Return(nil).Once()
+
+		err := threadUseCase.SuspendByUserID(threadDomain.CreatorID)
+
+		assert.Nil(t, err)
+	})
+
+	t.Run("Test case 2 | Invalid suspend thread by user id | Error when getting thread by user id", func(t *testing.T) {
+		expectedErr := errors.New("failed to suspend user threads")
+		threadRepository.On("SuspendByUserID", mock.Anything).Return(expectedErr).Once()
+
+		err := threadUseCase.SuspendByUserID(threadDomain.CreatorID)
+
+		assert.Equal(t, expectedErr, err)
 	})
 }
 
@@ -325,7 +344,7 @@ func TestDelete(t *testing.T) {
 	})
 
 	t.Run("Test case 5 | Invalid delete thread | User Not Creator", func(t *testing.T) {
-		expectedErr := errors.New("you are not the thread creator")
+		expectedErr := errors.New("user are not the thread creator")
 
 		threadRepository.On("GetByID", threadDomain.Id).Return(threadDomain, nil).Once()
 		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()

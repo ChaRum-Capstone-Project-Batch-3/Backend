@@ -100,6 +100,20 @@ func (_m *Repository) GetWithSortAndOrder(skip int, limit int, sort string, orde
 	return r0, r1, r2
 }
 
+// SuspendByUserID provides a mock function with given fields: domain
+func (_m *Repository) SuspendByUserID(domain *threads.Domain) error {
+	ret := _m.Called(domain)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*threads.Domain) error); ok {
+		r0 = rf(domain)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Update provides a mock function with given fields: domain
 func (_m *Repository) Update(domain *threads.Domain) (threads.Domain, error) {
 	ret := _m.Called(domain)

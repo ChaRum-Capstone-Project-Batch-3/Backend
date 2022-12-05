@@ -13,8 +13,7 @@ tags:
     description: Operation about thread
   - name: Admin
     description: Operations for admin
-  - name: Comment
-    description: Operations for comment
+    
 paths:
   /user/register:
     post:
@@ -38,6 +37,12 @@ paths:
                 displayName:
                   type: string
                   example: charum user
+                biodata:
+                  type: string
+                  example: halo aku user
+                socialMedia:
+                  type: string
+                  example: instagram @anon
                 password:
                   type: string
                   example: secretpassword
@@ -135,7 +140,7 @@ paths:
       tags:
         - User
       summary: Logs user into the system
-      description: Get token for user and user's data
+      description: Get token for user and user's data with email or username on key
       operationId: Login
       requestBody:
         content:
@@ -143,7 +148,7 @@ paths:
             schema:
               type: object
               properties:
-                email:
+                key:
                   type: string
                   example: user@charum.com
                 password:
@@ -286,6 +291,148 @@ paths:
                   message:
                     type: string
                     example: email is not registered
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: string
+                    example: null
+    put:
+      tags:
+        - User
+      summary: Update user profile
+      description: Update user's profile data
+      operationId: UserUpdate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: user@charum.com
+                userName:
+                  type: string
+                  example: charum-user
+                displayName:
+                  type: string
+                  example: charum user
+                biodata:
+                  type: string
+                  example: halo aku user
+                socialMedia:
+                  type: string
+                  example: instagram @anon
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to update
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: invalid id
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: string
+                    example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: unauthorized
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: string
+                    example: null
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: failed to get user
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: string
+                    example: null
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 409
+                  message:
+                    type: string
+                    example: email is already used
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: string
+                    example: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to update user
                   data:
                     type: string
                     example: null
@@ -725,7 +872,7 @@ paths:
                     example: 403
                   message:
                     type: string
-                    example: you are not the thread creator
+                    example: user are not the thread creator
                   data:
                     type: string
                     example: null
@@ -856,7 +1003,7 @@ paths:
                     example: 403
                   message:
                     type: string
-                    example: you are not the thread creator
+                    example: user are not the thread creator
                   data:
                     type: string
                     example: null
@@ -1097,7 +1244,7 @@ paths:
         - Admin
       summary: Update user profile
       description: Update user's profile data
-      operationId: Update
+      operationId: AdminUpdate
       parameters:
         - in: path
           name: id
@@ -1121,9 +1268,12 @@ paths:
                 displayName:
                   type: string
                   example: charum user
-                isActive:
-                  type: boolean
-                  example: false
+                biodata:
+                  type: string
+                  example: halo aku user
+                socialMedia:
+                  type: string
+                  example: instagram @anon
         required: true
       responses:
         '200':
@@ -1462,8 +1612,8 @@ paths:
     put:
       tags:
         - Admin
-      summary: Suspend user
-      description: Suspend user
+      summary: Unsuspend user
+      description: Unsuspend user
       operationId: Unsuspend
       parameters:
         - in: path
@@ -1979,86 +2129,10 @@ paths:
                   pagination:
                     type: string
                     example: null
-
-  /admin/topic/name/{topic}:
-    get:
-      tags:
-        - Admin
-      summary: Get topic data
-      description: Get topic data by topic name
-      operationId: GetByTopic
-      parameters:
-        - in: path
-          name: topic
-          description: topic name
-          required: true
-          schema:
-            type: string
-            example: topicname
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: integer
-                    example: 200
-                  message:
-                    type: string
-                    example: success to get topic by name
-                  data:
-                    type: object
-                    properties:
-                      topic:
-                        $ref: '#/components/schemas/Topic'
-                  pagination:
-                    type: string
-                    example: null
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: integer
-                    example: 400
-                  message:
-                    type: string
-                    example: invalid id
-                  data:
-                    type: string
-                    example: null
-                  pagination:
-                    type: string
-                    example: null
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: integer
-                    example: 404
-                  message:
-                    type: string
-                    example: failed to get topic
-                  data:
-                    type: string
-                    example: null
-                  pagination:
-                    type: string
-                    example: null
-  /comment/{thread-id}:
+  /thread/comment/{thread-id}:
     post:
       tags:
-        - Comment
+        - Thread
       summary: Send commment to thread
       description: Send commment by thread id
       operationId: CreateComment
@@ -2186,10 +2260,10 @@ paths:
                   pagination:
                     type: string
                     example: null
-  /comment/{comment-id}:
+  /thread/comment/{comment-id}:
     put:
       tags:
-        - Comment
+        - Thread
       summary: Update commment
       description: Update commment by comment id
       operationId: UpdateComment
@@ -2319,7 +2393,7 @@ paths:
                     example: null
     delete:
       tags:
-        - Comment
+        - Thread
       summary: Dlete commment from thread
       description: Delete commment by comment id
       operationId: DeleteComment
@@ -2447,7 +2521,448 @@ paths:
                   pagination:
                     type: string
                     example: null
-
+  /thread/follow:
+    get:
+      tags:
+        - Thread
+      summary: Get user's following thread by token
+      description: Get following thread by user's token
+      operationId: GetFollowedThreadByToken
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to follow thread
+                  data:
+                    type: object
+                    properties:
+                      comment:
+                        type: object
+                        properties:
+                          _id:
+                            type: string
+                            example: 6379fe8dad33ec4251700ded
+                          thread:
+                            $ref: '#/components/schemas/Thread'
+                          user:
+                            $ref: '#/components/schemas/User'
+                          createdAt:
+                            type: string
+                            example: 2022-11-26T23:05:11.806+07:00
+                          updatedAt:
+                            type: string
+                            example: 2022-11-26T23:05:11.806+07:00
+                  pagination:
+                    type: string
+                    example: null
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: invalid thread id
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: string
+                    example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: invalid token
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: string
+                    example: null
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: failed to get follow threads
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: string
+                    example: null
+  /thread/follow/{user-id}:
+    get:
+      tags:
+        - Thread
+      summary: Get user's following thread by user id
+      description: Get following thread by user id
+      operationId: GetFollowedThreadByUserID
+      parameters:
+        - in: path
+          name: user-id
+          description: user's ID
+          required: true
+          schema:
+            type: string
+            example: 6379fe8dad33ec4251700ded
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to follow thread
+                  data:
+                    type: object
+                    properties:
+                      comment:
+                        type: object
+                        properties:
+                          _id:
+                            type: string
+                            example: 6379fe8dad33ec4251700ded
+                          thread:
+                            $ref: '#/components/schemas/Thread'
+                          user:
+                            $ref: '#/components/schemas/User'
+                          createdAt:
+                            type: string
+                            example: 2022-11-26T23:05:11.806+07:00
+                          updatedAt:
+                            type: string
+                            example: 2022-11-26T23:05:11.806+07:00
+                  pagination:
+                    type: string
+                    example: null
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: invalid thread id
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: string
+                    example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: invalid token
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: string
+                    example: null
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: failed to get follow threads
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: string
+                    example: null
+  /thread/follow/{thread-id}:
+    post:
+      tags:
+        - Thread
+      summary: Follow thread
+      description: Create follow thread by thread id
+      operationId: CreateFollowThread
+      parameters:
+        - in: path
+          name: thread-id
+          description: thread's ID
+          required: true
+          schema:
+            type: string
+            example: 6379fe8dad33ec4251700ded
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 201
+                  message:
+                    type: string
+                    example: success to follow thread
+                  data:
+                    type: object
+                    properties:
+                      comment:
+                        type: object
+                        properties:
+                          _id:
+                            type: string
+                            example: 6379fe8dad33ec4251700ded
+                          thread:
+                            $ref: '#/components/schemas/Thread'
+                          user:
+                            $ref: '#/components/schemas/User'
+                          createdAt:
+                            type: string
+                            example: 2022-11-26T23:05:11.806+07:00
+                          updatedAt:
+                            type: string
+                            example: 2022-11-26T23:05:11.806+07:00
+                  pagination:
+                    type: string
+                    example: null
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: invalid thread id
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: string
+                    example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: invalid token
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: string
+                    example: null
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: failed to get thread
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: string
+                    example: null
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 409
+                  message:
+                    type: string
+                    example: user already follow this thread
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: string
+                    example: null
+    delete:
+      tags:
+        - Thread
+      summary: Unfollow thread
+      description: Delete follow thread by thread id
+      operationId: DeleteFollowThread
+      parameters:
+        - in: path
+          name: thread-id
+          description: thread's ID
+          required: true
+          schema:
+            type: string
+            example: 6379fe8dad33ec4251700ded
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to unfollow thread
+                  data:
+                    type: object
+                    properties:
+                      comment:
+                        type: object
+                        properties:
+                          _id:
+                            type: string
+                            example: 6379fe8dad33ec4251700ded
+                          thread:
+                            $ref: '#/components/schemas/Thread'
+                          user:
+                            $ref: '#/components/schemas/User'
+                          createdAt:
+                            type: string
+                            example: 2022-11-26T23:05:11.806+07:00
+                          updatedAt:
+                            type: string
+                            example: 2022-11-26T23:05:11.806+07:00
+                  pagination:
+                    type: string
+                    example: null
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: invalid thread id
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: string
+                    example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: invalid token
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: string
+                    example: null
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: failed to get follow thread
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: string
+                    example: null
 components:
   securitySchemes:
     bearerAuth:
@@ -2559,6 +3074,26 @@ components:
         updatedAt:
           type: string
           example: 2022-11-26T23:05:11.806+07:00
-
+    FollowThread:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 6379fe8dad33ec4251700ded
+        threadID:
+          type: string
+          example: 6379fe8dad33ec4251700ded
+        userID:
+          type: string
+          example: 6379fe8dad33ec4251700ded
+        notification:
+          type: integer
+          example: 1
+        createdAt:
+          type: string
+          example: 2022-11-26T23:05:11.806+07:00
+        updatedAt:
+          type: string
+          example: 2022-11-26T23:05:11.806+07:00
 security:
   - bearerAuth: []

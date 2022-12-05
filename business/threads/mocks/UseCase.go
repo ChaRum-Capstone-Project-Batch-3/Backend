@@ -3,6 +3,8 @@
 package mocks
 
 import (
+	dto "charum/dto"
+
 	mock "github.com/stretchr/testify/mock"
 	primitive "go.mongodb.org/mongo-driver/bson/primitive"
 
@@ -14,20 +16,20 @@ type UseCase struct {
 	mock.Mock
 }
 
-// Create provides a mock function with given fields: creatorID, topicName, domain
-func (_m *UseCase) Create(creatorID primitive.ObjectID, topicName string, domain *threads.Domain) (threads.Domain, error) {
-	ret := _m.Called(creatorID, topicName, domain)
+// Create provides a mock function with given fields: domain
+func (_m *UseCase) Create(domain *threads.Domain) (threads.Domain, error) {
+	ret := _m.Called(domain)
 
 	var r0 threads.Domain
-	if rf, ok := ret.Get(0).(func(primitive.ObjectID, string, *threads.Domain) threads.Domain); ok {
-		r0 = rf(creatorID, topicName, domain)
+	if rf, ok := ret.Get(0).(func(*threads.Domain) threads.Domain); ok {
+		r0 = rf(domain)
 	} else {
 		r0 = ret.Get(0).(threads.Domain)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(primitive.ObjectID, string, *threads.Domain) error); ok {
-		r1 = rf(creatorID, topicName, domain)
+	if rf, ok := ret.Get(1).(func(*threads.Domain) error); ok {
+		r1 = rf(domain)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -35,20 +37,64 @@ func (_m *UseCase) Create(creatorID primitive.ObjectID, topicName string, domain
 	return r0, r1
 }
 
-// Delete provides a mock function with given fields: creatorID, threadID
-func (_m *UseCase) Delete(creatorID primitive.ObjectID, threadID primitive.ObjectID) (threads.Domain, error) {
-	ret := _m.Called(creatorID, threadID)
+// Delete provides a mock function with given fields: userID, threadID
+func (_m *UseCase) Delete(userID primitive.ObjectID, threadID primitive.ObjectID) (threads.Domain, error) {
+	ret := _m.Called(userID, threadID)
 
 	var r0 threads.Domain
 	if rf, ok := ret.Get(0).(func(primitive.ObjectID, primitive.ObjectID) threads.Domain); ok {
-		r0 = rf(creatorID, threadID)
+		r0 = rf(userID, threadID)
 	} else {
 		r0 = ret.Get(0).(threads.Domain)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(primitive.ObjectID, primitive.ObjectID) error); ok {
-		r1 = rf(creatorID, threadID)
+		r1 = rf(userID, threadID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// DomainToResponse provides a mock function with given fields: domain
+func (_m *UseCase) DomainToResponse(domain threads.Domain) (dto.ResponseThread, error) {
+	ret := _m.Called(domain)
+
+	var r0 dto.ResponseThread
+	if rf, ok := ret.Get(0).(func(threads.Domain) dto.ResponseThread); ok {
+		r0 = rf(domain)
+	} else {
+		r0 = ret.Get(0).(dto.ResponseThread)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(threads.Domain) error); ok {
+		r1 = rf(domain)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// DomainsToResponseArray provides a mock function with given fields: domains
+func (_m *UseCase) DomainsToResponseArray(domains []threads.Domain) ([]dto.ResponseThread, error) {
+	ret := _m.Called(domains)
+
+	var r0 []dto.ResponseThread
+	if rf, ok := ret.Get(0).(func([]threads.Domain) []dto.ResponseThread); ok {
+		r0 = rf(domains)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]dto.ResponseThread)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func([]threads.Domain) error); ok {
+		r1 = rf(domains)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -78,7 +124,7 @@ func (_m *UseCase) GetByID(id primitive.ObjectID) (threads.Domain, error) {
 }
 
 // GetWithSortAndOrder provides a mock function with given fields: page, limit, sort, order
-func (_m *UseCase) GetWithSortAndOrder(page int, limit int, sort string, order string) ([]threads.Domain, int, error) {
+func (_m *UseCase) GetWithSortAndOrder(page int, limit int, sort string, order string) ([]threads.Domain, int, int, error) {
 	ret := _m.Called(page, limit, sort, order)
 
 	var r0 []threads.Domain
@@ -97,30 +143,51 @@ func (_m *UseCase) GetWithSortAndOrder(page int, limit int, sort string, order s
 		r1 = ret.Get(1).(int)
 	}
 
-	var r2 error
-	if rf, ok := ret.Get(2).(func(int, int, string, string) error); ok {
+	var r2 int
+	if rf, ok := ret.Get(2).(func(int, int, string, string) int); ok {
 		r2 = rf(page, limit, sort, order)
 	} else {
-		r2 = ret.Error(2)
+		r2 = ret.Get(2).(int)
 	}
 
-	return r0, r1, r2
+	var r3 error
+	if rf, ok := ret.Get(3).(func(int, int, string, string) error); ok {
+		r3 = rf(page, limit, sort, order)
+	} else {
+		r3 = ret.Error(3)
+	}
+
+	return r0, r1, r2, r3
 }
 
-// Update provides a mock function with given fields: creatorID, threadID, topicName, domain
-func (_m *UseCase) Update(creatorID primitive.ObjectID, threadID primitive.ObjectID, topicName string, domain *threads.Domain) (threads.Domain, error) {
-	ret := _m.Called(creatorID, threadID, topicName, domain)
+// SuspendByUserID provides a mock function with given fields: userID
+func (_m *UseCase) SuspendByUserID(userID primitive.ObjectID) error {
+	ret := _m.Called(userID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID) error); ok {
+		r0 = rf(userID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Update provides a mock function with given fields: domain
+func (_m *UseCase) Update(domain *threads.Domain) (threads.Domain, error) {
+	ret := _m.Called(domain)
 
 	var r0 threads.Domain
-	if rf, ok := ret.Get(0).(func(primitive.ObjectID, primitive.ObjectID, string, *threads.Domain) threads.Domain); ok {
-		r0 = rf(creatorID, threadID, topicName, domain)
+	if rf, ok := ret.Get(0).(func(*threads.Domain) threads.Domain); ok {
+		r0 = rf(domain)
 	} else {
 		r0 = ret.Get(0).(threads.Domain)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(primitive.ObjectID, primitive.ObjectID, string, *threads.Domain) error); ok {
-		r1 = rf(creatorID, threadID, topicName, domain)
+	if rf, ok := ret.Get(1).(func(*threads.Domain) error); ok {
+		r1 = rf(domain)
 	} else {
 		r1 = ret.Error(1)
 	}

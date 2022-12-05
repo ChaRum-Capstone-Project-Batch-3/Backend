@@ -1,6 +1,9 @@
 package topics
 
 import (
+	"charum/business/comments"
+	followThreads "charum/business/follow_threads"
+	"charum/business/threads"
 	"charum/business/topics"
 	"charum/controller/topics/request"
 	"charum/controller/topics/response"
@@ -13,16 +16,22 @@ import (
 )
 
 type TopicController struct {
-	TopicUseCase topics.UseCase
+	TopicUseCase        topics.UseCase
+	ThreadUseCase       threads.UseCase
+	CommentUseCase      comments.UseCase
+	FollowThreadUseCase followThreads.UseCase
 }
 
-func NewTopicController(topicUC topics.UseCase) *TopicController {
+func NewTopicController(topicUC topics.UseCase, threadUC threads.UseCase, commentUC comments.UseCase, followThreadUC followThreads.UseCase) *TopicController {
 	return &TopicController{
-		TopicUseCase: topicUC,
+		TopicUseCase:        topicUC,
+		ThreadUseCase:       threadUC,
+		CommentUseCase:      commentUC,
+		FollowThreadUseCase: followThreadUC,
 	}
 }
 
-func (topicCtrl *TopicController) CreateTopic(c echo.Context) error {
+func (topicCtrl *TopicController) Create(c echo.Context) error {
 	userInput := request.Topic{}
 
 	if c.Bind(&userInput) != nil {
@@ -65,7 +74,7 @@ func (topicCtrl *TopicController) CreateTopic(c echo.Context) error {
 }
 
 func (topicCtrl *TopicController) GetByID(c echo.Context) error {
-	topicID, err := primitive.ObjectIDFromHex(c.Param("id"))
+	topicID, err := primitive.ObjectIDFromHex(c.Param("topic-id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
@@ -137,8 +146,8 @@ func (topicCtrl *TopicController) GetByTopic(c echo.Context) error {
 Update
 */
 
-func (topicCtrl *TopicController) UpdateTopic(c echo.Context) error {
-	topicID, err := primitive.ObjectIDFromHex(c.Param("id"))
+func (topicCtrl *TopicController) Update(c echo.Context) error {
+	topicID, err := primitive.ObjectIDFromHex(c.Param("topic-id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
@@ -191,8 +200,8 @@ func (topicCtrl *TopicController) UpdateTopic(c echo.Context) error {
 Delete
 */
 
-func (topicCtrl *TopicController) DeleteTopic(c echo.Context) error {
-	topicID, err := primitive.ObjectIDFromHex(c.Param("id"))
+func (topicCtrl *TopicController) Delete(c echo.Context) error {
+	topicID, err := primitive.ObjectIDFromHex(c.Param("topic-id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
@@ -208,6 +217,44 @@ func (topicCtrl *TopicController) DeleteTopic(c echo.Context) error {
 			Message: err.Error(),
 			Data:    nil,
 		})
+	}
+
+	threads, err := topicCtrl.ThreadUseCase.GetAllByTopicID(topicID)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, helper.BaseResponse{
+			Status:  http.StatusNotFound,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	for _, thread := range threads {
+		err := topicCtrl.ThreadUseCase.DeleteByThreadID(thread.Id)
+		if err != nil {
+			return c.JSON(http.StatusNotFound, helper.BaseResponse{
+				Status:  http.StatusNotFound,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
+
+		err = topicCtrl.CommentUseCase.DeleteAllByThreadID(thread.Id)
+		if err != nil {
+			return c.JSON(http.StatusNotFound, helper.BaseResponse{
+				Status:  http.StatusNotFound,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
+
+		err = topicCtrl.FollowThreadUseCase.DeleteAllByThreadID(thread.Id)
+		if err != nil {
+			return c.JSON(http.StatusNotFound, helper.BaseResponse{
+				Status:  http.StatusNotFound,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
 	}
 
 	return c.JSON(http.StatusOK, helper.BaseResponse{

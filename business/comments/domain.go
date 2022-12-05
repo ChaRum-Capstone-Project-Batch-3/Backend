@@ -21,10 +21,13 @@ type Repository interface {
 	// Read
 	GetByID(id primitive.ObjectID) (Domain, error)
 	GetByThreadID(threadID primitive.ObjectID) ([]Domain, error)
+	CountByThreadID(threadID primitive.ObjectID) (int, error)
 	// Update
 	Update(domain *Domain) (Domain, error)
 	// Delete
 	Delete(id primitive.ObjectID) error
+	DeleteAllByUserID(userID primitive.ObjectID) error
+	DeleteAllByThreadID(threadID primitive.ObjectID) error
 }
 
 type UseCase interface {
@@ -34,8 +37,11 @@ type UseCase interface {
 	GetByThreadID(threadID primitive.ObjectID) ([]Domain, error)
 	DomainToResponse(comment Domain) (dto.ResponseComment, error)
 	DomainToResponseArray(comments []Domain) ([]dto.ResponseComment, error)
+	CountByThreadID(threadID primitive.ObjectID) (int, error)
 	// Update
 	Update(domain *Domain) (Domain, error)
 	// Delete
 	Delete(id primitive.ObjectID, userID primitive.ObjectID) (Domain, error)
+	DeleteAllByUserID(userID primitive.ObjectID) error
+	DeleteAllByThreadID(threadID primitive.ObjectID) error
 }

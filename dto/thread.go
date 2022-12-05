@@ -15,6 +15,7 @@ type ResponseThread struct {
 	Description   string             `json:"description"`
 	Likes         []Like             `json:"likes"`
 	TotalLike     int                `json:"totalLike"`
+	TotalFollow   int                `json:"totalFollow"`
 	TotalComment  int                `json:"totalComment"`
 	SuspendStatus string             `json:"suspendStatus,omitempty"`
 	SuspendDetail string             `json:"suspendDetail,omitempty"`

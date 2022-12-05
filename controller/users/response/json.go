@@ -11,6 +11,8 @@ type User struct {
 	Email       string             `json:"email" bson:"email"`
 	UserName    string             `json:"userName" bson:"userName"`
 	DisplayName string             `json:"displayName" bson:"displayName"`
+	Biodata     string             `json:"biodata" bson:"biodata"`
+	SocialMedia string             `json:"socialMedia" bson:"socialMedia"`
 	IsActive    bool               `json:"isActive" bson:"isActive"`
 	Role        string             `json:"role" bson:"role"`
 	CreatedAt   primitive.DateTime `json:"createdAt" bson:"createdAt"`
@@ -23,6 +25,8 @@ func FromDomain(domain users.Domain) User {
 		Email:       domain.Email,
 		UserName:    domain.UserName,
 		DisplayName: domain.DisplayName,
+		Biodata:     domain.Biodata,
+		SocialMedia: domain.SocialMedia,
 		IsActive:    domain.IsActive,
 		Role:        domain.Role,
 		CreatedAt:   domain.CreatedAt,

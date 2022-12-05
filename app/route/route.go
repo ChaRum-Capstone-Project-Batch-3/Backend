@@ -4,6 +4,7 @@ import (
 	_middleware "charum/app/middleware"
 	_usersDomain "charum/business/users"
 	"charum/controller/comments"
+	followThreads "charum/controller/follow_threads"
 	"charum/controller/threads"
 	"charum/controller/topics"
 	"charum/controller/users"
@@ -13,12 +14,13 @@ import (
 )
 
 type ControllerList struct {
-	LoggerMiddleware  echo.MiddlewareFunc
-	UserRepository    _usersDomain.Repository
-	UserController    *users.UserController
-	TopicController   *topics.TopicController
-	ThreadController  *threads.ThreadController
-	CommentController *comments.CommentController
+	LoggerMiddleware       echo.MiddlewareFunc
+	UserRepository         _usersDomain.Repository
+	UserController         *users.UserController
+	TopicController        *topics.TopicController
+	ThreadController       *threads.ThreadController
+	CommentController      *comments.CommentController
+	FollowThreadController *followThreads.FollowThreadController
 }
 
 func (cl *ControllerList) Init(e *echo.Echo) {
@@ -38,33 +40,54 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	user.POST("/register", cl.UserController.Register)
 	user.POST("/login", cl.UserController.Login)
 	user.GET("/profile", cl.UserController.GetProfile, authMiddleware.Check)
+	user.PUT("/profile", cl.UserController.UserUpdate, authMiddleware.Check)
+
+	topic := apiV1.Group("/topic")
+	topic.GET("", cl.TopicController.GetAll)
+	topic.GET("/:topic-id", cl.TopicController.GetByID)
 
 	thread := apiV1.Group("/thread")
 	thread.POST("", cl.ThreadController.Create, authMiddleware.Check)
 	thread.GET("/:page", cl.ThreadController.GetManyWithPagination)
-	thread.GET("/id/:id", cl.ThreadController.GetByID)
-	thread.PUT("/id/:id", cl.ThreadController.Update, authMiddleware.Check)
-	thread.DELETE("/id/:id", cl.ThreadController.Delete, authMiddleware.Check)
 
-	comment := apiV1.Group("/comment")
-	comment.POST("/:thread-id", cl.CommentController.Create, authMiddleware.Check)
-	comment.PUT("/:comment-id", cl.CommentController.Update, authMiddleware.Check)
-	comment.DELETE("/:comment-id", cl.CommentController.Delete, authMiddleware.Check)
+	threadID := thread.Group("/id")
+	threadID.GET("/:thread-id", cl.ThreadController.GetByID)
+	threadID.PUT("/:thread-id", cl.ThreadController.UserUpdate, authMiddleware.Check)
+	threadID.DELETE("/:thread-id", cl.ThreadController.UserDelete, authMiddleware.Check)
+
+	threadFollow := thread.Group("/follow")
+	threadFollow.GET("", cl.FollowThreadController.GetFollowedThreadByToken, authMiddleware.Check)
+	threadFollow.GET("/:user-id", cl.FollowThreadController.GetFollowedThreadByUserID)
+	threadFollow.POST("/:thread-id", cl.FollowThreadController.Create, authMiddleware.Check)
+	threadFollow.DELETE("/:thread-id", cl.FollowThreadController.Delete, authMiddleware.Check)
+
+	threadComment := thread.Group("/comment")
+	threadComment.POST("/:thread-id", cl.CommentController.Create, authMiddleware.Check)
+	threadComment.PUT("/:comment-id", cl.CommentController.Update, authMiddleware.Check)
+	threadComment.DELETE("/:comment-id", cl.CommentController.Delete, authMiddleware.Check)
 
 	admin := apiV1.Group("/admin", adminMiddleware.Check)
 
 	adminUser := admin.Group("/user")
 	adminUser.GET("/:page", cl.UserController.GetManyWithPagination)
-	adminUser.GET("/id/:id", cl.UserController.GetByID)
-	adminUser.PUT("/id/:id", cl.UserController.Update)
-	adminUser.DELETE("/id/:id", cl.UserController.Delete)
-	adminUser.PUT("/suspend/:id", cl.UserController.Suspend)
-	adminUser.PUT("/unsuspend/:id", cl.UserController.Unsuspend)
+	adminUser.PUT("/suspend/:user-id", cl.UserController.Suspend)
+	adminUser.PUT("/unsuspend/:user-id", cl.UserController.Unsuspend)
+
+	adminUserID := adminUser.Group("/id")
+	adminUserID.GET("/:user-id", cl.UserController.GetByID)
+	adminUserID.PUT("/:user-id", cl.UserController.AdminUpdate)
+	adminUserID.DELETE("/:user-id", cl.UserController.Delete)
 
 	adminTopic := admin.Group("/topic")
-	adminTopic.POST("", cl.TopicController.CreateTopic)
+	adminTopic.POST("", cl.TopicController.Create)
 	adminTopic.GET("", cl.TopicController.GetAll)
-	adminTopic.GET("/:id", cl.TopicController.GetByID)
-	adminTopic.PUT("/:id", cl.TopicController.UpdateTopic)
-	adminTopic.DELETE("/:id", cl.TopicController.DeleteTopic)
+	adminTopic.GET("/:topic-id", cl.TopicController.GetByID)
+	adminTopic.PUT("/:topic-id", cl.TopicController.Update)
+	adminTopic.DELETE("/:topic-id", cl.TopicController.Delete)
+
+	adminThread := admin.Group("/thread")
+	adminThread.GET("/:page", cl.ThreadController.GetManyWithPagination)
+	adminThread.GET("/id/:thread-id", cl.ThreadController.GetByID)
+	adminThread.PUT("/id/:thread-id", cl.ThreadController.AdminUpdate)
+	adminThread.DELETE("/id/:thread-id", cl.ThreadController.AdminDelete)
 }

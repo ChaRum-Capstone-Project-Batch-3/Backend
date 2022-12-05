@@ -102,6 +102,20 @@ func (cu *CommentUseCase) DomainToResponseArray(comments []Domain) ([]dto.Respon
 	return responseComments, nil
 }
 
+func (cu *CommentUseCase) CountByThreadID(threadID primitive.ObjectID) (int, error) {
+	_, err := cu.threadRepository.GetByID(threadID)
+	if err != nil {
+		return 0, errors.New("failed to get thread")
+	}
+
+	count, err := cu.commentRepository.CountByThreadID(threadID)
+	if err != nil {
+		return 0, errors.New("failed to count comments")
+	}
+
+	return count, nil
+}
+
 /*
 Update
 */
@@ -113,7 +127,7 @@ func (cu *CommentUseCase) Update(domain *Domain) (Domain, error) {
 	}
 
 	if comment.UserID != domain.UserID {
-		return Domain{}, errors.New("you are not the owner of this comment")
+		return Domain{}, errors.New("user are not the owner of this comment")
 	}
 
 	_, err = cu.threadRepository.GetByID(comment.ThreadID)
@@ -143,7 +157,7 @@ func (cu *CommentUseCase) Delete(id primitive.ObjectID, userID primitive.ObjectI
 	}
 
 	if comment.UserID != userID {
-		return Domain{}, errors.New("you are not the owner of this comment")
+		return Domain{}, errors.New("user are not the owner of this comment")
 	}
 
 	_, err = cu.threadRepository.GetByID(comment.ThreadID)
@@ -157,4 +171,22 @@ func (cu *CommentUseCase) Delete(id primitive.ObjectID, userID primitive.ObjectI
 	}
 
 	return comment, nil
+}
+
+func (cu *CommentUseCase) DeleteAllByUserID(userID primitive.ObjectID) error {
+	err := cu.commentRepository.DeleteAllByUserID(userID)
+	if err != nil {
+		return errors.New("failed to delete user's comments")
+	}
+
+	return nil
+}
+
+func (cu *CommentUseCase) DeleteAllByThreadID(threadID primitive.ObjectID) error {
+	err := cu.commentRepository.DeleteAllByThreadID(threadID)
+	if err != nil {
+		return errors.New("failed to delete thread's comments")
+	}
+
+	return nil
 }

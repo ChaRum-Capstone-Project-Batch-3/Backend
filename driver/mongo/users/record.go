@@ -11,6 +11,8 @@ type Model struct {
 	Email       string             `json:"email" bson:"email"`
 	UserName    string             `json:"userName" bson:"userName"`
 	DisplayName string             `json:"displayName" bson:"displayName"`
+	Biodata     string             `json:"biodata" bson:"biodata,omitempty"`
+	SocialMedia string             `json:"socialMedia" bson:"socialMedia,omitempty"`
 	Password    string             `json:"password" bson:"password"`
 	IsActive    bool               `json:"isActive" bson:"isActive"`
 	Role        string             `json:"role" bson:"role"`
@@ -24,6 +26,8 @@ func FromDomain(domain *users.Domain) *Model {
 		Email:       domain.Email,
 		UserName:    domain.UserName,
 		DisplayName: domain.DisplayName,
+		Biodata:     domain.Biodata,
+		SocialMedia: domain.SocialMedia,
 		Password:    domain.Password,
 		IsActive:    domain.IsActive,
 		Role:        domain.Role,
@@ -38,6 +42,8 @@ func (user *Model) ToDomain() users.Domain {
 		Email:       user.Email,
 		UserName:    user.UserName,
 		DisplayName: user.DisplayName,
+		Biodata:     user.Biodata,
+		SocialMedia: user.SocialMedia,
 		Password:    user.Password,
 		IsActive:    user.IsActive,
 		Role:        user.Role,

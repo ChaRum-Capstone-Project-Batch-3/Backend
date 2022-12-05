@@ -57,7 +57,7 @@ func (_m *UseCase) GetByID(id primitive.ObjectID) (users.Domain, error) {
 }
 
 // GetWithSortAndOrder provides a mock function with given fields: page, limit, sort, order
-func (_m *UseCase) GetWithSortAndOrder(page int, limit int, sort string, order string) ([]users.Domain, int, error) {
+func (_m *UseCase) GetWithSortAndOrder(page int, limit int, sort string, order string) ([]users.Domain, int, int, error) {
 	ret := _m.Called(page, limit, sort, order)
 
 	var r0 []users.Domain
@@ -76,14 +76,21 @@ func (_m *UseCase) GetWithSortAndOrder(page int, limit int, sort string, order s
 		r1 = ret.Get(1).(int)
 	}
 
-	var r2 error
-	if rf, ok := ret.Get(2).(func(int, int, string, string) error); ok {
+	var r2 int
+	if rf, ok := ret.Get(2).(func(int, int, string, string) int); ok {
 		r2 = rf(page, limit, sort, order)
 	} else {
-		r2 = ret.Error(2)
+		r2 = ret.Get(2).(int)
 	}
 
-	return r0, r1, r2
+	var r3 error
+	if rf, ok := ret.Get(3).(func(int, int, string, string) error); ok {
+		r3 = rf(page, limit, sort, order)
+	} else {
+		r3 = ret.Error(3)
+	}
+
+	return r0, r1, r2, r3
 }
 
 // Login provides a mock function with given fields: domain
@@ -142,20 +149,62 @@ func (_m *UseCase) Register(domain *users.Domain) (users.Domain, string, error) 
 	return r0, r1, r2
 }
 
-// Update provides a mock function with given fields: id, domain
-func (_m *UseCase) Update(id primitive.ObjectID, domain *users.Domain) (users.Domain, error) {
-	ret := _m.Called(id, domain)
+// Suspend provides a mock function with given fields: id
+func (_m *UseCase) Suspend(id primitive.ObjectID) (users.Domain, error) {
+	ret := _m.Called(id)
 
 	var r0 users.Domain
-	if rf, ok := ret.Get(0).(func(primitive.ObjectID, *users.Domain) users.Domain); ok {
-		r0 = rf(id, domain)
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID) users.Domain); ok {
+		r0 = rf(id)
 	} else {
 		r0 = ret.Get(0).(users.Domain)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(primitive.ObjectID, *users.Domain) error); ok {
-		r1 = rf(id, domain)
+	if rf, ok := ret.Get(1).(func(primitive.ObjectID) error); ok {
+		r1 = rf(id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Unsuspend provides a mock function with given fields: id
+func (_m *UseCase) Unsuspend(id primitive.ObjectID) (users.Domain, error) {
+	ret := _m.Called(id)
+
+	var r0 users.Domain
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID) users.Domain); ok {
+		r0 = rf(id)
+	} else {
+		r0 = ret.Get(0).(users.Domain)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(primitive.ObjectID) error); ok {
+		r1 = rf(id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Update provides a mock function with given fields: domain
+func (_m *UseCase) Update(domain *users.Domain) (users.Domain, error) {
+	ret := _m.Called(domain)
+
+	var r0 users.Domain
+	if rf, ok := ret.Get(0).(func(*users.Domain) users.Domain); ok {
+		r0 = rf(domain)
+	} else {
+		r0 = ret.Get(0).(users.Domain)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*users.Domain) error); ok {
+		r1 = rf(domain)
 	} else {
 		r1 = ret.Error(1)
 	}
