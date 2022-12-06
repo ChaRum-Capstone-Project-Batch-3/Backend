@@ -399,13 +399,51 @@ paths:
                   data:
                     type: string
                     example: null
-  /topic:
+  /topic/{page}:
     get:
       tags:
         - Topic
       summary: Get all topic
-      description: Get all topic
-      operationId: GetAllTopic
+      description: Get topic list with filter, pagination, and sorting
+      operationId: GetTopicWithPagination
+      parameters:
+        - in: path
+          name: page
+          description: page displayed
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: limit
+          description: topic limitation for per page
+          required: false
+          schema:
+            type: integer
+            example: 25
+            default: 25
+        - in: query
+          name: sort
+          description: define parameter for sorting. available options = id, topic, createdAt, or updatedAt
+          required: false
+          schema:
+            type: string
+            example: createdAt
+            default: createdAt
+        - in: query
+          name: order
+          description: define the order of the selected sort. available options = asc or desc
+          required: false
+          schema:
+            type: string
+            example: desc
+            default: desc
+        - in: query
+          name: topic
+          description: topic for filtering topic's data
+          schema:
+            type: string
+            example: topic name
       responses:
         '200':
           description: OK
@@ -419,14 +457,31 @@ paths:
                     example: 200
                   message:
                     type: string
-                    example: success to get user by id
+                    example: success to get topics
                   data:
                     type: object
                     properties:
-                      topic:
-                        $ref: '#/components/schemas/Topic'
-        '404':
-          description: Not Found
+                      topics:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Topic'
+                  pagination:
+                    type: object
+                    properties:
+                      size:
+                        type: integer
+                        example: 1
+                      totalData:
+                        type: integer
+                        example: 1
+                      totalPage:
+                        type: integer
+                        example: 1
+                      currentPage:
+                        type: integer
+                        example: 1
+        '400':
+          description: Bad Request
           content:
             application/json:
               schema:
@@ -434,13 +489,59 @@ paths:
                 properties:
                   status:
                     type: integer
-                    example: 404
+                    example: 400
                   message:
                     type: string
-                    example: failed to get topic
+                    example: page must be a number
                   data:
                     type: string
                     example: null
+                  pagination:
+                    type: object
+                    properties:
+                      size:
+                        type: integer
+                        example: 0
+                      totalData:
+                        type: integer
+                        example: 0
+                      totalPage:
+                        type: integer
+                        example: 0
+                      currentPage:
+                        type: integer
+                        example: 0
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to get topics
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: object
+                    properties:
+                      size:
+                        type: integer
+                        example: 0
+                      totalData:
+                        type: integer
+                        example: 0
+                      totalPage:
+                        type: integer
+                        example: 0
+                      currentPage:
+                        type: integer
+                        example: 0
   /topic/{topic-id}:
     get:
       tags:
@@ -660,7 +761,7 @@ paths:
                     type: string
                     example: null
   /thread/{page}:
-    post:
+    get:
       tags:
         - Thread
       summary: Get thread list
@@ -676,7 +777,7 @@ paths:
             example: 1
         - in: query
           name: limit
-          description: user limitation for per page
+          description: thread limitation for per page
           required: false
           schema:
             type: integer
@@ -684,7 +785,7 @@ paths:
             default: 25
         - in: query
           name: sort
-          description: define parameter for sorting. available options = id, title, createdAt, or updatedAt
+          description: define parameter for sorting. available options = _id, title, likes, createdAt, or updatedAt
           required: false
           schema:
             type: string
@@ -698,18 +799,19 @@ paths:
             type: string
             example: desc
             default: desc
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                topicID:
-                  type: string
-                  example: 6379fe8dad33ec4251700ded
-                title:
-                  type: string
-                  example: NextJS 13
+        - in: query
+          name: topic-id
+          description: topic's id for filtering thread
+          required: false
+          schema:
+            type: string
+            example: 6379fe8dad33ec4251700ded
+        - in: query
+          name: title
+          description: thread's title for filtering thread
+          schema:
+            type: string
+            example: NextJS 13
       responses:
         '200':
           description: OK
@@ -1154,7 +1256,7 @@ paths:
                     type: string
                     example: null
   /admin/user/{page}:
-    post:
+    get:
       tags:
         - Admin
       summary: Get user list
@@ -1178,7 +1280,7 @@ paths:
             default: 25
         - in: query
           name: sort
-          description: define parameter for sorting. available options = id, email, userName, displayName, createdAt, or updatedAt
+          description: define parameter for sorting. available options = _id, email, userName, displayName, createdAt, or updatedAt
           required: false
           schema:
             type: string
@@ -1192,21 +1294,25 @@ paths:
             type: string
             example: desc
             default: desc
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                Email:
-                  type: string
-                  example: user@charum.com
-                userName:
-                  type: string
-                  example: charumuser
-                displayName:
-                  type: string
-                  example: charum user
+        - in: query
+          name: email
+          description: user's email for filtering
+          required: false
+          schema:
+            type: string
+            example: user@charum.com
+        - in: query
+          name: userName
+          description: user's username for filtering
+          schema:
+            type: string
+            example: charumuser
+        - in: query
+          name: displayName
+          description: user's display name for filtering
+          schema:
+            type: string
+            example: charum user
       responses:
         '200':
           description: OK
@@ -1220,7 +1326,7 @@ paths:
                     example: 200
                   message:
                     type: string
-                    example: success to get user by id
+                    example: success to get users
                   data:
                     type: object
                     properties:
@@ -1803,46 +1909,6 @@ paths:
                     type: string
                     example: null
   /admin/topic:
-    get:
-      tags:
-        - Admin
-      summary: Get All Topic
-      description: Get all topics
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: integer
-                    example: 200
-                  message:
-                    type: string
-                    example: success to get user by id
-                  data:
-                    type: object
-                    properties:
-                      topic:
-                        $ref: '#/components/schemas/Topic'
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: integer
-                    example: 404
-                  message:
-                    type: string
-                    example: failed to get topic
-                  data:
-                    type: string
-                    example: null
     post:
       tags:
         - Admin
@@ -1903,6 +1969,22 @@ paths:
                       message:
                         type: string
                         example: This field is required
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: unauthorized
+                  data:
+                    type: string
+                    example: null
         '409':
           description: Conflict
           content:
@@ -1935,7 +2017,150 @@ paths:
                   data:
                     type: string
                     example: null
-  /admin/topic/{topic-id}:
+  /admin/topic/{page}:
+    get:
+      tags:
+        - Topic
+      summary: Get all topic
+      description: Get topic list with filter, pagination, and sorting
+      operationId: AdminGetTopicWithPagination
+      parameters:
+        - in: path
+          name: page
+          description: page displayed
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: limit
+          description: topic limitation for per page
+          required: false
+          schema:
+            type: integer
+            example: 25
+            default: 25
+        - in: query
+          name: sort
+          description: define parameter for sorting. available options = id, topic, createdAt, or updatedAt
+          required: false
+          schema:
+            type: string
+            example: createdAt
+            default: createdAt
+        - in: query
+          name: order
+          description: define the order of the selected sort. available options = asc or desc
+          required: false
+          schema:
+            type: string
+            example: desc
+            default: desc
+        - in: query
+          name: topic
+          description: topic for filtering topic's data
+          schema:
+            type: string
+            example: topic name
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to get topics
+                  data:
+                    type: object
+                    properties:
+                      topics:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Topic'
+                  pagination:
+                    type: object
+                    properties:
+                      size:
+                        type: integer
+                        example: 1
+                      totalData:
+                        type: integer
+                        example: 1
+                      totalPage:
+                        type: integer
+                        example: 1
+                      currentPage:
+                        type: integer
+                        example: 1
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: page must be a number
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: object
+                    properties:
+                      size:
+                        type: integer
+                        example: 0
+                      totalData:
+                        type: integer
+                        example: 0
+                      totalPage:
+                        type: integer
+                        example: 0
+                      currentPage:
+                        type: integer
+                        example: 0
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to get topics
+                  data:
+                    type: string
+                    example: null
+                  pagination:
+                    type: object
+                    properties:
+                      size:
+                        type: integer
+                        example: 0
+                      totalData:
+                        type: integer
+                        example: 0
+                      totalPage:
+                        type: integer
+                        example: 0
+                      currentPage:
+                        type: integer
+                        example: 0
+  /admin/topic/id/{topic-id}:
     get:
       tags:
         - Admin
@@ -2919,7 +3144,7 @@ paths:
                     type: string
                     example: null
   /admin/thread/{page}:
-    post:
+    get:
       tags:
         - Admin
       summary: Get thread list
@@ -2957,18 +3182,18 @@ paths:
             type: string
             example: desc
             default: desc
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                topicID:
-                  type: string
-                  example: 6379fe8dad33ec4251700ded
-                title:
-                  type: string
-                  example: NextJS 13
+        - in: query
+          name: topic-id
+          description: topic's id for filtering thread
+          schema: 
+            type: string
+            example: 6379fe8dad33ec4251700ded
+        - in: query
+          name: title
+          description: thread's title for filtering
+          schema: 
+            type: string
+            example: NextJS 13
       responses:
         '200':
           description: OK
@@ -3039,6 +3264,22 @@ paths:
                       currentPage:
                         type: integer
                         example: 0
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: unauthorized
+                  data:
+                    type: string
+                    example: null
         '500':
           description: Internal Server Error
           content:
@@ -3155,6 +3396,22 @@ paths:
                   data:
                    type: string
                    example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: unauthorized
+                  data:
+                    type: string
+                    example: null
         '404':
           description: Not Found
           content:
