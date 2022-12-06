@@ -6,6 +6,8 @@ import (
 	mock "github.com/stretchr/testify/mock"
 	primitive "go.mongodb.org/mongo-driver/bson/primitive"
 
+	query "charum/dto/query"
+
 	topics "charum/business/topics"
 )
 
@@ -49,29 +51,6 @@ func (_m *Repository) DeleteTopic(id primitive.ObjectID) error {
 	return r0
 }
 
-// GetAll provides a mock function with given fields:
-func (_m *Repository) GetAll() ([]topics.Domain, error) {
-	ret := _m.Called()
-
-	var r0 []topics.Domain
-	if rf, ok := ret.Get(0).(func() []topics.Domain); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]topics.Domain)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetByID provides a mock function with given fields: id
 func (_m *Repository) GetByID(id primitive.ObjectID) (topics.Domain, error) {
 	ret := _m.Called(id)
@@ -112,6 +91,36 @@ func (_m *Repository) GetByTopic(topic string) (topics.Domain, error) {
 	}
 
 	return r0, r1
+}
+
+// GetManyWithPagination provides a mock function with given fields: _a0, domain
+func (_m *Repository) GetManyWithPagination(_a0 query.Request, domain *topics.Domain) ([]topics.Domain, int, error) {
+	ret := _m.Called(_a0, domain)
+
+	var r0 []topics.Domain
+	if rf, ok := ret.Get(0).(func(query.Request, *topics.Domain) []topics.Domain); ok {
+		r0 = rf(_a0, domain)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]topics.Domain)
+		}
+	}
+
+	var r1 int
+	if rf, ok := ret.Get(1).(func(query.Request, *topics.Domain) int); ok {
+		r1 = rf(_a0, domain)
+	} else {
+		r1 = ret.Get(1).(int)
+	}
+
+	var r2 error
+	if rf, ok := ret.Get(2).(func(query.Request, *topics.Domain) error); ok {
+		r2 = rf(_a0, domain)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
 }
 
 // UpdateTopic provides a mock function with given fields: domain

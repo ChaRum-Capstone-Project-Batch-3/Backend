@@ -105,16 +105,18 @@ Read
 func (tc *ThreadController) GetManyWithPagination(c echo.Context) error {
 	page, err := strconv.Atoi(c.Param("page"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "page must be a number",
-			Data:    nil,
+		return c.JSON(http.StatusBadRequest, helper.BaseResponseWithPagination{
+			Status:     http.StatusBadRequest,
+			Message:    "page must be a number",
+			Data:       nil,
+			Pagination: helper.Page{},
 		})
 	} else if page < 1 {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "page must be greater than 0",
-			Data:    nil,
+		return c.JSON(http.StatusBadRequest, helper.BaseResponseWithPagination{
+			Status:     http.StatusBadRequest,
+			Message:    "page must be greater than 0",
+			Data:       nil,
+			Pagination: helper.Page{},
 		})
 	}
 
@@ -124,21 +126,23 @@ func (tc *ThreadController) GetManyWithPagination(c echo.Context) error {
 	}
 	limitNumber, err := strconv.Atoi(limit)
 	if err != nil || limitNumber < 1 {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "limit must be a number and greater than 0",
-			Data:    nil,
+		return c.JSON(http.StatusBadRequest, helper.BaseResponseWithPagination{
+			Status:     http.StatusBadRequest,
+			Message:    "limit must be a number and greater than 0",
+			Data:       nil,
+			Pagination: helper.Page{},
 		})
 	}
 
 	sort := c.QueryParam("sort")
 	if sort == "" {
 		sort = "createdAt"
-	} else if !(sort == "id" || sort == "title" || sort == "createdAt" || sort == "updatedAt" || sort == "likes") {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "sort must be id, title, createdAt, updatedAt, or likes",
-			Data:    nil,
+	} else if !(sort == "_id" || sort == "title" || sort == "createdAt" || sort == "updatedAt" || sort == "likes") {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponseWithPagination{
+			Status:     http.StatusBadRequest,
+			Message:    "sort must be _id, title, likes, createdAt, or updatedAt",
+			Data:       nil,
+			Pagination: helper.Page{},
 		})
 	}
 
@@ -146,25 +150,38 @@ func (tc *ThreadController) GetManyWithPagination(c echo.Context) error {
 	if order == "" {
 		order = "desc"
 	} else if !(order == "asc" || order == "desc") {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "order must be asc or desc",
-			Data:    nil,
+		return c.JSON(http.StatusBadRequest, helper.BaseResponseWithPagination{
+			Status:     http.StatusBadRequest,
+			Message:    "order must be asc or desc",
+			Data:       nil,
+			Pagination: helper.Page{},
 		})
 	}
 
-	userInput := request.Filter{}
-	c.Bind(&userInput)
-
-	userInputDomain := userInput.ToDomain()
-	if userInput.TopicID != "" {
-		userInputDomain.TopicID, err = primitive.ObjectIDFromHex(userInput.TopicID)
+	var topicID primitive.ObjectID
+	if c.QueryParam("topic-id") != "" {
+		topicID, err = primitive.ObjectIDFromHex(c.QueryParam("topic-id"))
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, helper.BaseResponseWithPagination{
+				Status:     http.StatusBadRequest,
+				Message:    "invalid topic id",
+				Data:       nil,
+				Pagination: helper.Page{},
+			})
+		}
 	}
+
+	userInputDomain := threads.Domain{
+		TopicID: topicID,
+		Title:   c.QueryParam("title"),
+	}
+
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "invalid topic id",
-			Data:    nil,
+		return c.JSON(http.StatusBadRequest, helper.BaseResponseWithPagination{
+			Status:     http.StatusBadRequest,
+			Message:    "invalid topic id",
+			Data:       nil,
+			Pagination: helper.Page{},
 		})
 	}
 
@@ -175,7 +192,7 @@ func (tc *ThreadController) GetManyWithPagination(c echo.Context) error {
 		Order: order,
 	}
 
-	threads, totalPage, totalData, err := tc.threadUseCase.GetManyWithPagination(pagination, userInputDomain)
+	threads, totalPage, totalData, err := tc.threadUseCase.GetManyWithPagination(pagination, &userInputDomain)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
 			Status:     http.StatusInternalServerError,

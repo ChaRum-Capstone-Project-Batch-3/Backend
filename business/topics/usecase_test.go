@@ -3,6 +3,7 @@ package topics_test
 import (
 	"charum/business/topics"
 	_topicMock "charum/business/topics/mocks"
+	dtoPagination "charum/dto/pagination"
 	"errors"
 	"testing"
 	"time"
@@ -109,23 +110,40 @@ func TestGetByTopic(t *testing.T) {
 	})
 }
 
-func TestGetAll(t *testing.T) {
-	t.Run("Test case 1 | Valid get all topic", func(t *testing.T) {
-		topicRepository.On("GetAll").Return([]topics.Domain{topicDomain}, nil).Once()
+func TestGetManyWithPagination(t *testing.T) {
+	t.Run("Test case 1 | Valid get thread with sort and order", func(t *testing.T) {
+		pagination := dtoPagination.Request{
+			Page:  1,
+			Limit: 2,
+			Sort:  "createdAt",
+			Order: "desc",
+		}
+		topicRepository.On("GetManyWithPagination", mock.Anything, mock.Anything).Return([]topics.Domain{topicDomain}, 1, nil).Once()
 
-		result, err := topicUseCase.GetAll()
+		result, totalPage, totalData, err := topicUseCase.GetManyWithPagination(pagination, &topicDomain)
 
 		assert.NotNil(t, result)
+		assert.NotZero(t, totalPage)
+		assert.NotZero(t, totalData)
 		assert.Nil(t, err)
 	})
 
-	t.Run("Test case 2 | Invalid get all topic | Error when getting all topic", func(t *testing.T) {
-		expectedErr := errors.New("failed to get all topic")
-		topicRepository.On("GetAll").Return([]topics.Domain{}, expectedErr).Once()
+	t.Run("Test case 2 | Invalid get thread with sort and order | Error when getting thread with sort and order", func(t *testing.T) {
+		pagination := dtoPagination.Request{
+			Page:  1,
+			Limit: 2,
+			Sort:  "createdAt",
+			Order: "asc",
+		}
 
-		result, err := topicUseCase.GetAll()
+		expectedErr := errors.New("failed to get topics")
+		topicRepository.On("GetManyWithPagination", mock.Anything, mock.Anything).Return([]topics.Domain{}, 0, expectedErr).Once()
+
+		result, totalPage, totalData, err := topicUseCase.GetManyWithPagination(pagination, &topicDomain)
 
 		assert.Equal(t, []topics.Domain{}, result)
+		assert.Zero(t, totalPage)
+		assert.Zero(t, totalData)
 		assert.Equal(t, err, expectedErr)
 	})
 }
