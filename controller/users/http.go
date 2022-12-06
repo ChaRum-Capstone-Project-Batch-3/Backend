@@ -204,7 +204,7 @@ func (userCtrl *UserController) GetManyWithPagination(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.BaseResponseWithPagination{
 		Status:  http.StatusOK,
-		Message: "success to get all users",
+		Message: "success to get users",
 		Data: map[string]interface{}{
 			"users": response.FromDomainArray(users),
 		},
