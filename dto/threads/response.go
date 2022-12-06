@@ -25,5 +25,5 @@ type Response struct {
 
 type Like struct {
 	User      users.Domain       `json:"user"`
-	CreatedAt primitive.DateTime `json:"createdAt"`
+	Timestamp primitive.DateTime `json:"timestamp" bson:"timestamp"`
 }
