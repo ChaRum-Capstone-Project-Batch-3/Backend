@@ -2,6 +2,7 @@ package topics
 
 import (
 	"charum/business/topics"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -31,4 +32,12 @@ func (topic *Model) ToDomain() topics.Domain {
 		CreatedAt:   topic.CreatedAt,
 		UpdatedAt:   topic.UpdatedAt,
 	}
+}
+
+func ToArrayDomain(data []Model) []topics.Domain {
+	var result []topics.Domain
+	for _, v := range data {
+		result = append(result, v.ToDomain())
+	}
+	return result
 }

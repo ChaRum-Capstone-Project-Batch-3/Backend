@@ -159,10 +159,10 @@ func (userCtrl *UserController) GetManyWithPagination(c echo.Context) error {
 	sort := c.QueryParam("sort")
 	if sort == "" {
 		sort = "createdAt"
-	} else if !(sort == "id" || sort == "email" || sort == "userName" || sort == "displayName" || sort == "createdAt" || sort == "updatedAt") {
+	} else if !(sort == "_id" || sort == "email" || sort == "userName" || sort == "displayName" || sort == "createdAt" || sort == "updatedAt") {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponseWithPagination{
 			Status:     http.StatusBadRequest,
-			Message:    "sort must be id, email, userName, displayName, createdAt, or updatedAt",
+			Message:    "sort must be _id, email, userName, displayName, createdAt, or updatedAt",
 			Data:       nil,
 			Pagination: helper.Page{},
 		})
@@ -180,8 +180,11 @@ func (userCtrl *UserController) GetManyWithPagination(c echo.Context) error {
 		})
 	}
 
-	userInput := request.Filter{}
-	c.Bind(&userInput)
+	userInputDomain := users.Domain{
+		Email:       c.QueryParam("email"),
+		UserName:    c.QueryParam("username"),
+		DisplayName: c.QueryParam("display-name"),
+	}
 
 	pagination := dtoPagination.Request{
 		Page:  page,
@@ -190,7 +193,7 @@ func (userCtrl *UserController) GetManyWithPagination(c echo.Context) error {
 		Order: order,
 	}
 
-	users, totalPage, totalData, err := userCtrl.userUseCase.GetManyWithPagination(pagination, userInput.ToDomain())
+	users, totalPage, totalData, err := userCtrl.userUseCase.GetManyWithPagination(pagination, &userInputDomain)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
 			Status:  http.StatusInternalServerError,

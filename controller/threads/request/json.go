@@ -53,14 +53,3 @@ func (req *Thread) Validate() []helper.ValidationError {
 
 	return nil
 }
-
-type Filter struct {
-	TopicID string `json:"topicID"`
-	Title   string `json:"title"`
-}
-
-func (req *Filter) ToDomain() *threads.Domain {
-	return &threads.Domain{
-		Title: req.Title,
-	}
-}
