@@ -2020,7 +2020,7 @@ paths:
   /admin/topic/{page}:
     get:
       tags:
-        - Topic
+        - Admin
       summary: Get all topic
       description: Get topic list with filter, pagination, and sorting
       operationId: AdminGetTopicWithPagination
