@@ -2,11 +2,14 @@ package topics
 
 import (
 	"charum/business/topics"
+	dtoQuery "charum/dto/query"
 	"context"
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"time"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type topicRepository struct {
@@ -58,25 +61,39 @@ func (tr *topicRepository) GetByID(id primitive.ObjectID) (topics.Domain, error)
 	return result.ToDomain(), nil
 }
 
-func (tr *topicRepository) GetAll() ([]topics.Domain, error) {
+func (tr *topicRepository) GetManyWithPagination(query dtoQuery.Request, domain *topics.Domain) ([]topics.Domain, int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
+	skip64 := int64(query.Skip)
+	limit64 := int64(query.Limit)
+
 	var result []Model
-	cursor, err := tr.collection.Find(ctx, bson.M{})
+	filter := bson.M{}
+
+	if domain.Topic != "" {
+		filter["topic"] = bson.M{"$regex": domain.Topic}
+	}
+
+	cursor, err := tr.collection.Find(ctx, filter, &options.FindOptions{
+		Skip:  &skip64,
+		Limit: &limit64,
+		Sort:  bson.M{query.Sort: query.Order},
+	})
 	if err != nil {
-		return []topics.Domain{}, err
+		return []topics.Domain{}, 0, err
 	}
+
+	totalData, err := tr.collection.CountDocuments(ctx, filter)
+	if err != nil {
+		return []topics.Domain{}, 0, err
+	}
+
 	if err = cursor.All(ctx, &result); err != nil {
-		return []topics.Domain{}, err
+		return []topics.Domain{}, 0, err
 	}
 
-	var results []topics.Domain
-	for _, data := range result {
-		results = append(results, data.ToDomain())
-	}
-
-	return results, nil
+	return ToArrayDomain(result), int(totalData), nil
 }
 
 func (tr *topicRepository) GetByTopic(topic string) (topics.Domain, error) {

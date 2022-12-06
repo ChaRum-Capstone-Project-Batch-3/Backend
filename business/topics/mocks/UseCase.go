@@ -3,7 +3,10 @@
 package mocks
 
 import (
+	pagination "charum/dto/pagination"
+
 	mock "github.com/stretchr/testify/mock"
+
 	primitive "go.mongodb.org/mongo-driver/bson/primitive"
 
 	topics "charum/business/topics"
@@ -56,29 +59,6 @@ func (_m *UseCase) DeleteTopic(id primitive.ObjectID) (topics.Domain, error) {
 	return r0, r1
 }
 
-// GetAll provides a mock function with given fields:
-func (_m *UseCase) GetAll() ([]topics.Domain, error) {
-	ret := _m.Called()
-
-	var r0 []topics.Domain
-	if rf, ok := ret.Get(0).(func() []topics.Domain); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]topics.Domain)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetByID provides a mock function with given fields: id
 func (_m *UseCase) GetByID(id primitive.ObjectID) (topics.Domain, error) {
 	ret := _m.Called(id)
@@ -119,6 +99,43 @@ func (_m *UseCase) GetByTopic(topic string) (topics.Domain, error) {
 	}
 
 	return r0, r1
+}
+
+// GetManyWithPagination provides a mock function with given fields: _a0, domain
+func (_m *UseCase) GetManyWithPagination(_a0 pagination.Request, domain *topics.Domain) ([]topics.Domain, int, int, error) {
+	ret := _m.Called(_a0, domain)
+
+	var r0 []topics.Domain
+	if rf, ok := ret.Get(0).(func(pagination.Request, *topics.Domain) []topics.Domain); ok {
+		r0 = rf(_a0, domain)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]topics.Domain)
+		}
+	}
+
+	var r1 int
+	if rf, ok := ret.Get(1).(func(pagination.Request, *topics.Domain) int); ok {
+		r1 = rf(_a0, domain)
+	} else {
+		r1 = ret.Get(1).(int)
+	}
+
+	var r2 int
+	if rf, ok := ret.Get(2).(func(pagination.Request, *topics.Domain) int); ok {
+		r2 = rf(_a0, domain)
+	} else {
+		r2 = ret.Get(2).(int)
+	}
+
+	var r3 error
+	if rf, ok := ret.Get(3).(func(pagination.Request, *topics.Domain) error); ok {
+		r3 = rf(_a0, domain)
+	} else {
+		r3 = ret.Error(3)
+	}
+
+	return r0, r1, r2, r3
 }
 
 // UpdateTopic provides a mock function with given fields: id, domain

@@ -1,9 +1,13 @@
 package topics
 
 import (
+	dtoPagination "charum/dto/pagination"
+	dtoQuery "charum/dto/query"
 	"errors"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"math"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type TopicUseCase struct {
@@ -20,8 +24,8 @@ func NewTopicUseCase(tr Repository) UseCase {
 Create topic
 */
 
-func (uc *TopicUseCase) CreateTopic(domain *Domain) (Domain, error) {
-	_, err := uc.topicsRepository.GetByTopic(domain.Topic)
+func (tc *TopicUseCase) CreateTopic(domain *Domain) (Domain, error) {
+	_, err := tc.topicsRepository.GetByTopic(domain.Topic)
 	if err == nil {
 		return Domain{}, errors.New("topic already exist")
 	}
@@ -30,7 +34,7 @@ func (uc *TopicUseCase) CreateTopic(domain *Domain) (Domain, error) {
 	domain.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
 	domain.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
 
-	result, err := uc.topicsRepository.CreateTopic(domain)
+	result, err := tc.topicsRepository.CreateTopic(domain)
 	if err != nil {
 		return Domain{}, errors.New("failed to create topic")
 	}
@@ -41,25 +45,43 @@ func (uc *TopicUseCase) CreateTopic(domain *Domain) (Domain, error) {
 Get topic
 */
 
-func (uc *TopicUseCase) GetByID(id primitive.ObjectID) (Domain, error) {
-	result, err := uc.topicsRepository.GetByID(id)
+func (tc *TopicUseCase) GetByID(id primitive.ObjectID) (Domain, error) {
+	result, err := tc.topicsRepository.GetByID(id)
 	if err != nil {
 		return Domain{}, errors.New("failed to get topic")
 	}
 	return result, nil
 }
 
-func (uc *TopicUseCase) GetAll() ([]Domain, error) {
-	result, err := uc.topicsRepository.GetAll()
-	if err != nil {
-		return []Domain{}, errors.New("failed to get all topic")
+func (tc *TopicUseCase) GetManyWithPagination(pagination dtoPagination.Request, domain *Domain) ([]Domain, int, int, error) {
+	skip := pagination.Limit * (pagination.Page - 1)
+	var orderInMongo int
+
+	if pagination.Order == "asc" {
+		orderInMongo = 1
+	} else {
+		orderInMongo = -1
 	}
-	return result, nil
+
+	query := dtoQuery.Request{
+		Skip:  skip,
+		Limit: pagination.Limit,
+		Order: orderInMongo,
+		Sort:  pagination.Sort,
+	}
+
+	users, totalData, err := tc.topicsRepository.GetManyWithPagination(query, domain)
+	if err != nil {
+		return []Domain{}, 0, 0, errors.New("failed to get topics")
+	}
+
+	totalPage := math.Ceil(float64(totalData) / float64(pagination.Limit))
+	return users, int(totalPage), totalData, nil
 }
 
 // get by topic
-func (uc *TopicUseCase) GetByTopic(topic string) (Domain, error) {
-	result, err := uc.topicsRepository.GetByTopic(topic)
+func (tc *TopicUseCase) GetByTopic(topic string) (Domain, error) {
+	result, err := tc.topicsRepository.GetByTopic(topic)
 	if err != nil {
 		return Domain{}, errors.New("failed to get topic")
 	}
@@ -69,14 +91,14 @@ func (uc *TopicUseCase) GetByTopic(topic string) (Domain, error) {
 /*
 Update topic
 */
-func (uc *TopicUseCase) UpdateTopic(id primitive.ObjectID, domain *Domain) (Domain, error) {
-	result, err := uc.topicsRepository.GetByID(id)
+func (tc *TopicUseCase) UpdateTopic(id primitive.ObjectID, domain *Domain) (Domain, error) {
+	result, err := tc.topicsRepository.GetByID(id)
 	if err != nil {
 		return Domain{}, errors.New("failed to get topic")
 	}
 
 	if domain.Topic != result.Topic {
-		_, err := uc.topicsRepository.GetByTopic(domain.Topic)
+		_, err := tc.topicsRepository.GetByTopic(domain.Topic)
 		if err == nil {
 			return Domain{}, errors.New("topic already exist")
 		}
@@ -86,7 +108,7 @@ func (uc *TopicUseCase) UpdateTopic(id primitive.ObjectID, domain *Domain) (Doma
 	// update topic and description
 	result.Topic = domain.Topic
 	result.Description = domain.Description
-	updatedResult, err := uc.topicsRepository.UpdateTopic(&result)
+	updatedResult, err := tc.topicsRepository.UpdateTopic(&result)
 	if err != nil {
 		return Domain{}, errors.New("failed to update topic")
 	}
@@ -97,13 +119,13 @@ func (uc *TopicUseCase) UpdateTopic(id primitive.ObjectID, domain *Domain) (Doma
 Delete topic
 */
 
-func (uc *TopicUseCase) DeleteTopic(id primitive.ObjectID) (Domain, error) {
-	result, err := uc.topicsRepository.GetByID(id)
+func (tc *TopicUseCase) DeleteTopic(id primitive.ObjectID) (Domain, error) {
+	result, err := tc.topicsRepository.GetByID(id)
 	if err != nil {
 		return Domain{}, errors.New("failed to get topic")
 	}
 
-	err = uc.topicsRepository.DeleteTopic(id)
+	err = tc.topicsRepository.DeleteTopic(id)
 	if err != nil {
 		return Domain{}, errors.New("failed to delete topic")
 	}

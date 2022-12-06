@@ -7,9 +7,11 @@ import (
 	"charum/business/topics"
 	"charum/controller/topics/request"
 	"charum/controller/topics/response"
+	dtoPagination "charum/dto/pagination"
 	"charum/helper"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -101,21 +103,93 @@ func (topicCtrl *TopicController) GetByID(c echo.Context) error {
 	})
 }
 
-func (topicCtrl *TopicController) GetAll(c echo.Context) error {
-	topic, err := topicCtrl.TopicUseCase.GetAll()
+func (topicCtrl *TopicController) GetManyWithPagination(c echo.Context) error {
+	page, err := strconv.Atoi(c.Param("page"))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+		return c.JSON(http.StatusBadRequest, helper.BaseResponseWithPagination{
+			Status:     http.StatusBadRequest,
+			Message:    "page must be a number",
+			Data:       nil,
+			Pagination: helper.Page{},
+		})
+	} else if page < 1 {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponseWithPagination{
+			Status:     http.StatusBadRequest,
+			Message:    "page must be greater than 0",
+			Data:       nil,
+			Pagination: helper.Page{},
+		})
+	}
+
+	limit := c.QueryParam("limit")
+	if limit == "" {
+		limit = "25"
+	}
+	limitNumber, err := strconv.Atoi(limit)
+	if err != nil || limitNumber < 1 {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponseWithPagination{
+			Status:     http.StatusBadRequest,
+			Message:    "limit must be a number and greater than 0",
+			Data:       nil,
+			Pagination: helper.Page{},
+		})
+	}
+
+	sort := c.QueryParam("sort")
+	if sort == "" {
+		sort = "createdAt"
+	} else if !(sort == "_id" || sort == "topic" || sort == "createdAt" || sort == "updatedAt") {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponseWithPagination{
+			Status:     http.StatusBadRequest,
+			Message:    "sort must be _id, topic, createdAt, or updatedAt",
+			Data:       nil,
+			Pagination: helper.Page{},
+		})
+	}
+
+	order := c.QueryParam("order")
+	if order == "" {
+		order = "desc"
+	} else if !(order == "asc" || order == "desc") {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponseWithPagination{
+			Status:     http.StatusBadRequest,
+			Message:    "order must be asc or desc",
+			Data:       nil,
+			Pagination: helper.Page{},
+		})
+	}
+
+	userInputDomain := topics.Domain{
+		Topic: c.QueryParam("topic"),
+	}
+
+	pagination := dtoPagination.Request{
+		Page:  page,
+		Limit: limitNumber,
+		Sort:  sort,
+		Order: order,
+	}
+
+	users, totalPage, totalData, err := topicCtrl.TopicUseCase.GetManyWithPagination(pagination, &userInputDomain)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
 			Status:  http.StatusInternalServerError,
 			Message: err.Error(),
 			Data:    nil,
 		})
 	}
 
-	return c.JSON(http.StatusOK, helper.BaseResponse{
+	return c.JSON(http.StatusOK, helper.BaseResponseWithPagination{
 		Status:  http.StatusOK,
-		Message: "success get all topics",
+		Message: "success to get topics",
 		Data: map[string]interface{}{
-			"topics": response.FromDomainArray(topic),
+			"users": response.FromDomainArray(users),
+		},
+		Pagination: helper.Page{
+			Size:        limitNumber,
+			TotalData:   totalData,
+			TotalPage:   totalPage,
+			CurrentPage: page,
 		},
 	})
 }
@@ -231,8 +305,8 @@ func (topicCtrl *TopicController) Delete(c echo.Context) error {
 	for _, thread := range threads {
 		err := topicCtrl.ThreadUseCase.DeleteByThreadID(thread.Id)
 		if err != nil {
-			return c.JSON(http.StatusNotFound, helper.BaseResponse{
-				Status:  http.StatusNotFound,
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+				Status:  http.StatusInternalServerError,
 				Message: err.Error(),
 				Data:    nil,
 			})
@@ -240,8 +314,8 @@ func (topicCtrl *TopicController) Delete(c echo.Context) error {
 
 		err = topicCtrl.CommentUseCase.DeleteAllByThreadID(thread.Id)
 		if err != nil {
-			return c.JSON(http.StatusNotFound, helper.BaseResponse{
-				Status:  http.StatusNotFound,
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+				Status:  http.StatusInternalServerError,
 				Message: err.Error(),
 				Data:    nil,
 			})
@@ -249,8 +323,8 @@ func (topicCtrl *TopicController) Delete(c echo.Context) error {
 
 		err = topicCtrl.FollowThreadUseCase.DeleteAllByThreadID(thread.Id)
 		if err != nil {
-			return c.JSON(http.StatusNotFound, helper.BaseResponse{
-				Status:  http.StatusNotFound,
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+				Status:  http.StatusInternalServerError,
 				Message: err.Error(),
 				Data:    nil,
 			})
