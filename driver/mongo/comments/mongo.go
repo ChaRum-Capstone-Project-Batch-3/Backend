@@ -98,6 +98,22 @@ func (cr *commentRepository) CountByThreadID(threadID primitive.ObjectID) (int, 
 	return int(count), nil
 }
 
+func (cr *commentRepository) GetByIDAndThreadID(id primitive.ObjectID, threadID primitive.ObjectID) (comments.Domain, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	var result Model
+	err := cr.collection.FindOne(ctx, bson.M{
+		"_id":      id,
+		"threadID": threadID,
+	}).Decode(&result)
+	if err != nil {
+		return comments.Domain{}, err
+	}
+
+	return result.ToDomain(), nil
+}
+
 /*
 Update
 */

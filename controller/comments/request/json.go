@@ -14,6 +14,7 @@ import (
 type Comment struct {
 	ThreadID primitive.ObjectID `json:"threadID" bson:"threadID"`
 	UserID   primitive.ObjectID `json:"userID" bson:"userID"`
+	ParentID primitive.ObjectID `json:"parentID" bson:"parentID"`
 	Comment  string             `json:"comment" validate:"required" bson:"comment"`
 }
 
@@ -21,6 +22,7 @@ func (req *Comment) ToDomain() *comments.Domain {
 	return &comments.Domain{
 		ThreadID: req.ThreadID,
 		UserID:   req.UserID,
+		ParentID: req.ParentID,
 		Comment:  req.Comment,
 	}
 }

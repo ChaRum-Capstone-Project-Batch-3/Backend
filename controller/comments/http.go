@@ -7,6 +7,7 @@ import (
 	"charum/helper"
 	"charum/util"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -63,7 +64,7 @@ func (cc *CommentController) Create(c echo.Context) error {
 	comment, err := cc.CommentUseCase.Create(commentInput.ToDomain())
 	if err != nil {
 		statusCode := http.StatusInternalServerError
-		if err.Error() == "failed to get thread" || err.Error() == "failed to get user" {
+		if strings.Contains(err.Error(), "failed to get") {
 			statusCode = http.StatusNotFound
 		}
 

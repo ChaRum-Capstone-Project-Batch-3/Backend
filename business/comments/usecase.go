@@ -29,9 +29,12 @@ Create
 */
 
 func (cu *CommentUseCase) Create(domain *Domain) (Domain, error) {
-	_, err := cu.userRepository.GetByID(domain.UserID)
-	if err != nil {
-		return Domain{}, errors.New("failed to get user")
+	var err error
+	if domain.ParentID != primitive.NilObjectID {
+		_, err := cu.commentRepository.GetByIDAndThreadID(domain.ParentID, domain.ThreadID)
+		if err != nil {
+			return Domain{}, errors.New("failed to get parent comment")
+		}
 	}
 
 	_, err = cu.threadRepository.GetByID(domain.ThreadID)
@@ -79,6 +82,7 @@ func (cu *CommentUseCase) DomainToResponse(comment Domain) (dtoComment.Response,
 
 	responseComment.Id = comment.Id
 	responseComment.ThreadID = comment.ThreadID
+	responseComment.ParentID = comment.ParentID
 	responseComment.User = user
 	responseComment.Comment = comment.Comment
 	responseComment.CreatedAt = comment.CreatedAt
@@ -121,7 +125,7 @@ Update
 */
 
 func (cu *CommentUseCase) Update(domain *Domain) (Domain, error) {
-	comment, err := cu.commentRepository.GetByID(domain.Id)
+	comment, err := cu.commentRepository.GetByIDAndThreadID(domain.Id, domain.ThreadID)
 	if err != nil {
 		return Domain{}, errors.New("failed to get comment")
 	}
