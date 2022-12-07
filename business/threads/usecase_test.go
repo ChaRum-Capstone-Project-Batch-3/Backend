@@ -58,9 +58,14 @@ func TestMain(m *testing.M) {
 		CreatorID:   primitive.NewObjectID(),
 		Title:       "Test Thread",
 		Description: "Test Thread Description",
-		Likes:       []threads.Like{},
-		CreatedAt:   primitive.NewDateTimeFromTime(time.Now()),
-		UpdatedAt:   primitive.NewDateTimeFromTime(time.Now()),
+		Likes: []threads.Like{
+			{
+				UserID:    primitive.NewObjectID(),
+				Timestamp: primitive.NewDateTimeFromTime(time.Now()),
+			},
+		},
+		CreatedAt: primitive.NewDateTimeFromTime(time.Now()),
+		UpdatedAt: primitive.NewDateTimeFromTime(time.Now()),
 	}
 
 	m.Run()
@@ -272,6 +277,27 @@ func TestDomainToResponse(t *testing.T) {
 	})
 }
 
+func TestGetLikedByUserID(t *testing.T) {
+	t.Run("Test case 1 | Valid get liked thread by user id", func(t *testing.T) {
+		threadRepository.On("GetLikedByUserID", threadDomain.CreatorID).Return([]threads.Domain{threadDomain}, nil).Once()
+
+		result, err := threadUseCase.GetLikedByUserID(threadDomain.CreatorID)
+
+		assert.NotNil(t, result)
+		assert.Nil(t, err)
+	})
+
+	t.Run("Test case 2 | Invalid get liked thread by user id | Error when getting thread", func(t *testing.T) {
+		expectedErr := errors.New("failed to get threads")
+		threadRepository.On("GetLikedByUserID", threadDomain.CreatorID).Return([]threads.Domain{}, expectedErr).Once()
+
+		result, err := threadUseCase.GetLikedByUserID(threadDomain.CreatorID)
+
+		assert.Equal(t, []threads.Domain{}, result)
+		assert.Equal(t, err, expectedErr)
+	})
+}
+
 func TestDomainToResponseArray(t *testing.T) {
 	t.Run("Test case 1 | Valid domain to response array", func(t *testing.T) {
 		userRepository.On("GetByID", threadDomain.CreatorID).Return(userDomain, nil).Once()
@@ -418,6 +444,66 @@ func TestSuspendByUserID(t *testing.T) {
 		threadRepository.On("SuspendByUserID", mock.Anything).Return(expectedErr).Once()
 
 		err := threadUseCase.SuspendByUserID(threadDomain.CreatorID)
+
+		assert.Equal(t, expectedErr, err)
+	})
+}
+
+func TestLike(t *testing.T) {
+	t.Run("Test case 1 | Valid like thread", func(t *testing.T) {
+		threadRepository.On("CheckLikedByUserID", threadDomain.CreatorID, threadDomain.Id).Return(errors.New("not found")).Once()
+		threadRepository.On("AppendLike", threadDomain.CreatorID, threadDomain.Id).Return(nil).Once()
+
+		err := threadUseCase.Like(threadDomain.CreatorID, threadDomain.Id)
+
+		assert.Nil(t, err)
+	})
+
+	t.Run("Test case 2 | Invalid like thread | Error when checking liked by user id", func(t *testing.T) {
+		expectedErr := errors.New("failed to like thread")
+		threadRepository.On("CheckLikedByUserID", threadDomain.CreatorID, threadDomain.Id).Return(errors.New("not found")).Once()
+		threadRepository.On("AppendLike", threadDomain.CreatorID, threadDomain.Id).Return(expectedErr).Once()
+
+		err := threadUseCase.Like(threadDomain.CreatorID, threadDomain.Id)
+
+		assert.Equal(t, expectedErr, err)
+	})
+
+	t.Run("Test case 3 | Invalid like thread | Error when appending like", func(t *testing.T) {
+		expectedErr := errors.New("user already like this thread")
+		threadRepository.On("CheckLikedByUserID", threadDomain.CreatorID, threadDomain.Id).Return(nil).Once()
+
+		err := threadUseCase.Like(threadDomain.CreatorID, threadDomain.Id)
+
+		assert.Equal(t, expectedErr, err)
+	})
+}
+
+func TestUnlike(t *testing.T) {
+	t.Run("Test case 1 | Valid unlike thread", func(t *testing.T) {
+		threadRepository.On("CheckLikedByUserID", threadDomain.CreatorID, threadDomain.Id).Return(nil).Once()
+		threadRepository.On("RemoveLike", threadDomain.CreatorID, threadDomain.Id).Return(nil).Once()
+
+		err := threadUseCase.Unlike(threadDomain.CreatorID, threadDomain.Id)
+
+		assert.Nil(t, err)
+	})
+
+	t.Run("Test case 2 | Invalid unlike thread | Error when checking liked by user id", func(t *testing.T) {
+		expectedErr := errors.New("failed to unlike thread")
+		threadRepository.On("CheckLikedByUserID", threadDomain.CreatorID, threadDomain.Id).Return(nil).Once()
+		threadRepository.On("RemoveLike", threadDomain.CreatorID, threadDomain.Id).Return(expectedErr).Once()
+
+		err := threadUseCase.Unlike(threadDomain.CreatorID, threadDomain.Id)
+
+		assert.Equal(t, expectedErr, err)
+	})
+
+	t.Run("Test case 3 | Invalid unlike thread | Error when deleting like", func(t *testing.T) {
+		expectedErr := errors.New("user not like this thread")
+		threadRepository.On("CheckLikedByUserID", threadDomain.CreatorID, threadDomain.Id).Return(errors.New("not found")).Once()
+
+		err := threadUseCase.Unlike(threadDomain.CreatorID, threadDomain.Id)
 
 		assert.Equal(t, expectedErr, err)
 	})
