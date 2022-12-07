@@ -27,13 +27,13 @@ func (br *bookmarkRepository) AddBookmark(domain *bookmarks.Domain) (bookmarks.D
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
-	res, err := br.collection.InsertOne(ctx, FromDomain(domain))
+	_, err := br.collection.InsertOne(ctx, FromDomain(domain))
 	if err != nil {
 		return bookmarks.Domain{}, err
 	}
 
-	// return data
-	result, err := br.GetByID(res.InsertedID.(primitive.ObjectID))
+	// get threadid from res
+	result, err := br.GetByID(domain.UserID, domain.ThreadID)
 	if err != nil {
 		return bookmarks.Domain{}, err
 	}

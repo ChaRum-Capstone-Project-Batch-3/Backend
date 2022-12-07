@@ -12,7 +12,6 @@ type Model struct {
 	UserName    string             `json:"userName" bson:"userName"`
 	DisplayName string             `json:"displayName" bson:"displayName"`
 	Password    string             `json:"password" bson:"password"`
-	BookmarkId  primitive.ObjectID `json:"bookmarkId" bson:"bookmarkId"`
 	IsActive    bool               `json:"isActive" bson:"isActive"`
 	Role        string             `json:"role" bson:"role"`
 	CreatedAt   primitive.DateTime `json:"createdAt" bson:"createdAt"`
@@ -26,7 +25,6 @@ func FromDomain(domain *users.Domain) *Model {
 		UserName:    domain.UserName,
 		DisplayName: domain.DisplayName,
 		Password:    domain.Password,
-		BookmarkId:  domain.BookmarkID,
 		IsActive:    domain.IsActive,
 		Role:        domain.Role,
 		CreatedAt:   domain.CreatedAt,
@@ -41,7 +39,6 @@ func (user *Model) ToDomain() users.Domain {
 		UserName:    user.UserName,
 		DisplayName: user.DisplayName,
 		Password:    user.Password,
-		BookmarkID:  user.BookmarkId,
 		IsActive:    user.IsActive,
 		Role:        user.Role,
 		CreatedAt:   user.CreatedAt,
