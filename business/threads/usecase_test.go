@@ -533,6 +533,25 @@ func TestUnlike(t *testing.T) {
 	})
 }
 
+func TestRemoveUserFromAllLikes(t *testing.T) {
+	t.Run("Test case 1 | Valid remove user from all likes", func(t *testing.T) {
+		threadRepository.On("RemoveUserFromAllLikes", threadDomain.CreatorID).Return(nil).Once()
+
+		err := threadUseCase.RemoveUserFromAllLikes(threadDomain.CreatorID)
+
+		assert.Nil(t, err)
+	})
+
+	t.Run("Test case 2 | Invalid remove user from all likes | Error when removing user from all likes", func(t *testing.T) {
+		expectedErr := errors.New("failed to remove user from all likes")
+		threadRepository.On("RemoveUserFromAllLikes", threadDomain.CreatorID).Return(expectedErr).Once()
+
+		err := threadUseCase.RemoveUserFromAllLikes(threadDomain.CreatorID)
+
+		assert.Equal(t, expectedErr, err)
+	})
+}
+
 func TestDelete(t *testing.T) {
 	t.Run("Test case 1 | Valid delete thread", func(t *testing.T) {
 		threadRepository.On("GetByID", threadDomain.Id).Return(threadDomain, nil).Once()
