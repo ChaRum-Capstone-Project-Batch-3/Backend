@@ -34,11 +34,13 @@ type Repository interface {
 	GetByID(id primitive.ObjectID) (Domain, error)
 	GetAllByTopicID(topicID primitive.ObjectID) ([]Domain, error)
 	GetAllByUserID(userID primitive.ObjectID) ([]Domain, error)
-	GetLikeByUserID(userID primitive.ObjectID, threadID primitive.ObjectID) error
+	GetLikedByUserID(userID primitive.ObjectID) ([]Domain, error)
+	CheckLikedByUserID(userID primitive.ObjectID, threadID primitive.ObjectID) error
 	// Update
 	Update(domain *Domain) (Domain, error)
 	SuspendByUserID(domain *Domain) error
 	AppendLike(userID primitive.ObjectID, threadID primitive.ObjectID) error
+	RemoveLike(userID primitive.ObjectID, threadID primitive.ObjectID) error
 	// Delete
 	Delete(id primitive.ObjectID) error
 	DeleteAllByUserID(id primitive.ObjectID) error
@@ -52,6 +54,7 @@ type UseCase interface {
 	GetByID(id primitive.ObjectID) (Domain, error)
 	GetAllByTopicID(topicID primitive.ObjectID) ([]Domain, error)
 	GetAllByUserID(userID primitive.ObjectID) ([]Domain, error)
+	GetLikedByUserID(userID primitive.ObjectID) ([]Domain, error)
 	DomainToResponse(domain Domain) (dtoThread.Response, error)
 	DomainsToResponseArray(domains []Domain) ([]dtoThread.Response, error)
 	// Update
@@ -59,6 +62,7 @@ type UseCase interface {
 	AdminUpdate(domain *Domain) (Domain, error)
 	SuspendByUserID(userID primitive.ObjectID) error
 	Like(userID primitive.ObjectID, threadID primitive.ObjectID) error
+	Unlike(userID primitive.ObjectID, threadID primitive.ObjectID) error
 	// Delete
 	Delete(userID primitive.ObjectID, threadID primitive.ObjectID) (Domain, error)
 	DeleteAllByUserID(id primitive.ObjectID) error

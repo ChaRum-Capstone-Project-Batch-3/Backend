@@ -139,7 +139,30 @@ func (tr *threadRepository) GetAllByUserID(userID primitive.ObjectID) ([]threads
 	return ToArrayDomain(result), nil
 }
 
-func (tr *threadRepository) GetLikeByUserID(userID primitive.ObjectID, threadID primitive.ObjectID) error {
+func (tr *threadRepository) GetLikedByUserID(userID primitive.ObjectID) ([]threads.Domain, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	var result []Model
+	cursor, err := tr.collection.Find(ctx, bson.M{
+		"likes": bson.M{
+			"$elemMatch": bson.M{
+				"userID": userID,
+			},
+		},
+	})
+	if err != nil {
+		return []threads.Domain{}, err
+	}
+
+	if err = cursor.All(ctx, &result); err != nil {
+		return []threads.Domain{}, err
+	}
+
+	return ToArrayDomain(result), nil
+}
+
+func (tr *threadRepository) CheckLikedByUserID(userID primitive.ObjectID, threadID primitive.ObjectID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
@@ -214,6 +237,26 @@ func (tr *threadRepository) AppendLike(userID primitive.ObjectID, threadID primi
 			"likes": bson.M{
 				"userID":    userID,
 				"timestamp": primitive.NewDateTimeFromTime(time.Now()),
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (tr *threadRepository) RemoveLike(userID primitive.ObjectID, threadID primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	_, err := tr.collection.UpdateOne(ctx, bson.M{
+		"_id": threadID,
+	}, bson.M{
+		"$pull": bson.M{
+			"likes": bson.M{
+				"userID": userID,
 			},
 		},
 	})
