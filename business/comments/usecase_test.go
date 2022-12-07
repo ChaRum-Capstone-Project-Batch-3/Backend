@@ -58,6 +58,7 @@ func TestMain(m *testing.M) {
 		Id:        primitive.NewObjectID(),
 		ThreadID:  threadDomain.Id,
 		UserID:    userDomain.Id,
+		ParentID:  primitive.NewObjectID(),
 		Comment:   "test",
 		CreatedAt: primitive.NewDateTimeFromTime(time.Now()),
 		UpdatedAt: primitive.NewDateTimeFromTime(time.Now()),
@@ -68,7 +69,7 @@ func TestMain(m *testing.M) {
 
 func TestCreate(t *testing.T) {
 	t.Run("Test case 1 | Valid create", func(t *testing.T) {
-		userRepository.On("GetByID", commentDomain.UserID).Return(userDomain, nil).Once()
+		commentRepository.On("GetByIDAndThreadID", mock.Anything, mock.Anything).Return(commentDomain, nil).Once()
 		threadRepository.On("GetByID", commentDomain.ThreadID).Return(threadDomain, nil).Once()
 		commentRepository.On("Create", mock.Anything).Return(commentDomain, nil).Once()
 
@@ -78,9 +79,9 @@ func TestCreate(t *testing.T) {
 		assert.NotEmpty(t, actualComment)
 	})
 
-	t.Run("Test case 2 | Invalid create | Failed To Get User", func(t *testing.T) {
-		expectedErr := errors.New("failed to get user")
-		userRepository.On("GetByID", commentDomain.UserID).Return(users.Domain{}, expectedErr).Once()
+	t.Run("Test case 2 | Invalid create | Failed To Get Parent Comment", func(t *testing.T) {
+		expectedErr := errors.New("failed to get parent comment")
+		commentRepository.On("GetByIDAndThreadID", mock.Anything, mock.Anything).Return(comments.Domain{}, expectedErr).Once()
 
 		actualComment, err := commentUseCase.Create(&commentDomain)
 		assert.NotNil(t, err)
@@ -89,21 +90,23 @@ func TestCreate(t *testing.T) {
 
 	t.Run("Test case 3 | Invalid create | Failed To Get Thread", func(t *testing.T) {
 		expectedErr := errors.New("failed to get thread")
-		userRepository.On("GetByID", commentDomain.UserID).Return(userDomain, nil).Once()
+		commentRepository.On("GetByIDAndThreadID", mock.Anything, mock.Anything).Return(commentDomain, nil).Once()
 		threadRepository.On("GetByID", commentDomain.ThreadID).Return(threads.Domain{}, expectedErr).Once()
 
-		_, err := commentUseCase.Create(&commentDomain)
+		actualComment, err := commentUseCase.Create(&commentDomain)
 		assert.NotNil(t, err)
+		assert.Empty(t, actualComment)
 	})
 
 	t.Run("Test case 4 | Invalid create | Failed To Create Comment", func(t *testing.T) {
 		expectedErr := errors.New("failed to create comment")
-		userRepository.On("GetByID", commentDomain.UserID).Return(userDomain, nil).Once()
+		commentRepository.On("GetByIDAndThreadID", mock.Anything, mock.Anything).Return(commentDomain, nil).Once()
 		threadRepository.On("GetByID", commentDomain.ThreadID).Return(threadDomain, nil).Once()
 		commentRepository.On("Create", mock.Anything).Return(comments.Domain{}, expectedErr).Once()
 
-		_, err := commentUseCase.Create(&commentDomain)
+		actualComment, err := commentUseCase.Create(&commentDomain)
 		assert.NotNil(t, err)
+		assert.Empty(t, actualComment)
 	})
 }
 
@@ -177,7 +180,7 @@ func TestDomainToResponseArray(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	t.Run("Test case 1 | Valid update", func(t *testing.T) {
-		commentRepository.On("GetByID", commentDomain.Id).Return(commentDomain, nil).Once()
+		commentRepository.On("GetByIDAndThreadID", commentDomain.Id, threadDomain.Id).Return(commentDomain, nil).Once()
 		threadRepository.On("GetByID", commentDomain.ThreadID).Return(threadDomain, nil).Once()
 		commentRepository.On("Update", mock.Anything).Return(commentDomain, nil).Once()
 
@@ -189,16 +192,15 @@ func TestUpdate(t *testing.T) {
 
 	t.Run("Test case 2 | Invalid update | Failed To Get Comment", func(t *testing.T) {
 		expectedErr := errors.New("failed to get comment")
-		commentRepository.On("GetByID", commentDomain.Id).Return(comments.Domain{}, expectedErr).Once()
+		commentRepository.On("GetByIDAndThreadID", commentDomain.Id, threadDomain.Id).Return(comments.Domain{}, expectedErr).Once()
 
-		actualComment, err := commentUseCase.Update(&commentDomain)
+		_, err := commentUseCase.Update(&commentDomain)
 		assert.NotNil(t, err)
-		assert.Empty(t, actualComment)
 	})
 
 	t.Run("Test case 3 | Invalid update | Failed To Get Thread", func(t *testing.T) {
 		expectedErr := errors.New("failed to get thread")
-		commentRepository.On("GetByID", commentDomain.Id).Return(commentDomain, nil).Once()
+		commentRepository.On("GetByIDAndThreadID", commentDomain.Id, threadDomain.Id).Return(commentDomain, nil).Once()
 		threadRepository.On("GetByID", commentDomain.ThreadID).Return(threads.Domain{}, expectedErr).Once()
 
 		_, err := commentUseCase.Update(&commentDomain)
@@ -207,7 +209,7 @@ func TestUpdate(t *testing.T) {
 
 	t.Run("Test case 4 | Invalid update | Failed To Update Comment", func(t *testing.T) {
 		expectedErr := errors.New("failed to update comment")
-		commentRepository.On("GetByID", commentDomain.Id).Return(commentDomain, nil).Once()
+		commentRepository.On("GetByIDAndThreadID", commentDomain.Id, threadDomain.Id).Return(commentDomain, nil).Once()
 		threadRepository.On("GetByID", commentDomain.ThreadID).Return(threadDomain, nil).Once()
 		commentRepository.On("Update", mock.Anything).Return(comments.Domain{}, expectedErr).Once()
 
@@ -215,12 +217,13 @@ func TestUpdate(t *testing.T) {
 		assert.NotNil(t, err)
 	})
 
-	t.Run("Test case 5 | Invalid update | You Are Not The Owner Of This Comment", func(t *testing.T) {
-		copyComment := commentDomain
-		copyComment.UserID = primitive.NewObjectID()
-		commentRepository.On("GetByID", commentDomain.Id).Return(commentDomain, nil).Once()
+	t.Run("Test case 5 | Invalid update | User Are Not The Owner Of This Comment", func(t *testing.T) {
+		copyDomain := commentDomain
+		copyDomain.UserID = primitive.NewObjectID()
 
-		_, err := commentUseCase.Update(&copyComment)
+		commentRepository.On("GetByIDAndThreadID", commentDomain.Id, threadDomain.Id).Return(commentDomain, nil).Once()
+
+		_, err := commentUseCase.Update(&copyDomain)
 		assert.NotNil(t, err)
 	})
 }

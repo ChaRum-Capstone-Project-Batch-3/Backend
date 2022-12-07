@@ -288,7 +288,7 @@ func TestGetLikedByUserID(t *testing.T) {
 	})
 
 	t.Run("Test case 2 | Invalid get liked thread by user id | Error when getting thread", func(t *testing.T) {
-		expectedErr := errors.New("failed to get threads")
+		expectedErr := errors.New("failed to get liked threads")
 		threadRepository.On("GetLikedByUserID", threadDomain.CreatorID).Return([]threads.Domain{}, expectedErr).Once()
 
 		result, err := threadUseCase.GetLikedByUserID(threadDomain.CreatorID)
@@ -451,6 +451,7 @@ func TestSuspendByUserID(t *testing.T) {
 
 func TestLike(t *testing.T) {
 	t.Run("Test case 1 | Valid like thread", func(t *testing.T) {
+		threadRepository.On("GetByID", threadDomain.Id).Return(threadDomain, nil).Once()
 		threadRepository.On("CheckLikedByUserID", threadDomain.CreatorID, threadDomain.Id).Return(errors.New("not found")).Once()
 		threadRepository.On("AppendLike", threadDomain.CreatorID, threadDomain.Id).Return(nil).Once()
 
@@ -461,6 +462,7 @@ func TestLike(t *testing.T) {
 
 	t.Run("Test case 2 | Invalid like thread | Error when checking liked by user id", func(t *testing.T) {
 		expectedErr := errors.New("failed to like thread")
+		threadRepository.On("GetByID", threadDomain.Id).Return(threadDomain, nil).Once()
 		threadRepository.On("CheckLikedByUserID", threadDomain.CreatorID, threadDomain.Id).Return(errors.New("not found")).Once()
 		threadRepository.On("AppendLike", threadDomain.CreatorID, threadDomain.Id).Return(expectedErr).Once()
 
@@ -471,7 +473,17 @@ func TestLike(t *testing.T) {
 
 	t.Run("Test case 3 | Invalid like thread | Error when appending like", func(t *testing.T) {
 		expectedErr := errors.New("user already like this thread")
+		threadRepository.On("GetByID", threadDomain.Id).Return(threadDomain, nil).Once()
 		threadRepository.On("CheckLikedByUserID", threadDomain.CreatorID, threadDomain.Id).Return(nil).Once()
+
+		err := threadUseCase.Like(threadDomain.CreatorID, threadDomain.Id)
+
+		assert.Equal(t, expectedErr, err)
+	})
+
+	t.Run("Test case 4 | Invalid like thread | Error when getting thread by id", func(t *testing.T) {
+		expectedErr := errors.New("failed to get thread")
+		threadRepository.On("GetByID", threadDomain.Id).Return(threads.Domain{}, expectedErr).Once()
 
 		err := threadUseCase.Like(threadDomain.CreatorID, threadDomain.Id)
 
@@ -481,6 +493,7 @@ func TestLike(t *testing.T) {
 
 func TestUnlike(t *testing.T) {
 	t.Run("Test case 1 | Valid unlike thread", func(t *testing.T) {
+		threadRepository.On("GetByID", threadDomain.Id).Return(threadDomain, nil).Once()
 		threadRepository.On("CheckLikedByUserID", threadDomain.CreatorID, threadDomain.Id).Return(nil).Once()
 		threadRepository.On("RemoveLike", threadDomain.CreatorID, threadDomain.Id).Return(nil).Once()
 
@@ -491,6 +504,7 @@ func TestUnlike(t *testing.T) {
 
 	t.Run("Test case 2 | Invalid unlike thread | Error when checking liked by user id", func(t *testing.T) {
 		expectedErr := errors.New("failed to unlike thread")
+		threadRepository.On("GetByID", threadDomain.Id).Return(threadDomain, nil).Once()
 		threadRepository.On("CheckLikedByUserID", threadDomain.CreatorID, threadDomain.Id).Return(nil).Once()
 		threadRepository.On("RemoveLike", threadDomain.CreatorID, threadDomain.Id).Return(expectedErr).Once()
 
@@ -501,7 +515,17 @@ func TestUnlike(t *testing.T) {
 
 	t.Run("Test case 3 | Invalid unlike thread | Error when deleting like", func(t *testing.T) {
 		expectedErr := errors.New("user not like this thread")
+		threadRepository.On("GetByID", threadDomain.Id).Return(threadDomain, nil).Once()
 		threadRepository.On("CheckLikedByUserID", threadDomain.CreatorID, threadDomain.Id).Return(errors.New("not found")).Once()
+
+		err := threadUseCase.Unlike(threadDomain.CreatorID, threadDomain.Id)
+
+		assert.Equal(t, expectedErr, err)
+	})
+
+	t.Run("Test case 4 | Invalid unlike thread | Error when getting thread by id", func(t *testing.T) {
+		expectedErr := errors.New("failed to get thread")
+		threadRepository.On("GetByID", threadDomain.Id).Return(threads.Domain{}, expectedErr).Once()
 
 		err := threadUseCase.Unlike(threadDomain.CreatorID, threadDomain.Id)
 
