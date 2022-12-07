@@ -2416,6 +2416,18 @@ paths:
           schema:
             type: string
             example: 6379fe8dad33ec4251700ded
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                parentID:
+                  type: string
+                  example: 6379fe8dad33ec4251700ded
+                comment:
+                  type: string
+                  example: very excited
       responses:
         '200':
           description: OK
@@ -2532,6 +2544,15 @@ paths:
           schema:
             type: string
             example: 6379fe8dad33ec4251700ded
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comment:
+                  type: string
+                  example: very excited
       responses:
         '200':
           description: OK
