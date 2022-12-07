@@ -77,7 +77,6 @@ func (tu *ThreadUseCase) GetByID(id primitive.ObjectID) (Domain, error) {
 	if err != nil {
 		return Domain{}, errors.New("failed to get thread")
 	}
-
 	return thread, nil
 }
 

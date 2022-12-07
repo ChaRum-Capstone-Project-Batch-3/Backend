@@ -45,17 +45,74 @@ func (br *bookmarkRepository) AddBookmark(domain *bookmarks.Domain) (bookmarks.D
 Read
 */
 
-func (br *bookmarkRepository) GetByID(id primitive.ObjectID) (bookmarks.Domain, error) {
+func (br *bookmarkRepository) GetByID(UserID primitive.ObjectID, ThreadID primitive.ObjectID) (bookmarks.Domain, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
 	var result Bookmark
 	err := br.collection.FindOne(ctx, bson.M{
-		"userId": id,
+		"userId":   UserID,
+		"threadId": ThreadID,
 	}).Decode(&result)
 	if err != nil {
 		return bookmarks.Domain{}, err
 	}
 
 	return result.ToDomain(), nil
+}
+
+func (br *bookmarkRepository) GetAllBookmark(UserID primitive.ObjectID) ([]bookmarks.Domain, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	// get all bookmark by userID
+	cursor, err := br.collection.Find(ctx, bson.M{
+		"userId": UserID,
+	})
+	if err != nil {
+		return []bookmarks.Domain{}, err
+	}
+
+	// convert to array
+	var results []Bookmark
+	if err = cursor.All(ctx, &results); err != nil {
+		return []bookmarks.Domain{}, err
+	}
+
+	// convert to domain
+	var domains []bookmarks.Domain
+	for _, result := range results {
+		domains = append(domains, result.ToDomain())
+	}
+
+	return domains, nil
+}
+
+/*
+Update
+*/
+
+func (br *bookmarkRepository) UpdateBookmark(userID primitive.ObjectID, threadID primitive.ObjectID, domain *bookmarks.Domain) (bookmarks.Domain, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	// update
+	// only update threads & updatedAt
+	_, err := br.collection.UpdateOne(ctx, bson.M{
+		"_id": userID,
+	}, bson.M{
+		"$set": FromDomain(domain),
+	})
+
+	if err != nil {
+		return bookmarks.Domain{}, err
+	}
+
+	// return data
+	result, err := br.GetByID(domain.UserID, domain.ThreadID)
+	if err != nil {
+		return bookmarks.Domain{}, err
+	}
+
+	return result, err
 }
