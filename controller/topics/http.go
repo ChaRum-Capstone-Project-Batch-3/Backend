@@ -183,7 +183,7 @@ func (topicCtrl *TopicController) GetManyWithPagination(c echo.Context) error {
 		Status:  http.StatusOK,
 		Message: "success to get topics",
 		Data: map[string]interface{}{
-			"users": response.FromDomainArray(users),
+			"topics": response.FromDomainArray(users),
 		},
 		Pagination: helper.Page{
 			Size:        limitNumber,

@@ -3143,6 +3143,314 @@ paths:
                   data:
                     type: string
                     example: null
+  /thread/like:
+    get:
+      tags:
+        - Thread
+      summary: get users' liked thread by token
+      description: get users' liked thread by user's token
+      operationId: GetLikedThreadByToken
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to get liked thread
+                  data:
+                    type: string
+                    example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: invalid token
+                  data:
+                    type: string
+                    example: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to get liked threads
+                  data:
+                    type: string
+                    example: null
+  /thread/like/{user-id}:
+    get:
+      tags:
+        - Thread
+      summary: get users' liked thread by token
+      description: get users' liked thread by user's token
+      operationId: GetLikedThreadByUserID
+      parameters:
+        - in: path
+          name: user-id
+          description: comment's ID
+          required: true
+          schema:
+            type: string
+            example: 6379fe8dad33ec4251700ded
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to get liked thread
+                  data:
+                    type: string
+                    example: null
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: invalid user id
+                  data:
+                    type: string
+                    example: null
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: failed to get user
+                  data:
+                    type: string
+                    example: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to get liked threads
+                  data:
+                    type: string
+                    example: null
+  /thread/like/id/{thread-id}:
+    post:
+      tags:
+        - Thread
+      summary: Like thread
+      description: Like thread by User
+      operationId: Like
+      parameters:
+        - in: path
+          name: thread-id
+          required: true
+          schema:
+            type: string
+            example: 6379fe8dad33ec4251700ded
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 201
+                  message:
+                    type: string
+                    example: success to like thread
+                  data:
+                    type: string
+                    example: null
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: invalid thread id
+                  data:
+                    type: string
+                    example: null
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: failed to get thread
+                  data:
+                    type: string
+                    example: null
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 409
+                  message:
+                    type: string
+                    example: user already like this thread
+                  data:
+                    type: string
+                    example: null
+        '500':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to like thread
+                  data:
+                    type: string
+                    example: null
+    delete:
+      tags:
+        - Thread
+      summary: Unlike Thread
+      description: Unlike Thread by User
+      parameters:
+        - in : path
+          name: thread-id
+          required: true
+          schema:
+            type: string
+            example: 6379fe8dad33ec4251700ded
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to unlike thread
+                  data:
+                    type: string
+                    example: null
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: invalid thread id
+                  data:
+                    type: string
+                    example: null
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: failed to get threaad
+                  data:
+                    type: string
+                    example: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to unlike thread
+                  data:
+                    type: string
+                    example: null
   /admin/thread/{page}:
     get:
       tags:

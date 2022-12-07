@@ -64,10 +64,10 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	threadComment.PUT("/:comment-id", cl.CommentController.Update, authMiddleware.Check)
 	threadComment.DELETE("/:comment-id", cl.CommentController.Delete, authMiddleware.Check)
 	threadLike := thread.Group("/like")
-	// threadLike.GET("", cl.ThreadController.GetLikedThreadByToken, authMiddleware.Check)
-	// threadLike.GET("/:user-id", cl.ThreadController.GetLikedThreadByUserID)
+	threadLike.GET("", cl.ThreadController.GetLikedThreadByToken, authMiddleware.Check)
+	threadLike.GET("/:user-id", cl.ThreadController.GetLikedThreadByUserID)
 	threadLike.POST("/id/:thread-id", cl.ThreadController.Like, authMiddleware.Check)
-	// threadLike.DELETE("/id/:thread-id", cl.ThreadController.Unlike, authMiddleware.Check)
+	threadLike.DELETE("/id/:thread-id", cl.ThreadController.Unlike, authMiddleware.Check)
 
 	// Admin
 	admin := apiV1.Group("/admin", adminMiddleware.Check)
