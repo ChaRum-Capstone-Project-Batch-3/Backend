@@ -267,6 +267,26 @@ func (tr *threadRepository) RemoveLike(userID primitive.ObjectID, threadID primi
 	return nil
 }
 
+func (tr *threadRepository) RemoveUserFromAllLikes(userID primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	_, err := tr.collection.UpdateMany(ctx, bson.M{
+		"likes.userID": userID,
+	}, bson.M{
+		"$pull": bson.M{
+			"likes": bson.M{
+				"userID": userID,
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 /*
 Delete
 */
