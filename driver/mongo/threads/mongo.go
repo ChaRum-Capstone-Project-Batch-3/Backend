@@ -86,12 +86,12 @@ func (tr *threadRepository) GetManyWithPagination(query dtoQuery.Request, domain
 	return ToArrayDomain(result), int(totalData), nil
 }
 
-func (ur *threadRepository) GetByID(id primitive.ObjectID) (threads.Domain, error) {
+func (tr *threadRepository) GetByID(id primitive.ObjectID) (threads.Domain, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
 	var result Model
-	err := ur.collection.FindOne(ctx, bson.M{
+	err := tr.collection.FindOne(ctx, bson.M{
 		"_id": id,
 	}).Decode(&result)
 	if err != nil {
@@ -101,12 +101,12 @@ func (ur *threadRepository) GetByID(id primitive.ObjectID) (threads.Domain, erro
 	return result.ToDomain(), nil
 }
 
-func (ur *threadRepository) GetAllByTopicID(topicID primitive.ObjectID) ([]threads.Domain, error) {
+func (tr *threadRepository) GetAllByTopicID(topicID primitive.ObjectID) ([]threads.Domain, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
 	var result []Model
-	cursor, err := ur.collection.Find(ctx, bson.M{
+	cursor, err := tr.collection.Find(ctx, bson.M{
 		"topicId": topicID,
 	})
 	if err != nil {
@@ -120,12 +120,12 @@ func (ur *threadRepository) GetAllByTopicID(topicID primitive.ObjectID) ([]threa
 	return ToArrayDomain(result), nil
 }
 
-func (ur *threadRepository) GetAllByUserID(userID primitive.ObjectID) ([]threads.Domain, error) {
+func (tr *threadRepository) GetAllByUserID(userID primitive.ObjectID) ([]threads.Domain, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
 	var result []Model
-	cursor, err := ur.collection.Find(ctx, bson.M{
+	cursor, err := tr.collection.Find(ctx, bson.M{
 		"userId": userID,
 	})
 	if err != nil {
@@ -137,6 +137,26 @@ func (ur *threadRepository) GetAllByUserID(userID primitive.ObjectID) ([]threads
 	}
 
 	return ToArrayDomain(result), nil
+}
+
+func (tr *threadRepository) GetLikeByUserID(userID primitive.ObjectID, threadID primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	var result Model
+	err := tr.collection.FindOne(ctx, bson.M{
+		"_id": threadID,
+		"likes": bson.M{
+			"$elemMatch": bson.M{
+				"userID": userID,
+			},
+		},
+	}).Decode(&result)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 /*
@@ -174,6 +194,27 @@ func (tr *threadRepository) SuspendByUserID(domain *threads.Domain) error {
 		"$set": bson.M{
 			"suspendStatus": domain.SuspendStatus,
 			"suspendDetail": domain.SuspendDetail,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (tr *threadRepository) AppendLike(userID primitive.ObjectID, threadID primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	_, err := tr.collection.UpdateOne(ctx, bson.M{
+		"_id": threadID,
+	}, bson.M{
+		"$push": bson.M{
+			"likes": bson.M{
+				"userID":    userID,
+				"timestamp": primitive.NewDateTimeFromTime(time.Now()),
+			},
 		},
 	})
 	if err != nil {
