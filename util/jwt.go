@@ -29,7 +29,8 @@ func GenerateToken(uid string, role string) string {
 	}
 
 	token, _ := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(JWTSecretKey))
-	return token
+	BearerToken := "Bearer " + token
+	return BearerToken
 }
 
 func GetPayloadToken(token string) (JWTCustomClaims, error) {

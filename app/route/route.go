@@ -50,30 +50,32 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	thread.GET("", cl.ThreadController.GetManyByToken, authMiddleware.Check)
 	thread.POST("", cl.ThreadController.Create, authMiddleware.Check)
 	thread.GET("/:page", cl.ThreadController.GetManyWithPagination)
-
 	threadID := thread.Group("/id")
 	threadID.GET("/:thread-id", cl.ThreadController.GetByID)
 	threadID.PUT("/:thread-id", cl.ThreadController.UserUpdate, authMiddleware.Check)
 	threadID.DELETE("/:thread-id", cl.ThreadController.UserDelete, authMiddleware.Check)
-
 	threadFollow := thread.Group("/follow")
 	threadFollow.GET("", cl.FollowThreadController.GetFollowedThreadByToken, authMiddleware.Check)
 	threadFollow.GET("/:user-id", cl.FollowThreadController.GetFollowedThreadByUserID)
 	threadFollow.POST("/:thread-id", cl.FollowThreadController.Create, authMiddleware.Check)
 	threadFollow.DELETE("/:thread-id", cl.FollowThreadController.Delete, authMiddleware.Check)
-
 	threadComment := thread.Group("/comment")
 	threadComment.POST("/:thread-id", cl.CommentController.Create, authMiddleware.Check)
 	threadComment.PUT("/:comment-id", cl.CommentController.Update, authMiddleware.Check)
 	threadComment.DELETE("/:comment-id", cl.CommentController.Delete, authMiddleware.Check)
+	threadLike := thread.Group("/like")
+	// threadLike.GET("", cl.ThreadController.GetLikedThreadByToken, authMiddleware.Check)
+	// threadLike.GET("/:user-id", cl.ThreadController.GetLikedThreadByUserID)
+	threadLike.POST("/id/:thread-id", cl.ThreadController.Like, authMiddleware.Check)
+	// threadLike.DELETE("/id/:thread-id", cl.ThreadController.Unlike, authMiddleware.Check)
 
+	// Admin
 	admin := apiV1.Group("/admin", adminMiddleware.Check)
 
 	adminUser := admin.Group("/user")
 	adminUser.GET("/:page", cl.UserController.GetManyWithPagination)
 	adminUser.PUT("/suspend/:user-id", cl.UserController.Suspend)
 	adminUser.PUT("/unsuspend/:user-id", cl.UserController.Unsuspend)
-
 	adminUserID := adminUser.Group("/id")
 	adminUserID.GET("/:user-id", cl.UserController.GetByID)
 	adminUserID.PUT("/:user-id", cl.UserController.AdminUpdate)

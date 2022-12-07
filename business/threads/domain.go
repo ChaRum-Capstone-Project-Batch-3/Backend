@@ -22,8 +22,8 @@ type Domain struct {
 }
 
 type Like struct {
-	UserID    primitive.ObjectID `json:"userId" bson:"userId"`
-	CreatedAt primitive.DateTime `json:"createdAt" bson:"createdAt"`
+	UserID    primitive.ObjectID `json:"userID" bson:"userID"`
+	Timestamp primitive.DateTime `json:"timestamp" bson:"timestamp"`
 }
 
 type Repository interface {
@@ -34,9 +34,11 @@ type Repository interface {
 	GetByID(id primitive.ObjectID) (Domain, error)
 	GetAllByTopicID(topicID primitive.ObjectID) ([]Domain, error)
 	GetAllByUserID(userID primitive.ObjectID) ([]Domain, error)
+	GetLikeByUserID(userID primitive.ObjectID, threadID primitive.ObjectID) error
 	// Update
 	Update(domain *Domain) (Domain, error)
 	SuspendByUserID(domain *Domain) error
+	AppendLike(userID primitive.ObjectID, threadID primitive.ObjectID) error
 	// Delete
 	Delete(id primitive.ObjectID) error
 	DeleteAllByUserID(id primitive.ObjectID) error
@@ -56,6 +58,7 @@ type UseCase interface {
 	UserUpdate(domain *Domain) (Domain, error)
 	AdminUpdate(domain *Domain) (Domain, error)
 	SuspendByUserID(userID primitive.ObjectID) error
+	Like(userID primitive.ObjectID, threadID primitive.ObjectID) error
 	// Delete
 	Delete(userID primitive.ObjectID, threadID primitive.ObjectID) (Domain, error)
 	DeleteAllByUserID(id primitive.ObjectID) error

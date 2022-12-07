@@ -121,22 +121,22 @@ func (tu *ThreadUseCase) DomainToResponse(domain Domain) (dtoThread.Response, er
 		return dtoThread.Response{}, errors.New("failed to get creator")
 	}
 
+	topic, err := tu.topicRepository.GetByID(domain.TopicID)
+	if err != nil {
+		return dtoThread.Response{}, errors.New("failed to get topic")
+	}
+
 	likes := []dtoThread.Like{}
 	for _, like := range domain.Likes {
 		user, err := tu.userRepository.GetByID(like.UserID)
 		if err != nil {
-			return dtoThread.Response{}, errors.New("failed to get user who like thread")
+			return dtoThread.Response{}, err
 		}
 
 		likes = append(likes, dtoThread.Like{
 			User:      user,
-			CreatedAt: domain.CreatedAt,
+			Timestamp: like.Timestamp,
 		})
-	}
-
-	topic, err := tu.topicRepository.GetByID(domain.TopicID)
-	if err != nil {
-		return dtoThread.Response{}, errors.New("failed to get topic")
 	}
 
 	return dtoThread.Response{
@@ -234,6 +234,20 @@ func (tu *ThreadUseCase) SuspendByUserID(userID primitive.ObjectID) error {
 	err := tu.threadRepository.SuspendByUserID(&domain)
 	if err != nil {
 		return errors.New("failed to suspend user threads")
+	}
+
+	return nil
+}
+
+func (tu *ThreadUseCase) Like(userID primitive.ObjectID, threadID primitive.ObjectID) error {
+	err := tu.threadRepository.GetLikeByUserID(userID, threadID)
+	if err == nil {
+		return errors.New("user already like this thread")
+	}
+
+	err = tu.threadRepository.AppendLike(userID, threadID)
+	if err != nil {
+		return errors.New("failed to like thread")
 	}
 
 	return nil
