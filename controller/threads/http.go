@@ -4,6 +4,7 @@ import (
 	"charum/business/comments"
 	followThreads "charum/business/follow_threads"
 	"charum/business/threads"
+	"charum/business/users"
 	"charum/controller/threads/request"
 	dtoPagination "charum/dto/pagination"
 	"charum/helper"
@@ -20,13 +21,15 @@ type ThreadController struct {
 	threadUseCase       threads.UseCase
 	commentUseCase      comments.UseCase
 	followThreadUseCase followThreads.UseCase
+	userUseCase         users.UseCase
 }
 
-func NewThreadController(threadUC threads.UseCase, commentUC comments.UseCase, followThreadUC followThreads.UseCase) *ThreadController {
+func NewThreadController(threadUC threads.UseCase, commentUC comments.UseCase, followThreadUC followThreads.UseCase, userUC users.UseCase) *ThreadController {
 	return &ThreadController{
 		threadUseCase:       threadUC,
 		commentUseCase:      commentUC,
 		followThreadUseCase: followThreadUC,
+		userUseCase:         userUC,
 	}
 }
 
@@ -539,11 +542,94 @@ func (tc *ThreadController) AdminUpdate(c echo.Context) error {
 	})
 }
 
+func (tc *ThreadController) GetLikedThreadByToken(c echo.Context) error {
+	userID, err := util.GetUIDFromToken(c)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, helper.BaseResponse{
+			Status:  http.StatusUnauthorized,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	result, err := tc.threadUseCase.GetLikedByUserID(userID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	responseThreads, err := tc.threadUseCase.DomainsToResponseArray(result)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success to get liked thread",
+		Data: map[string]interface{}{
+			"likedThreads": responseThreads,
+		},
+	})
+}
+
+func (tc *ThreadController) GetLikedThreadByUserID(c echo.Context) error {
+	userID, err := primitive.ObjectIDFromHex(c.Param("user-id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "invalid user id",
+			Data:    nil,
+		})
+	}
+
+	_, err = tc.userUseCase.GetByID(userID)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, helper.BaseResponse{
+			Status:  http.StatusNotFound,
+			Message: "failed to get user",
+			Data:    nil,
+		})
+	}
+
+	result, err := tc.threadUseCase.GetLikedByUserID(userID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	responseThreads, err := tc.threadUseCase.DomainsToResponseArray(result)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success to get liked thread",
+		Data: map[string]interface{}{
+			"likedThreads": responseThreads,
+		},
+	})
+}
+
 func (tc *ThreadController) Like(c echo.Context) error {
 	userID, err := util.GetUIDFromToken(c)
 	if err != nil {
-		return c.JSON(http.StatusForbidden, helper.BaseResponse{
-			Status:  http.StatusForbidden,
+		return c.JSON(http.StatusUnauthorized, helper.BaseResponse{
+			Status:  http.StatusUnauthorized,
 			Message: err.Error(),
 			Data:    nil,
 		})
@@ -574,9 +660,49 @@ func (tc *ThreadController) Like(c echo.Context) error {
 		})
 	}
 
+	return c.JSON(http.StatusCreated, helper.BaseResponse{
+		Status:  http.StatusCreated,
+		Message: "success to like thread",
+		Data:    nil,
+	})
+}
+
+func (tcc *ThreadController) Unlike(c echo.Context) error {
+	userID, err := util.GetUIDFromToken(c)
+	if err != nil {
+		return c.JSON(http.StatusForbidden, helper.BaseResponse{
+			Status:  http.StatusForbidden,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	threadID, err := primitive.ObjectIDFromHex(c.Param("thread-id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "invalid thread id",
+			Data:    nil,
+		})
+	}
+
+	err = tcc.threadUseCase.Unlike(userID, threadID)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if strings.Contains(err.Error(), "failed to get") || strings.Contains(err.Error(), "user not") {
+			statusCode = http.StatusNotFound
+		}
+
+		return c.JSON(statusCode, helper.BaseResponse{
+			Status:  statusCode,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
-		Message: "success to like thread",
+		Message: "success to unlike thread",
 		Data:    nil,
 	})
 }

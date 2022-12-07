@@ -115,6 +115,15 @@ func (tu *ThreadUseCase) GetAllByUserID(userID primitive.ObjectID) ([]Domain, er
 	return threads, nil
 }
 
+func (tu *ThreadUseCase) GetLikedByUserID(userID primitive.ObjectID) ([]Domain, error) {
+	threads, err := tu.threadRepository.GetLikedByUserID(userID)
+	if err != nil {
+		return []Domain{}, errors.New("failed to get liked threads")
+	}
+
+	return threads, nil
+}
+
 func (tu *ThreadUseCase) DomainToResponse(domain Domain) (dtoThread.Response, error) {
 	creator, err := tu.userRepository.GetByID(domain.CreatorID)
 	if err != nil {
@@ -240,7 +249,12 @@ func (tu *ThreadUseCase) SuspendByUserID(userID primitive.ObjectID) error {
 }
 
 func (tu *ThreadUseCase) Like(userID primitive.ObjectID, threadID primitive.ObjectID) error {
-	err := tu.threadRepository.GetLikeByUserID(userID, threadID)
+	_, err := tu.threadRepository.GetByID(threadID)
+	if err != nil {
+		return errors.New("failed to get thread")
+	}
+
+	err = tu.threadRepository.CheckLikedByUserID(userID, threadID)
 	if err == nil {
 		return errors.New("user already like this thread")
 	}
@@ -248,6 +262,25 @@ func (tu *ThreadUseCase) Like(userID primitive.ObjectID, threadID primitive.Obje
 	err = tu.threadRepository.AppendLike(userID, threadID)
 	if err != nil {
 		return errors.New("failed to like thread")
+	}
+
+	return nil
+}
+
+func (tu *ThreadUseCase) Unlike(userID primitive.ObjectID, threadID primitive.ObjectID) error {
+	_, err := tu.threadRepository.GetByID(threadID)
+	if err != nil {
+		return errors.New("failed to get thread")
+	}
+
+	err = tu.threadRepository.CheckLikedByUserID(userID, threadID)
+	if err != nil {
+		return errors.New("user not like this thread")
+	}
+
+	err = tu.threadRepository.RemoveLike(userID, threadID)
+	if err != nil {
+		return errors.New("failed to unlike thread")
 	}
 
 	return nil

@@ -242,6 +242,29 @@ func (_m *UseCase) GetByID(id primitive.ObjectID) (threads.Domain, error) {
 	return r0, r1
 }
 
+// GetLikedByUserID provides a mock function with given fields: userID
+func (_m *UseCase) GetLikedByUserID(userID primitive.ObjectID) ([]threads.Domain, error) {
+	ret := _m.Called(userID)
+
+	var r0 []threads.Domain
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID) []threads.Domain); ok {
+		r0 = rf(userID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]threads.Domain)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(primitive.ObjectID) error); ok {
+		r1 = rf(userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetManyWithPagination provides a mock function with given fields: _a0, domain
 func (_m *UseCase) GetManyWithPagination(_a0 pagination.Request, domain *threads.Domain) ([]threads.Domain, int, int, error) {
 	ret := _m.Called(_a0, domain)
@@ -279,6 +302,20 @@ func (_m *UseCase) GetManyWithPagination(_a0 pagination.Request, domain *threads
 	return r0, r1, r2, r3
 }
 
+// Like provides a mock function with given fields: userID, threadID
+func (_m *UseCase) Like(userID primitive.ObjectID, threadID primitive.ObjectID) error {
+	ret := _m.Called(userID, threadID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID, primitive.ObjectID) error); ok {
+		r0 = rf(userID, threadID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // SuspendByUserID provides a mock function with given fields: userID
 func (_m *UseCase) SuspendByUserID(userID primitive.ObjectID) error {
 	ret := _m.Called(userID)
@@ -286,6 +323,20 @@ func (_m *UseCase) SuspendByUserID(userID primitive.ObjectID) error {
 	var r0 error
 	if rf, ok := ret.Get(0).(func(primitive.ObjectID) error); ok {
 		r0 = rf(userID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Unlike provides a mock function with given fields: userID, threadID
+func (_m *UseCase) Unlike(userID primitive.ObjectID, threadID primitive.ObjectID) error {
+	ret := _m.Called(userID, threadID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID, primitive.ObjectID) error); ok {
+		r0 = rf(userID, threadID)
 	} else {
 		r0 = ret.Error(0)
 	}
