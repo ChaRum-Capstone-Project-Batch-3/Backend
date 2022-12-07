@@ -49,7 +49,7 @@ func main() {
 
 	userController := _userController.NewUserController(userUsecase, threadUsecase, commentUsecase, followThreadUsecase)
 	topicController := _topicController.NewTopicController(topicUsecase, threadUsecase, commentUsecase, followThreadUsecase)
-	threadController := _threadController.NewThreadController(threadUsecase, commentUsecase, followThreadUsecase)
+	threadController := _threadController.NewThreadController(threadUsecase, commentUsecase, followThreadUsecase, userUsecase)
 	commentController := _commentController.NewCommentController(commentUsecase, followThreadUsecase)
 	followThreadController := _followThreadController.NewFollowThreadController(followThreadUsecase)
 

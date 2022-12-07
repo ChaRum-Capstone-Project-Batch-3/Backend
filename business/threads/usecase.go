@@ -118,7 +118,7 @@ func (tu *ThreadUseCase) GetAllByUserID(userID primitive.ObjectID) ([]Domain, er
 func (tu *ThreadUseCase) GetLikedByUserID(userID primitive.ObjectID) ([]Domain, error) {
 	threads, err := tu.threadRepository.GetLikedByUserID(userID)
 	if err != nil {
-		return []Domain{}, errors.New("failed to get threads")
+		return []Domain{}, errors.New("failed to get liked threads")
 	}
 
 	return threads, nil
@@ -249,7 +249,12 @@ func (tu *ThreadUseCase) SuspendByUserID(userID primitive.ObjectID) error {
 }
 
 func (tu *ThreadUseCase) Like(userID primitive.ObjectID, threadID primitive.ObjectID) error {
-	err := tu.threadRepository.CheckLikedByUserID(userID, threadID)
+	_, err := tu.threadRepository.GetByID(threadID)
+	if err != nil {
+		return errors.New("failed to get thread")
+	}
+
+	err = tu.threadRepository.CheckLikedByUserID(userID, threadID)
 	if err == nil {
 		return errors.New("user already like this thread")
 	}
@@ -263,7 +268,12 @@ func (tu *ThreadUseCase) Like(userID primitive.ObjectID, threadID primitive.Obje
 }
 
 func (tu *ThreadUseCase) Unlike(userID primitive.ObjectID, threadID primitive.ObjectID) error {
-	err := tu.threadRepository.CheckLikedByUserID(userID, threadID)
+	_, err := tu.threadRepository.GetByID(threadID)
+	if err != nil {
+		return errors.New("failed to get thread")
+	}
+
+	err = tu.threadRepository.CheckLikedByUserID(userID, threadID)
 	if err != nil {
 		return errors.New("user not like this thread")
 	}
