@@ -13,6 +13,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -40,20 +41,26 @@ Create
 
 func (userCtrl *UserController) Register(c echo.Context) error {
 	userInput := request.Register{}
-
-	if c.Bind(&userInput) != nil {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "fill all the required fields and make sure data type is correct",
-			Data:    nil,
-		})
-	}
+	c.Bind(&userInput)
 
 	if err := userInput.Validate(); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
 			Message: "validation failed",
 			Data:    err,
+		})
+	}
+
+	if strings.Contains(userInput.UserName, " ") {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "validation failed",
+			Data: []helper.ValidationError{
+				{
+					Field:   "userName",
+					Message: "This field must not contain spaces",
+				},
+			},
 		})
 	}
 
@@ -88,14 +95,7 @@ Read
 
 func (userCtrl *UserController) Login(c echo.Context) error {
 	userInput := request.Login{}
-
-	if c.Bind(&userInput) != nil {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "fill all the required fields and make sure data type is correct",
-			Data:    nil,
-		})
-	}
+	c.Bind(&userInput)
 
 	if err := userInput.Validate(); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
@@ -288,19 +288,26 @@ func (userCtrl *UserController) AdminUpdate(c echo.Context) error {
 	}
 
 	userInput := request.Update{}
-	if c.Bind(&userInput) != nil {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "fill all the required fields and make sure data type is correct",
-			Data:    nil,
-		})
-	}
+	c.Bind(&userInput)
 
 	if err := userInput.Validate(); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
 			Message: "validation failed",
 			Data:    err,
+		})
+	}
+
+	if strings.Contains(userInput.UserName, " ") {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "validation failed",
+			Data: []helper.ValidationError{
+				{
+					Field:   "userName",
+					Message: "This field must not contain spaces",
+				},
+			},
 		})
 	}
 
@@ -343,19 +350,26 @@ func (userCtrl *UserController) UserUpdate(c echo.Context) error {
 	}
 
 	userInput := request.Update{}
-	if c.Bind(&userInput) != nil {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "fill all the required fields and make sure data type is correct",
-			Data:    nil,
-		})
-	}
+	c.Bind(&userInput)
 
 	if err := userInput.Validate(); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
 			Message: "validation failed",
 			Data:    err,
+		})
+	}
+
+	if strings.Contains(userInput.UserName, " ") {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "validation failed",
+			Data: []helper.ValidationError{
+				{
+					Field:   "userName",
+					Message: "This field must not contain spaces",
+				},
+			},
 		})
 	}
 
