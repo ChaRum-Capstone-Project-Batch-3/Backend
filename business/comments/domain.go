@@ -10,6 +10,7 @@ type Domain struct {
 	Id        primitive.ObjectID `json:"_id" bson:"_id"`
 	ThreadID  primitive.ObjectID `json:"threadID" bson:"threadID"`
 	UserID    primitive.ObjectID `json:"userID" bson:"userID"`
+	ParentID  primitive.ObjectID `json:"parentID,omitempty" bson:"parentID,omitempty"`
 	Comment   string             `json:"comment" bson:"commment"`
 	CreatedAt primitive.DateTime `json:"createdAt" bson:"createdAt"`
 	UpdatedAt primitive.DateTime `json:"updatedAt" bson:"updatedAt"`
@@ -22,6 +23,7 @@ type Repository interface {
 	GetByID(id primitive.ObjectID) (Domain, error)
 	GetByThreadID(threadID primitive.ObjectID) ([]Domain, error)
 	CountByThreadID(threadID primitive.ObjectID) (int, error)
+	GetByIDAndThreadID(id primitive.ObjectID, threadID primitive.ObjectID) (Domain, error)
 	// Update
 	Update(domain *Domain) (Domain, error)
 	// Delete

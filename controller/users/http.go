@@ -454,6 +454,15 @@ func (userCtrl *UserController) Suspend(c echo.Context) error {
 		})
 	}
 
+	err = userCtrl.threadUseCase.RemoveUserFromAllLikes(userID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
 		Message: "success to suspend user",
@@ -545,6 +554,15 @@ func (userCtrl *UserController) Delete(c echo.Context) error {
 	}
 
 	err = userCtrl.threadUseCase.DeleteAllByUserID(userID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	err = userCtrl.threadUseCase.RemoveUserFromAllLikes(userID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,

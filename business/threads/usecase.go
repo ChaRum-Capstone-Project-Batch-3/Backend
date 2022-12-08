@@ -286,6 +286,15 @@ func (tu *ThreadUseCase) Unlike(userID primitive.ObjectID, threadID primitive.Ob
 	return nil
 }
 
+func (tu *ThreadUseCase) RemoveUserFromAllLikes(userID primitive.ObjectID) error {
+	err := tu.threadRepository.RemoveUserFromAllLikes(userID)
+	if err != nil {
+		return errors.New("failed to remove user from all likes")
+	}
+
+	return nil
+}
+
 /*
 Delete
 */

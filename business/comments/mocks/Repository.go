@@ -120,6 +120,27 @@ func (_m *Repository) GetByID(id primitive.ObjectID) (comments.Domain, error) {
 	return r0, r1
 }
 
+// GetByIDAndThreadID provides a mock function with given fields: id, threadID
+func (_m *Repository) GetByIDAndThreadID(id primitive.ObjectID, threadID primitive.ObjectID) (comments.Domain, error) {
+	ret := _m.Called(id, threadID)
+
+	var r0 comments.Domain
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID, primitive.ObjectID) comments.Domain); ok {
+		r0 = rf(id, threadID)
+	} else {
+		r0 = ret.Get(0).(comments.Domain)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(primitive.ObjectID, primitive.ObjectID) error); ok {
+		r1 = rf(id, threadID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetByThreadID provides a mock function with given fields: threadID
 func (_m *Repository) GetByThreadID(threadID primitive.ObjectID) ([]comments.Domain, error) {
 	ret := _m.Called(threadID)
