@@ -92,35 +92,6 @@ func (br *bookmarkRepository) GetAllBookmark(UserID primitive.ObjectID) ([]bookm
 }
 
 /*
-Update
-*/
-
-func (br *bookmarkRepository) UpdateBookmark(userID primitive.ObjectID, threadID primitive.ObjectID, domain *bookmarks.Domain) (bookmarks.Domain, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	defer cancel()
-
-	// update
-	// only update threads & updatedAt
-	_, err := br.collection.UpdateOne(ctx, bson.M{
-		"_id": userID,
-	}, bson.M{
-		"$set": FromDomain(domain),
-	})
-
-	if err != nil {
-		return bookmarks.Domain{}, err
-	}
-
-	// return data
-	result, err := br.GetByID(domain.UserID, domain.ThreadID)
-	if err != nil {
-		return bookmarks.Domain{}, err
-	}
-
-	return result, err
-}
-
-/*
 Delete
 */
 

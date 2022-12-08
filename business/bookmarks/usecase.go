@@ -144,39 +144,6 @@ func (bu *BookmarkUseCase) DomainsToResponseArray(domains []Domain) ([]bookmarks
 }
 
 /*
-Update
-*/
-
-func (bu *BookmarkUseCase) UpdateBookmark(userID primitive.ObjectID, threadID primitive.ObjectID, domain *Domain) (Domain, error) {
-	// check user already bookmarked or not
-	thread, err := bu.threadRepository.GetByID(threadID)
-	if err != nil {
-		return Domain{}, errors.New("failed to get thread")
-	}
-
-	bookmark, err := bu.bookmarkRepository.GetByID(userID, threadID)
-	if err != nil {
-		return Domain{}, err
-	}
-
-	if bookmark.ThreadID == thread.Id && bookmark.UserID == userID {
-		return Domain{}, errors.New("thread already bookmarked")
-	}
-
-	bookmark.Id = domain.Id
-	// append bookmark threads without remove the previous threads
-	bookmark.ThreadID = thread.Id
-	bookmark.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
-
-	bookmark, err = bu.bookmarkRepository.UpdateBookmark(userID, threadID, &bookmark)
-	if err != nil {
-		return Domain{}, err
-	}
-
-	return bookmark, nil
-}
-
-/*
 Delete
 */
 

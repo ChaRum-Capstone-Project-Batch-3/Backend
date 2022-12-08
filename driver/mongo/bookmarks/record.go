@@ -32,11 +32,3 @@ func (bookmark *Bookmark) ToDomain() bookmarks.Domain {
 		UpdatedAt: bookmark.UpdatedAt,
 	}
 }
-
-func ToArrayDomain(data []Bookmark) []bookmarks.Domain {
-	var result []bookmarks.Domain
-	for _, v := range data {
-		result = append(result, v.ToDomain())
-	}
-	return result
-}
