@@ -21,6 +21,8 @@ type Repository interface {
 	GetAllBookmark(UserID primitive.ObjectID) ([]Domain, error)
 	// Update
 	UpdateBookmark(userID primitive.ObjectID, threadID primitive.ObjectID, domain *Domain) (Domain, error)
+	// Delete
+	DeleteBookmark(userID primitive.ObjectID, threadID primitive.ObjectID) error
 }
 
 type UseCase interface {
@@ -33,4 +35,6 @@ type UseCase interface {
 	DomainsToResponseArray(domains []Domain) ([]dto.ResponseBookmark, error)
 	// Update
 	UpdateBookmark(userID primitive.ObjectID, threadID primitive.ObjectID, domain *Domain) (Domain, error)
+	// Delete
+	DeleteBookmark(userID primitive.ObjectID, threadID primitive.ObjectID) (Domain, error)
 }

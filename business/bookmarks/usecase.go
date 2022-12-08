@@ -177,3 +177,21 @@ func (bu *BookmarkUseCase) UpdateBookmark(userID primitive.ObjectID, threadID pr
 
 	return bookmark, nil
 }
+
+/*
+Delete
+*/
+
+// delete bookmark by bookmark id
+func (bu *BookmarkUseCase) DeleteBookmark(userID primitive.ObjectID, threadID primitive.ObjectID) (Domain, error) {
+	bookmark, err := bu.bookmarkRepository.GetByID(userID, threadID)
+	if err != nil {
+		return Domain{}, errors.New("failed to get bookmark")
+	}
+
+	result := bu.bookmarkRepository.DeleteBookmark(userID, threadID)
+	if result != nil {
+		return Domain{}, errors.New("failed to delete bookmark")
+	}
+	return bookmark, nil
+}

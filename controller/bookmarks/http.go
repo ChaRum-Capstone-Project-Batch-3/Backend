@@ -135,3 +135,33 @@ func (bc *BookmarkController) GetAllBookmark(c echo.Context) error {
 		},
 	})
 }
+
+/*
+Delete
+*/
+func (bc *BookmarkController) DeleteBookmark(c echo.Context) error {
+	userID, err := util.GetUIDFromToken(c)
+	threadID, err := primitive.ObjectIDFromHex(c.Param("thread_id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "invalid thread id",
+			Data:    nil,
+		})
+	}
+
+	_, err = bc.bookmarkUseCase.DeleteBookmark(userID, threadID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success delete bookmark",
+		Data:    nil,
+	})
+}

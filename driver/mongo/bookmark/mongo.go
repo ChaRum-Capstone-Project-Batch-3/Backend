@@ -116,3 +116,24 @@ func (br *bookmarkRepository) UpdateBookmark(userID primitive.ObjectID, threadID
 
 	return result, err
 }
+
+/*
+Delete
+*/
+
+func (br *bookmarkRepository) DeleteBookmark(userID primitive.ObjectID, threadID primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	// delete
+	_, err := br.collection.DeleteOne(ctx, bson.M{
+		"userId":   userID,
+		"threadId": threadID,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
