@@ -227,6 +227,20 @@ func (_m *Repository) RemoveLike(userID primitive.ObjectID, threadID primitive.O
 	return r0
 }
 
+// RemoveUserFromAllLikes provides a mock function with given fields: userID
+func (_m *Repository) RemoveUserFromAllLikes(userID primitive.ObjectID) error {
+	ret := _m.Called(userID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID) error); ok {
+		r0 = rf(userID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // SuspendByUserID provides a mock function with given fields: domain
 func (_m *Repository) SuspendByUserID(domain *threads.Domain) error {
 	ret := _m.Called(domain)

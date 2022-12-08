@@ -9,6 +9,7 @@ import (
 type Response struct {
 	Id        primitive.ObjectID `json:"_id"`
 	ThreadID  primitive.ObjectID `json:"threadID"`
+	ParentID  primitive.ObjectID `json:"parentID,omitempty"`
 	User      users.Domain       `json:"user"`
 	Comment   string             `json:"comment"`
 	CreatedAt primitive.DateTime `json:"createdAt"`

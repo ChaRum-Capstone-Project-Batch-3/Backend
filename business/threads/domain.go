@@ -41,6 +41,7 @@ type Repository interface {
 	SuspendByUserID(domain *Domain) error
 	AppendLike(userID primitive.ObjectID, threadID primitive.ObjectID) error
 	RemoveLike(userID primitive.ObjectID, threadID primitive.ObjectID) error
+	RemoveUserFromAllLikes(userID primitive.ObjectID) error
 	// Delete
 	Delete(id primitive.ObjectID) error
 	DeleteAllByUserID(id primitive.ObjectID) error
@@ -63,6 +64,7 @@ type UseCase interface {
 	SuspendByUserID(userID primitive.ObjectID) error
 	Like(userID primitive.ObjectID, threadID primitive.ObjectID) error
 	Unlike(userID primitive.ObjectID, threadID primitive.ObjectID) error
+	RemoveUserFromAllLikes(userID primitive.ObjectID) error
 	// Delete
 	Delete(userID primitive.ObjectID, threadID primitive.ObjectID) (Domain, error)
 	DeleteAllByUserID(id primitive.ObjectID) error
