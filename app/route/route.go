@@ -72,8 +72,8 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	threadLike.DELETE("/id/:thread-id", cl.ThreadController.Unlike, authMiddleware.Check)
 	threadBookmark := thread.Group("/bookmark")
 	threadBookmark.GET("", cl.BookmarkController.GetAllByToken, authMiddleware.Check)
-	threadBookmark.POST("/:thread_id", cl.BookmarkController.Create, authMiddleware.Check)
-	threadBookmark.DELETE("/:thread_id", cl.BookmarkController.Delete, authMiddleware.Check)
+	threadBookmark.POST("/:thread-id", cl.BookmarkController.Create, authMiddleware.Check)
+	threadBookmark.DELETE("/:thread-id", cl.BookmarkController.Delete, authMiddleware.Check)
 
 	// Admin
 	admin := apiV1.Group("/admin", adminMiddleware.Check)

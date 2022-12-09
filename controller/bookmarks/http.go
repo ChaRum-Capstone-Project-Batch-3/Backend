@@ -7,6 +7,7 @@ import (
 	"charum/helper"
 	"charum/util"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -36,7 +37,7 @@ func (bc *BookmarkController) Create(c echo.Context) error {
 		})
 	}
 
-	threadID, err := primitive.ObjectIDFromHex(c.Param("thread_id"))
+	threadID, err := primitive.ObjectIDFromHex(c.Param("thread-id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
@@ -52,8 +53,13 @@ func (bc *BookmarkController) Create(c echo.Context) error {
 
 	result, err := bc.bookmarkUseCase.Create(&userInputDomain)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
-			Status:  http.StatusInternalServerError,
+		statusCode := http.StatusInternalServerError
+		if strings.Contains(err.Error(), "already") {
+			statusCode = http.StatusConflict
+		}
+
+		return c.JSON(statusCode, helper.BaseResponse{
+			Status:  statusCode,
 			Message: err.Error(),
 			Data:    nil,
 		})
@@ -70,7 +76,7 @@ func (bc *BookmarkController) Create(c echo.Context) error {
 
 	return c.JSON(http.StatusCreated, helper.BaseResponse{
 		Status:  http.StatusCreated,
-		Message: "success add to bookmark",
+		Message: "success to craete bookmark",
 		Data: map[string]interface{}{
 			"bookmark": response,
 		},
@@ -89,8 +95,13 @@ func (bc *BookmarkController) GetAllByToken(c echo.Context) error {
 
 	result, err := bc.bookmarkUseCase.GetAllByUserID(userID)
 	if err != nil {
-		return c.JSON(http.StatusCreated, helper.BaseResponse{
-			Status:  http.StatusCreated,
+		statusCode := http.StatusInternalServerError
+		if strings.Contains(err.Error(), "failed to get") {
+			statusCode = http.StatusNotFound
+		}
+
+		return c.JSON(statusCode, helper.BaseResponse{
+			Status:  statusCode,
 			Message: err.Error(),
 			Data:    nil,
 		})
@@ -136,7 +147,7 @@ func (bc *BookmarkController) GetAllByToken(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
-		Message: "success get all bookmark",
+		Message: "success to get bookmarks",
 		Data: map[string]interface{}{
 			"bookmarks": responseBookmark,
 		},
@@ -157,7 +168,7 @@ func (bc *BookmarkController) Delete(c echo.Context) error {
 		})
 	}
 
-	threadID, err := primitive.ObjectIDFromHex(c.Param("thread_id"))
+	threadID, err := primitive.ObjectIDFromHex(c.Param("thread-id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
@@ -173,8 +184,13 @@ func (bc *BookmarkController) Delete(c echo.Context) error {
 
 	_, err = bc.bookmarkUseCase.Delete(&userInputDomain)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
-			Status:  http.StatusInternalServerError,
+		statusCode := http.StatusInternalServerError
+		if strings.Contains(err.Error(), "failed to get") {
+			statusCode = http.StatusNotFound
+		}
+
+		return c.JSON(statusCode, helper.BaseResponse{
+			Status:  statusCode,
 			Message: err.Error(),
 			Data:    nil,
 		})
@@ -182,7 +198,7 @@ func (bc *BookmarkController) Delete(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
-		Message: "success delete bookmark",
+		Message: "success to delete bookmark",
 		Data:    nil,
 	})
 }
