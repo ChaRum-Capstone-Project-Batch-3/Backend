@@ -7,6 +7,7 @@ import (
 	"charum/helper"
 	"charum/util"
 	"errors"
+	"fmt"
 	"math"
 	"mime/multipart"
 	"strings"
@@ -191,6 +192,32 @@ func (uu *UserUseCase) Update(domain *Domain, profilePicture *multipart.FileHead
 	updatedUser, err := uu.userRepository.Update(&user)
 	if err != nil {
 		return Domain{}, errors.New("failed to update user")
+	}
+
+	return updatedUser, nil
+}
+
+func (uu *UserUseCase) UpdatePassword(domain *Domain) (Domain, error) {
+	user, err := uu.userRepository.GetByID(domain.Id)
+	if err != nil {
+		return Domain{}, errors.New("failed to get user")
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(domain.OldPassword))
+	fmt.Println(err)
+	if err != nil {
+		return Domain{}, errors.New("wrong password")
+	}
+
+	encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte(domain.NewPassword), bcrypt.DefaultCost)
+	user.Password = string(encryptedPassword)
+	user.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
+	fmt.Println(user.Password)
+
+	updatedUser, err := uu.userRepository.UpdatePassword(&user)
+	fmt.Println(err)
+	if err != nil {
+		return Domain{}, errors.New("failed to update user password")
 	}
 
 	return updatedUser, nil

@@ -488,6 +488,52 @@ func (userCtrl *UserController) UserUpdate(c echo.Context) error {
 	})
 }
 
+func (userCtrl *UserController) UpdatePassword(c echo.Context) error {
+	userID, err := util.GetUIDFromToken(c)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, helper.BaseResponse{
+			Status:  http.StatusUnauthorized,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	userInput := request.ChangePassword{}
+	c.Bind(&userInput)
+
+	if err := userInput.Validate(); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "validation failed",
+			Data:    err,
+		})
+	}
+
+	userDomain := userInput.ToDomain()
+	userDomain.Id = userID
+
+	statusCode := http.StatusInternalServerError
+	if err == errors.New("failed to get user") {
+		statusCode = http.StatusNotFound
+	} else if err == errors.New("password is incorrect") {
+		statusCode = http.StatusForbidden
+	}
+
+	if err != nil {
+		return c.JSON(statusCode, helper.BaseResponse{
+			Status:  statusCode,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success to change password",
+		Data:    nil,
+	})
+}
+
 func (userCtrl *UserController) Suspend(c echo.Context) error {
 	userID, err := primitive.ObjectIDFromHex(c.Param("user-id"))
 	if err != nil {
