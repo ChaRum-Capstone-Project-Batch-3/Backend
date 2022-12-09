@@ -70,7 +70,7 @@ func (userCtrl *UserController) Register(c echo.Context) error {
 	user, token, err := userCtrl.userUseCase.Register(userInput.ToDomain())
 
 	statusCode := http.StatusInternalServerError
-	if err == errors.New("email is already registered") || err == errors.New("username is already used") {
+	if strings.Contains(err.Error(), "email is already registered") || strings.Contains(err.Error(), "username is already used") {
 		statusCode = http.StatusConflict
 	}
 
@@ -321,7 +321,7 @@ func (userCtrl *UserController) AdminUpdate(c echo.Context) error {
 	statusCode := http.StatusInternalServerError
 	if err == errors.New("failed to get user") {
 		statusCode = http.StatusNotFound
-	} else if !(err == errors.New("username is already used") || err == errors.New("email is already used")) {
+	} else if strings.Contains(err.Error(), "email is already registered") || strings.Contains(err.Error(), "username is already used") {
 		statusCode = http.StatusConflict
 	}
 
@@ -383,7 +383,7 @@ func (userCtrl *UserController) UserUpdate(c echo.Context) error {
 	statusCode := http.StatusInternalServerError
 	if err == errors.New("failed to get user") {
 		statusCode = http.StatusNotFound
-	} else if !(err == errors.New("username is already used") || err == errors.New("email is already used")) {
+	} else if strings.Contains(err.Error(), "email is already registered") || strings.Contains(err.Error(), "username is already used") {
 		statusCode = http.StatusConflict
 	}
 
