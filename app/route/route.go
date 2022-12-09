@@ -43,9 +43,6 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	user.POST("/login", cl.UserController.Login)
 	user.GET("/profile", cl.UserController.GetProfile, authMiddleware.Check)
 	user.PUT("/profile", cl.UserController.UserUpdate, authMiddleware.Check)
-	user.POST("/bookmark/:thread_id", cl.BookmarkController.AddBookmark, authMiddleware.Check)
-	user.GET("/bookmark", cl.BookmarkController.GetAllBookmark, authMiddleware.Check)
-	user.DELETE("/bookmark/:thread_id", cl.BookmarkController.DeleteBookmark, authMiddleware.Check)
 
 	topic := apiV1.Group("/topic")
 	topic.GET("/:page", cl.TopicController.GetManyWithPagination)
@@ -73,6 +70,10 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	threadLike.GET("/:user-id", cl.ThreadController.GetLikedThreadByUserID)
 	threadLike.POST("/id/:thread-id", cl.ThreadController.Like, authMiddleware.Check)
 	threadLike.DELETE("/id/:thread-id", cl.ThreadController.Unlike, authMiddleware.Check)
+	threadBookmark := thread.Group("/bookmark")
+	threadBookmark.GET("", cl.BookmarkController.GetAllByToken, authMiddleware.Check)
+	threadBookmark.POST("/:thread_id", cl.BookmarkController.Create, authMiddleware.Check)
+	threadBookmark.DELETE("/:thread_id", cl.BookmarkController.Delete, authMiddleware.Check)
 
 	// Admin
 	admin := apiV1.Group("/admin", adminMiddleware.Check)

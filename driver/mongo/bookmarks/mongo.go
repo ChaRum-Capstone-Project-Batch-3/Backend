@@ -1,13 +1,13 @@
-package bookmark
+package bookmarks
 
 import (
 	"charum/business/bookmarks"
 	"context"
-	"fmt"
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"time"
 )
 
 type bookmarkRepository struct {
@@ -24,7 +24,7 @@ func NewMongoRepository(db *mongo.Database) bookmarks.Repository {
 Create
 */
 
-func (br *bookmarkRepository) AddBookmark(domain *bookmarks.Domain) (bookmarks.Domain, error) {
+func (br *bookmarkRepository) Create(domain *bookmarks.Domain) (bookmarks.Domain, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
@@ -33,10 +33,7 @@ func (br *bookmarkRepository) AddBookmark(domain *bookmarks.Domain) (bookmarks.D
 		return bookmarks.Domain{}, err
 	}
 
-	// get threadid from res
-	result, err := br.GetByID(domain.UserID, domain.ThreadID)
-	fmt.Println(result)
-	fmt.Println(domain.UserID, domain.ThreadID)
+	result, err := br.GetByUserIDAndThreadID(domain.UserID, domain.ThreadID)
 	if err != nil {
 		return bookmarks.Domain{}, err
 	}
@@ -48,14 +45,14 @@ func (br *bookmarkRepository) AddBookmark(domain *bookmarks.Domain) (bookmarks.D
 Read
 */
 
-func (br *bookmarkRepository) GetByID(UserID primitive.ObjectID, ThreadID primitive.ObjectID) (bookmarks.Domain, error) {
+func (br *bookmarkRepository) GetByUserIDAndThreadID(UserID primitive.ObjectID, ThreadID primitive.ObjectID) (bookmarks.Domain, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
-	var result Bookmark
+	var result Model
 	err := br.collection.FindOne(ctx, bson.M{
-		"userId":   UserID,
-		"threadId": ThreadID,
+		"userID":   UserID,
+		"threadID": ThreadID,
 	}).Decode(&result)
 	if err != nil {
 		return bookmarks.Domain{}, err
@@ -64,47 +61,81 @@ func (br *bookmarkRepository) GetByID(UserID primitive.ObjectID, ThreadID primit
 	return result.ToDomain(), nil
 }
 
-func (br *bookmarkRepository) GetAllBookmark(UserID primitive.ObjectID) ([]bookmarks.Domain, error) {
+func (br *bookmarkRepository) GetAllByUserID(UserID primitive.ObjectID) ([]bookmarks.Domain, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
-	// get all bookmark by userID
 	cursor, err := br.collection.Find(ctx, bson.M{
-		"userId": UserID,
+		"userID": UserID,
 	})
 	if err != nil {
 		return []bookmarks.Domain{}, err
 	}
 
-	// convert to array
-	var results []Bookmark
+	var results []Model
 	if err = cursor.All(ctx, &results); err != nil {
 		return []bookmarks.Domain{}, err
 	}
 
-	// convert to domain
-	var domains []bookmarks.Domain
-	for _, result := range results {
-		domains = append(domains, result.ToDomain())
-	}
+	domains := ToDomainArray(results)
 
 	return domains, nil
+}
+
+func (br *bookmarkRepository) CountByThreadID(threadID primitive.ObjectID) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	count, err := br.collection.CountDocuments(ctx, bson.M{
+		"threadID": threadID,
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	return int(count), nil
 }
 
 /*
 Delete
 */
 
-func (br *bookmarkRepository) DeleteBookmark(userID primitive.ObjectID, threadID primitive.ObjectID) error {
+func (br *bookmarkRepository) Delete(domain *bookmarks.Domain) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
-	// delete
 	_, err := br.collection.DeleteOne(ctx, bson.M{
-		"userId":   userID,
-		"threadId": threadID,
+		"userID":   domain.UserID,
+		"threadID": domain.ThreadID,
 	})
+	if err != nil {
+		return err
+	}
 
+	return nil
+}
+
+func (br *bookmarkRepository) DeleteAllByUserID(userID primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	_, err := br.collection.DeleteMany(ctx, bson.M{
+		"userID": userID,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (br *bookmarkRepository) DeleteAllByThreadID(threadID primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	_, err := br.collection.DeleteMany(ctx, bson.M{
+		"threadID": threadID,
+	})
 	if err != nil {
 		return err
 	}

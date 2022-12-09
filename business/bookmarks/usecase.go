@@ -4,10 +4,8 @@ import (
 	"charum/business/threads"
 	"charum/business/topics"
 	"charum/business/users"
-	"charum/dto/bookmarks"
-	threadsDto "charum/dto/threads"
+	dtoBookmark "charum/dto/bookmarks"
 	"errors"
-	"fmt"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -18,41 +16,38 @@ type BookmarkUseCase struct {
 	threadRepository   threads.Repository
 	userRepository     users.Repository
 	topicRepository    topics.Repository
+	threadUseCase      threads.UseCase
 }
 
-func NewBookmarkUseCase(br Repository, tr threads.Repository, ur users.Repository, tc topics.Repository) UseCase {
+func NewBookmarkUseCase(br Repository, tr threads.Repository, ur users.Repository, tc topics.Repository, tuc threads.UseCase) UseCase {
 	return &BookmarkUseCase{
 		bookmarkRepository: br,
 		threadRepository:   tr,
 		userRepository:     ur,
 		topicRepository:    tc,
+		threadUseCase:      tuc,
 	}
 }
 
 /*
 Add Bookmark
 */
-func (bu *BookmarkUseCase) AddBookmark(userID primitive.ObjectID, threadID primitive.ObjectID, domain *Domain) (Domain, error) {
-	// check thread is exist or not
-	thread, err := bu.threadRepository.GetByID(threadID)
+func (bu *BookmarkUseCase) Create(domain *Domain) (Domain, error) {
+	_, err := bu.threadRepository.GetByID(domain.ThreadID)
 	if err != nil {
 		return Domain{}, errors.New("failed to get thread")
 	}
 
-	// check the thread already bookmarked or not
-	_, err = bu.bookmarkRepository.GetByID(userID, threadID)
+	_, err = bu.bookmarkRepository.GetByUserIDAndThreadID(domain.UserID, domain.ThreadID)
 	if err == nil {
 		return Domain{}, errors.New("thread already bookmarked")
 	}
 
 	domain.Id = primitive.NewObjectID()
-	domain.UserID = userID
-	domain.ThreadID = thread.Id
 	domain.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
 	domain.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
 
-	bookmark, err := bu.bookmarkRepository.AddBookmark(domain)
-	fmt.Println("bookmark error:", err)
+	bookmark, err := bu.bookmarkRepository.Create(domain)
 	if err != nil {
 		return Domain{}, errors.New("failed to add thread to bookmark")
 	}
@@ -64,19 +59,8 @@ func (bu *BookmarkUseCase) AddBookmark(userID primitive.ObjectID, threadID primi
 Read
 */
 
-// get bookmark by user id
-func (bu *BookmarkUseCase) GetByID(userID primitive.ObjectID, threadID primitive.ObjectID) (Domain, error) {
-	result, err := bu.bookmarkRepository.GetByID(userID, threadID)
-	if err != nil {
-		return Domain{}, errors.New("failed to get bookmark")
-	}
-	return result, nil
-}
-
-// get all bookmark by user id
-func (bu *BookmarkUseCase) GetAllBookmark(userID primitive.ObjectID) ([]Domain, error) {
-	// get bookmark data by user id, and get thread data by thread id and return it with array
-	result, err := bu.bookmarkRepository.GetAllBookmark(userID)
+func (bu *BookmarkUseCase) GetAllByUserID(userID primitive.ObjectID) ([]Domain, error) {
+	result, err := bu.bookmarkRepository.GetAllByUserID(userID)
 	if err != nil {
 		return []Domain{}, errors.New("failed to get all bookmark")
 	}
@@ -84,57 +68,46 @@ func (bu *BookmarkUseCase) GetAllBookmark(userID primitive.ObjectID) ([]Domain, 
 	return result, nil
 }
 
-func (bu *BookmarkUseCase) DomainToResponse(domain Domain) (bookmarks.Response, error) {
-	// get thread data by thread id˙
-	thread, err := bu.threadRepository.GetByID(domain.ThreadID)
+func (bu *BookmarkUseCase) CountByThreadID(threadID primitive.ObjectID) (int, error) {
+	_, err := bu.threadRepository.GetByID(threadID)
 	if err != nil {
-		return bookmarks.Response{}, errors.New("failed to get thread")
+		return 0, errors.New("failed to get thread")
 	}
-	creator, err := bu.userRepository.GetByID(thread.CreatorID)
+
+	result, err := bu.bookmarkRepository.CountByThreadID(threadID)
 	if err != nil {
-		return bookmarks.Response{}, errors.New("failed to get creator")
+		return 0, errors.New("failed to count bookmark")
 	}
 
-	likes := []threadsDto.Like{}
-	for _, like := range thread.Likes {
-		user, err := bu.userRepository.GetByID(like.UserID)
-		if err != nil {
-			return bookmarks.Response{}, err
-		}
-
-		likes = append(likes, threadsDto.Like{
-			User:      user,
-			Timestamp: domain.CreatedAt,
-		})
-	}
-
-	topic, err := bu.topicRepository.GetByID(thread.TopicID)
-	if err != nil {
-		return bookmarks.Response{}, errors.New("failed to get topic")
-	}
-
-	return bookmarks.Response{
-		Id:            domain.Id,
-		ThreadId:      thread.Id,
-		Topic:         topic,
-		Creator:       creator,
-		Title:         thread.Title,
-		Description:   thread.Description,
-		Likes:         likes,
-		TotalLike:     len(thread.Likes),
-		SuspendStatus: thread.SuspendStatus,
-		SuspendDetail: thread.SuspendDetail,
-		CreatedAt:     thread.CreatedAt,
-		UpdatedAt:     thread.UpdatedAt,
-	}, nil
+	return result, nil
 }
 
-func (bu *BookmarkUseCase) DomainsToResponseArray(domains []Domain) ([]bookmarks.Response, error) {
-	var responses []bookmarks.Response
+func (bu *BookmarkUseCase) DomainToResponse(domain Domain) (dtoBookmark.Response, error) {
+	thread, err := bu.threadRepository.GetByID(domain.ThreadID)
+	if err != nil {
+		return dtoBookmark.Response{}, errors.New("failed to get bookmark")
+	}
+
+	responseThread, err := bu.threadUseCase.DomainToResponse(thread)
+	if err != nil {
+		return dtoBookmark.Response{}, errors.New("failed to get bookmark")
+	}
+
+	responseBookmark := dtoBookmark.Response{
+		Id:     domain.Id,
+		UserID: domain.UserID,
+		Thread: responseThread,
+	}
+
+	return responseBookmark, nil
+}
+
+func (bu *BookmarkUseCase) DomainsToResponseArray(domains []Domain) ([]dtoBookmark.Response, error) {
+	var responses []dtoBookmark.Response
 	for _, domain := range domains {
 		response, err := bu.DomainToResponse(domain)
 		if err != nil {
-			return []bookmarks.Response{}, errors.New("failed to get thread")
+			return []dtoBookmark.Response{}, errors.New("failed to get bookmark")
 		}
 
 		responses = append(responses, response)
@@ -147,16 +120,34 @@ func (bu *BookmarkUseCase) DomainsToResponseArray(domains []Domain) ([]bookmarks
 Delete
 */
 
-// delete bookmark by bookmark id
-func (bu *BookmarkUseCase) DeleteBookmark(userID primitive.ObjectID, threadID primitive.ObjectID) (Domain, error) {
-	bookmark, err := bu.bookmarkRepository.GetByID(userID, threadID)
+func (bu *BookmarkUseCase) Delete(domain *Domain) (Domain, error) {
+	bookmark, err := bu.bookmarkRepository.GetByUserIDAndThreadID(domain.UserID, domain.ThreadID)
 	if err != nil {
 		return Domain{}, errors.New("failed to get bookmark")
 	}
 
-	result := bu.bookmarkRepository.DeleteBookmark(userID, bookmark.ThreadID)
+	result := bu.bookmarkRepository.Delete(domain)
 	if result != nil {
 		return Domain{}, errors.New("failed to delete bookmark")
 	}
+
 	return bookmark, nil
+}
+
+func (bu *BookmarkUseCase) DeleteAllByUserID(userID primitive.ObjectID) error {
+	result := bu.bookmarkRepository.DeleteAllByUserID(userID)
+	if result != nil {
+		return errors.New("failed to delete bookmark")
+	}
+
+	return nil
+}
+
+func (bu *BookmarkUseCase) DeleteAllByThreadID(threadID primitive.ObjectID) error {
+	result := bu.bookmarkRepository.DeleteAllByThreadID(threadID)
+	if result != nil {
+		return errors.New("failed to delete bookmark")
+	}
+
+	return nil
 }

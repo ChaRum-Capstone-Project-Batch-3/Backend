@@ -1,6 +1,7 @@
 package users
 
 import (
+	"charum/business/bookmarks"
 	"charum/business/comments"
 	followThreads "charum/business/follow_threads"
 	"charum/business/threads"
@@ -24,14 +25,16 @@ type UserController struct {
 	threadUseCase       threads.UseCase
 	commentUseCase      comments.UseCase
 	followThreadUseCase followThreads.UseCase
+	bookmarksUseCase    bookmarks.UseCase
 }
 
-func NewUserController(userUC users.UseCase, threadUC threads.UseCase, commentUC comments.UseCase, followThreadUC followThreads.UseCase) *UserController {
+func NewUserController(userUC users.UseCase, threadUC threads.UseCase, commentUC comments.UseCase, followThreadUC followThreads.UseCase, bookmarkUC bookmarks.UseCase) *UserController {
 	return &UserController{
 		userUseCase:         userUC,
 		threadUseCase:       threadUC,
 		commentUseCase:      commentUC,
 		followThreadUseCase: followThreadUC,
+		bookmarksUseCase:    bookmarkUC,
 	}
 }
 
@@ -463,6 +466,15 @@ func (userCtrl *UserController) Suspend(c echo.Context) error {
 		})
 	}
 
+	err = userCtrl.bookmarksUseCase.DeleteAllByUserID(userID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
 		Message: "success to suspend user",
@@ -563,6 +575,15 @@ func (userCtrl *UserController) Delete(c echo.Context) error {
 	}
 
 	err = userCtrl.threadUseCase.RemoveUserFromAllLikes(userID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	err = userCtrl.bookmarksUseCase.DeleteAllByUserID(userID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,

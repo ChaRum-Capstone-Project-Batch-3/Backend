@@ -50,14 +50,14 @@ func main() {
 	threadUsecase := _threadUseCase.NewThreadUseCase(threadRepository, topicRepository, userRepository)
 	commentUsecase := _commentUseCase.NewCommentUseCase(commentRepository, threadRepository, userRepository)
 	followThreadUsecase := _followThreadUseCase.NewFollowThreadUseCase(followThreadRepository, userRepository, threadRepository, commentRepository, threadUsecase)
-	bookmarkUsecase := _bookmarkUseCase.NewBookmarkUseCase(bookmarkRepository, threadRepository, userRepository, topicRepository)
+	bookmarkUsecase := _bookmarkUseCase.NewBookmarkUseCase(bookmarkRepository, threadRepository, userRepository, topicRepository, threadUsecase)
 
-	userController := _userController.NewUserController(userUsecase, threadUsecase, commentUsecase, followThreadUsecase)
-	topicController := _topicController.NewTopicController(topicUsecase, threadUsecase, commentUsecase, followThreadUsecase)
-	threadController := _threadController.NewThreadController(threadUsecase, commentUsecase, followThreadUsecase, userUsecase)
+	userController := _userController.NewUserController(userUsecase, threadUsecase, commentUsecase, followThreadUsecase, bookmarkUsecase)
+	topicController := _topicController.NewTopicController(topicUsecase, threadUsecase, commentUsecase, followThreadUsecase, bookmarkUsecase)
+	threadController := _threadController.NewThreadController(threadUsecase, commentUsecase, followThreadUsecase, userUsecase, bookmarkUsecase)
 	commentController := _commentController.NewCommentController(commentUsecase, followThreadUsecase)
 	followThreadController := _followThreadController.NewFollowThreadController(followThreadUsecase)
-	bookmarkController := _bookmarkController.NewBookmarkController(bookmarkUsecase)
+	bookmarkController := _bookmarkController.NewBookmarkController(bookmarkUsecase, followThreadUsecase, commentUsecase)
 
 	routeController := _route.ControllerList{
 		UserRepository:         userRepository,

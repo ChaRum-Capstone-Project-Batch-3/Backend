@@ -2,26 +2,31 @@ package bookmarks
 
 import (
 	"charum/business/bookmarks"
-	"charum/controller/bookmarks/request"
-	"charum/controller/bookmarks/response"
+	"charum/business/comments"
+	followThreads "charum/business/follow_threads"
 	"charum/helper"
 	"charum/util"
+	"net/http"
+
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"net/http"
 )
 
 type BookmarkController struct {
-	bookmarkUseCase bookmarks.UseCase
+	bookmarkUseCase     bookmarks.UseCase
+	followThreadUseCase followThreads.UseCase
+	commentUseCase      comments.UseCase
 }
 
-func NewBookmarkController(bu bookmarks.UseCase) *BookmarkController {
+func NewBookmarkController(bUC bookmarks.UseCase, ftUC followThreads.UseCase, cUC comments.UseCase) *BookmarkController {
 	return &BookmarkController{
-		bookmarkUseCase: bu,
+		bookmarkUseCase:     bUC,
+		followThreadUseCase: ftUC,
+		commentUseCase:      cUC,
 	}
 }
 
-func (bc *BookmarkController) AddBookmark(c echo.Context) error {
+func (bc *BookmarkController) Create(c echo.Context) error {
 	userID, err := util.GetUIDFromToken(c)
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, helper.BaseResponse{
@@ -40,18 +45,21 @@ func (bc *BookmarkController) AddBookmark(c echo.Context) error {
 		})
 	}
 
-	bookmarkInput := request.Bookmark{}
-	c.Bind(&bookmarkInput)
+	userInputDomain := bookmarks.Domain{
+		UserID:   userID,
+		ThreadID: threadID,
+	}
 
-	if err := bookmarkInput.Validate(); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "validation failed",
-			Data:    err,
+	result, err := bc.bookmarkUseCase.Create(&userInputDomain)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
 		})
 	}
 
-	result, err := bc.bookmarkUseCase.AddBookmark(userID, threadID, bookmarkInput.ToDomain())
+	response, err := bc.bookmarkUseCase.DomainToResponse(result)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,
@@ -64,42 +72,12 @@ func (bc *BookmarkController) AddBookmark(c echo.Context) error {
 		Status:  http.StatusCreated,
 		Message: "success add to bookmark",
 		Data: map[string]interface{}{
-			"bookmark": response.FromDomain(result),
+			"bookmark": response,
 		},
 	})
 }
 
-// get bookmark by id
-func (bc *BookmarkController) GetByID(c echo.Context) error {
-	userID, err := util.GetUIDFromToken(c)
-	if err != nil {
-		return c.JSON(http.StatusUnauthorized, helper.BaseResponse{
-			Status:  http.StatusUnauthorized,
-			Message: err.Error(),
-			Data:    nil,
-		})
-	}
-	//
-	threadID, err := primitive.ObjectIDFromHex(c.Param("thread_id"))
-	result, err := bc.bookmarkUseCase.GetByID(userID, threadID)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
-			Status:  http.StatusInternalServerError,
-			Message: err.Error(),
-			Data:    nil,
-		})
-	}
-
-	return c.JSON(http.StatusOK, helper.BaseResponse{
-		Status:  http.StatusOK,
-		Message: "success get bookmark by id",
-		Data: map[string]interface{}{
-			"bookmark": response.FromDomain(result),
-		},
-	})
-}
-
-func (bc *BookmarkController) GetAllBookmark(c echo.Context) error {
+func (bc *BookmarkController) GetAllByToken(c echo.Context) error {
 	userID, err := util.GetUIDFromToken(c)
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, helper.BaseResponse{
@@ -109,7 +87,7 @@ func (bc *BookmarkController) GetAllBookmark(c echo.Context) error {
 		})
 	}
 
-	result, err := bc.bookmarkUseCase.GetAllBookmark(userID)
+	result, err := bc.bookmarkUseCase.GetAllByUserID(userID)
 	if err != nil {
 		return c.JSON(http.StatusCreated, helper.BaseResponse{
 			Status:  http.StatusCreated,
@@ -127,6 +105,35 @@ func (bc *BookmarkController) GetAllBookmark(c echo.Context) error {
 		})
 	}
 
+	for i, boomark := range responseBookmark {
+		responseBookmark[i].Thread.TotalFollow, err = bc.followThreadUseCase.CountByThreadID(boomark.Thread.Id)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+				Status:  http.StatusInternalServerError,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
+
+		responseBookmark[i].Thread.TotalComment, err = bc.commentUseCase.CountByThreadID(boomark.Thread.Id)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+				Status:  http.StatusInternalServerError,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
+
+		responseBookmark[i].Thread.TotalBookmark, err = bc.bookmarkUseCase.CountByThreadID(boomark.Thread.Id)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+				Status:  http.StatusInternalServerError,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
+	}
+
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
 		Message: "success get all bookmark",
@@ -139,8 +146,17 @@ func (bc *BookmarkController) GetAllBookmark(c echo.Context) error {
 /*
 Delete
 */
-func (bc *BookmarkController) DeleteBookmark(c echo.Context) error {
+
+func (bc *BookmarkController) Delete(c echo.Context) error {
 	userID, err := util.GetUIDFromToken(c)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, helper.BaseResponse{
+			Status:  http.StatusUnauthorized,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
 	threadID, err := primitive.ObjectIDFromHex(c.Param("thread_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
@@ -150,7 +166,12 @@ func (bc *BookmarkController) DeleteBookmark(c echo.Context) error {
 		})
 	}
 
-	_, err = bc.bookmarkUseCase.DeleteBookmark(userID, threadID)
+	userInputDomain := bookmarks.Domain{
+		UserID:   userID,
+		ThreadID: threadID,
+	}
+
+	_, err = bc.bookmarkUseCase.Delete(&userInputDomain)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,
