@@ -1,6 +1,7 @@
 package users
 
 import (
+	"charum/business/bookmarks"
 	"charum/business/comments"
 	followThreads "charum/business/follow_threads"
 	"charum/business/threads"
@@ -24,14 +25,16 @@ type UserController struct {
 	threadUseCase       threads.UseCase
 	commentUseCase      comments.UseCase
 	followThreadUseCase followThreads.UseCase
+	bookmarksUseCase    bookmarks.UseCase
 }
 
-func NewUserController(userUC users.UseCase, threadUC threads.UseCase, commentUC comments.UseCase, followThreadUC followThreads.UseCase) *UserController {
+func NewUserController(userUC users.UseCase, threadUC threads.UseCase, commentUC comments.UseCase, followThreadUC followThreads.UseCase, bookmarkUC bookmarks.UseCase) *UserController {
 	return &UserController{
 		userUseCase:         userUC,
 		threadUseCase:       threadUC,
 		commentUseCase:      commentUC,
 		followThreadUseCase: followThreadUC,
+		bookmarksUseCase:    bookmarkUC,
 	}
 }
 
@@ -67,7 +70,7 @@ func (userCtrl *UserController) Register(c echo.Context) error {
 	user, token, err := userCtrl.userUseCase.Register(userInput.ToDomain())
 
 	statusCode := http.StatusInternalServerError
-	if err == errors.New("email is already registered") || err == errors.New("username is already used") {
+	if strings.Contains(err.Error(), "email is already registered") || strings.Contains(err.Error(), "username is already used") {
 		statusCode = http.StatusConflict
 	}
 
@@ -318,7 +321,7 @@ func (userCtrl *UserController) AdminUpdate(c echo.Context) error {
 	statusCode := http.StatusInternalServerError
 	if err == errors.New("failed to get user") {
 		statusCode = http.StatusNotFound
-	} else if !(err == errors.New("username is already used") || err == errors.New("email is already used")) {
+	} else if strings.Contains(err.Error(), "email is already registered") || strings.Contains(err.Error(), "username is already used") {
 		statusCode = http.StatusConflict
 	}
 
@@ -380,7 +383,7 @@ func (userCtrl *UserController) UserUpdate(c echo.Context) error {
 	statusCode := http.StatusInternalServerError
 	if err == errors.New("failed to get user") {
 		statusCode = http.StatusNotFound
-	} else if !(err == errors.New("username is already used") || err == errors.New("email is already used")) {
+	} else if strings.Contains(err.Error(), "email is already registered") || strings.Contains(err.Error(), "username is already used") {
 		statusCode = http.StatusConflict
 	}
 
@@ -455,6 +458,15 @@ func (userCtrl *UserController) Suspend(c echo.Context) error {
 	}
 
 	err = userCtrl.threadUseCase.RemoveUserFromAllLikes(userID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	err = userCtrl.bookmarksUseCase.DeleteAllByUserID(userID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,
@@ -563,6 +575,15 @@ func (userCtrl *UserController) Delete(c echo.Context) error {
 	}
 
 	err = userCtrl.threadUseCase.RemoveUserFromAllLikes(userID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	err = userCtrl.bookmarksUseCase.DeleteAllByUserID(userID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,

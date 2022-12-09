@@ -26,6 +26,9 @@ import (
 	_followThreadUseCase "charum/business/follow_threads"
 	_followThreadController "charum/controller/follow_threads"
 
+	_bookmarkUseCase "charum/business/bookmarks"
+	_bookmarkController "charum/controller/bookmarks"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -40,18 +43,21 @@ func main() {
 	threadRepository := _driver.NewThreadRepository(database)
 	commentRepository := _driver.NewCommentRepository(database)
 	followThreadRepository := _driver.NewFollowThreadRepository(database)
+	bookmarkRepository := _driver.NewBookmarkRepository(database)
 
 	userUsecase := _userUseCase.NewUserUseCase(userRepository)
 	topicUsecase := _topicUseCase.NewTopicUseCase(topicRepository)
 	threadUsecase := _threadUseCase.NewThreadUseCase(threadRepository, topicRepository, userRepository)
 	commentUsecase := _commentUseCase.NewCommentUseCase(commentRepository, threadRepository, userRepository)
 	followThreadUsecase := _followThreadUseCase.NewFollowThreadUseCase(followThreadRepository, userRepository, threadRepository, commentRepository, threadUsecase)
+	bookmarkUsecase := _bookmarkUseCase.NewBookmarkUseCase(bookmarkRepository, threadRepository, userRepository, topicRepository, threadUsecase)
 
-	userController := _userController.NewUserController(userUsecase, threadUsecase, commentUsecase, followThreadUsecase)
-	topicController := _topicController.NewTopicController(topicUsecase, threadUsecase, commentUsecase, followThreadUsecase)
-	threadController := _threadController.NewThreadController(threadUsecase, commentUsecase, followThreadUsecase, userUsecase)
+	userController := _userController.NewUserController(userUsecase, threadUsecase, commentUsecase, followThreadUsecase, bookmarkUsecase)
+	topicController := _topicController.NewTopicController(topicUsecase, threadUsecase, commentUsecase, followThreadUsecase, bookmarkUsecase)
+	threadController := _threadController.NewThreadController(threadUsecase, commentUsecase, followThreadUsecase, userUsecase, bookmarkUsecase)
 	commentController := _commentController.NewCommentController(commentUsecase, followThreadUsecase)
 	followThreadController := _followThreadController.NewFollowThreadController(followThreadUsecase)
+	bookmarkController := _bookmarkController.NewBookmarkController(bookmarkUsecase, followThreadUsecase, commentUsecase)
 
 	routeController := _route.ControllerList{
 		UserRepository:         userRepository,
@@ -60,6 +66,7 @@ func main() {
 		ThreadController:       threadController,
 		CommentController:      commentController,
 		FollowThreadController: followThreadController,
+		BookmarkController:     bookmarkController,
 	}
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{

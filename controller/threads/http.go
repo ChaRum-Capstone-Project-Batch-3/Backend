@@ -1,6 +1,7 @@
 package threads
 
 import (
+	"charum/business/bookmarks"
 	"charum/business/comments"
 	followThreads "charum/business/follow_threads"
 	"charum/business/threads"
@@ -22,14 +23,16 @@ type ThreadController struct {
 	commentUseCase      comments.UseCase
 	followThreadUseCase followThreads.UseCase
 	userUseCase         users.UseCase
+	bookmarkUseCase     bookmarks.UseCase
 }
 
-func NewThreadController(threadUC threads.UseCase, commentUC comments.UseCase, followThreadUC followThreads.UseCase, userUC users.UseCase) *ThreadController {
+func NewThreadController(threadUC threads.UseCase, commentUC comments.UseCase, followThreadUC followThreads.UseCase, userUC users.UseCase, bookmarkUC bookmarks.UseCase) *ThreadController {
 	return &ThreadController{
 		threadUseCase:       threadUC,
 		commentUseCase:      commentUC,
 		followThreadUseCase: followThreadUC,
 		userUseCase:         userUC,
+		bookmarkUseCase:     bookmarkUC,
 	}
 }
 
@@ -236,7 +239,15 @@ func (tc *ThreadController) GetManyWithPagination(c echo.Context) error {
 			})
 		}
 
-		responseThreads[i].TotalLike = len(thread.Likes)
+		responseThreads[i].TotalBookmark, err = tc.bookmarkUseCase.CountByThreadID(thread.Id)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
+				Status:     http.StatusInternalServerError,
+				Message:    err.Error(),
+				Data:       nil,
+				Pagination: helper.Page{},
+			})
+		}
 	}
 
 	return c.JSON(http.StatusOK, helper.BaseResponseWithPagination{
@@ -301,7 +312,15 @@ func (tc *ThreadController) GetManyByToken(c echo.Context) error {
 			})
 		}
 
-		responseThreads[i].TotalLike = len(thread.Likes)
+		responseThreads[i].TotalBookmark, err = tc.bookmarkUseCase.CountByThreadID(thread.Id)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
+				Status:     http.StatusInternalServerError,
+				Message:    err.Error(),
+				Data:       nil,
+				Pagination: helper.Page{},
+			})
+		}
 	}
 
 	return c.JSON(http.StatusOK, helper.BaseResponse{
@@ -350,6 +369,15 @@ func (tc *ThreadController) GetByID(c echo.Context) error {
 		})
 	}
 
+	totalBookmark, err := tc.bookmarkUseCase.CountByThreadID(threadID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
 	responseComment, err := tc.commentUseCase.DomainToResponseArray(comment)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
@@ -382,6 +410,7 @@ func (tc *ThreadController) GetByID(c echo.Context) error {
 
 	responseThread.TotalComment = len(responseComment)
 	responseThread.TotalFollow = totalFollow
+	responseThread.TotalBookmark = totalBookmark
 
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
@@ -570,6 +599,36 @@ func (tc *ThreadController) GetLikedThreadByToken(c echo.Context) error {
 		})
 	}
 
+	for i, thread := range responseThreads {
+		responseThreads[i].TotalFollow, err = tc.followThreadUseCase.CountByThreadID(thread.Id)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+				Status:  http.StatusInternalServerError,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
+
+		responseThreads[i].TotalComment, err = tc.commentUseCase.CountByThreadID(thread.Id)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+				Status:  http.StatusInternalServerError,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
+
+		responseThreads[i].TotalBookmark, err = tc.bookmarkUseCase.CountByThreadID(thread.Id)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
+				Status:     http.StatusInternalServerError,
+				Message:    err.Error(),
+				Data:       nil,
+				Pagination: helper.Page{},
+			})
+		}
+	}
+
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
 		Message: "success to get liked thread",
@@ -614,6 +673,36 @@ func (tc *ThreadController) GetLikedThreadByUserID(c echo.Context) error {
 			Message: err.Error(),
 			Data:    nil,
 		})
+	}
+
+	for i, thread := range responseThreads {
+		responseThreads[i].TotalFollow, err = tc.followThreadUseCase.CountByThreadID(thread.Id)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+				Status:  http.StatusInternalServerError,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
+
+		responseThreads[i].TotalComment, err = tc.commentUseCase.CountByThreadID(thread.Id)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+				Status:  http.StatusInternalServerError,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
+
+		responseThreads[i].TotalBookmark, err = tc.bookmarkUseCase.CountByThreadID(thread.Id)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
+				Status:     http.StatusInternalServerError,
+				Message:    err.Error(),
+				Data:       nil,
+				Pagination: helper.Page{},
+			})
+		}
 	}
 
 	return c.JSON(http.StatusOK, helper.BaseResponse{
@@ -773,6 +862,15 @@ func (tc *ThreadController) UserDelete(c echo.Context) error {
 		})
 	}
 
+	err = tc.bookmarkUseCase.DeleteAllByThreadID(threadID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
 		Message: "success to delete thread",
@@ -827,6 +925,15 @@ func (tc *ThreadController) AdminDelete(c echo.Context) error {
 	}
 
 	err = tc.followThreadUseCase.DeleteAllByThreadID(threadID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	err = tc.bookmarkUseCase.DeleteAllByThreadID(threadID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,
