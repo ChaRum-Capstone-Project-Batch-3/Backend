@@ -212,7 +212,7 @@ func (uu *UserUseCase) UpdatePassword(domain *Domain) (Domain, error) {
 	encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte(domain.NewPassword), bcrypt.DefaultCost)
 	user.Password = string(encryptedPassword)
 	user.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
-	fmt.Println(user.Password)
+	fmt.Println(user.UpdatedAt)
 
 	updatedUser, err := uu.userRepository.UpdatePassword(&user)
 	fmt.Println(err)

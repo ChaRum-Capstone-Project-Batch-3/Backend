@@ -163,7 +163,8 @@ func (ur *userRepository) UpdatePassword(domain *users.Domain) (users.Domain, er
 		"_id": domain.Id,
 	}, bson.M{
 		"$set": bson.M{
-			"password": domain.NewPassword,
+			"password":  domain.Password,
+			"updatedAt": domain.UpdatedAt,
 		},
 	})
 	if err != nil {

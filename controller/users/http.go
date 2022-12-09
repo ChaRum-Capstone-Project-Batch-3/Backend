@@ -511,6 +511,7 @@ func (userCtrl *UserController) UpdatePassword(c echo.Context) error {
 
 	userDomain := userInput.ToDomain()
 	userDomain.Id = userID
+	user, err := userCtrl.userUseCase.UpdatePassword(userDomain)
 
 	statusCode := http.StatusInternalServerError
 	if err == errors.New("failed to get user") {
@@ -530,7 +531,9 @@ func (userCtrl *UserController) UpdatePassword(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
 		Message: "success to change password",
-		Data:    nil,
+		Data: map[string]interface{}{
+			"user": response.FromDomain(user),
+		},
 	})
 }
 
