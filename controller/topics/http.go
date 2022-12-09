@@ -1,6 +1,7 @@
 package topics
 
 import (
+	"charum/business/bookmarks"
 	"charum/business/comments"
 	followThreads "charum/business/follow_threads"
 	"charum/business/threads"
@@ -22,14 +23,16 @@ type TopicController struct {
 	ThreadUseCase       threads.UseCase
 	CommentUseCase      comments.UseCase
 	FollowThreadUseCase followThreads.UseCase
+	bookmarkUseCase     bookmarks.UseCase
 }
 
-func NewTopicController(topicUC topics.UseCase, threadUC threads.UseCase, commentUC comments.UseCase, followThreadUC followThreads.UseCase) *TopicController {
+func NewTopicController(topicUC topics.UseCase, threadUC threads.UseCase, commentUC comments.UseCase, followThreadUC followThreads.UseCase, bookmarkUC bookmarks.UseCase) *TopicController {
 	return &TopicController{
 		TopicUseCase:        topicUC,
 		ThreadUseCase:       threadUC,
 		CommentUseCase:      commentUC,
 		FollowThreadUseCase: followThreadUC,
+		bookmarkUseCase:     bookmarkUC,
 	}
 }
 
@@ -322,6 +325,15 @@ func (topicCtrl *TopicController) Delete(c echo.Context) error {
 		}
 
 		err = topicCtrl.FollowThreadUseCase.DeleteAllByThreadID(thread.Id)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+				Status:  http.StatusInternalServerError,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
+
+		err = topicCtrl.bookmarkUseCase.DeleteAllByThreadID(thread.Id)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 				Status:  http.StatusInternalServerError,

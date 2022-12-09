@@ -3,6 +3,7 @@ package route
 import (
 	_middleware "charum/app/middleware"
 	_usersDomain "charum/business/users"
+	_bookmarkController "charum/controller/bookmarks"
 	"charum/controller/comments"
 	followThreads "charum/controller/follow_threads"
 	"charum/controller/threads"
@@ -21,6 +22,7 @@ type ControllerList struct {
 	ThreadController       *threads.ThreadController
 	CommentController      *comments.CommentController
 	FollowThreadController *followThreads.FollowThreadController
+	BookmarkController     *_bookmarkController.BookmarkController
 }
 
 func (cl *ControllerList) Init(e *echo.Echo) {
@@ -68,6 +70,10 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	threadLike.GET("/:user-id", cl.ThreadController.GetLikedThreadByUserID)
 	threadLike.POST("/id/:thread-id", cl.ThreadController.Like, authMiddleware.Check)
 	threadLike.DELETE("/id/:thread-id", cl.ThreadController.Unlike, authMiddleware.Check)
+	threadBookmark := thread.Group("/bookmark")
+	threadBookmark.GET("", cl.BookmarkController.GetAllByToken, authMiddleware.Check)
+	threadBookmark.POST("/:thread-id", cl.BookmarkController.Create, authMiddleware.Check)
+	threadBookmark.DELETE("/:thread-id", cl.BookmarkController.Delete, authMiddleware.Check)
 
 	// Admin
 	admin := apiV1.Group("/admin", adminMiddleware.Check)
