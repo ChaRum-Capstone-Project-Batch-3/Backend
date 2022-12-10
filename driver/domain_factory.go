@@ -8,7 +8,10 @@ import (
 	topicDomain "charum/business/topics"
 	userDomain "charum/business/users"
 	"charum/driver/cloudinary"
+<<<<<<< HEAD
 	bookmarkDB "charum/driver/mongo/bookmarks"
+=======
+>>>>>>> ec958ee8370b90dd9f1b0ab0f6f0875aa31a2b76
 	commentDB "charum/driver/mongo/comments"
 	followThreadDB "charum/driver/mongo/follow_threads"
 	threadDB "charum/driver/mongo/threads"
