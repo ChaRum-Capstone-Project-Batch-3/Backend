@@ -56,6 +56,31 @@ paths:
                 password:
                   type: string
                   example: secretpassword
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: user@charum.com
+                userName:
+                  type: string
+                  example: charum-user
+                displayName:
+                  type: string
+                  example: charum user
+                biodata:
+                  type: string
+                  example: halo aku user
+                socialMedia:
+                  type: string
+                  example: instagram @anon
+                password:
+                  type: string
+                  example: secretpassword
+                profilePicture:
+                  type: string
+                  format: binary
         required: true
       responses:
         '201':
@@ -307,6 +332,28 @@ paths:
                 socialMedia:
                   type: string
                   example: instagram @anon
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: user@charum.com
+                userName:
+                  type: string
+                  example: charum-user
+                displayName:
+                  type: string
+                  example: charum user
+                biodata:
+                  type: string
+                  example: halo aku user
+                socialMedia:
+                  type: string
+                  example: instagram @anon
+                profilePicture:
+                  type: string
+                  format: binary
         required: true
       responses:
         '200':
@@ -695,6 +742,22 @@ paths:
                 description:
                   type: string
                   example: Best NextJS update ever
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                topicID:
+                  type: string
+                  example: 6379fe8dad33ec4251700ded
+                title:
+                  type: string
+                  example: NextJS 13
+                description:
+                  type: string
+                  example: Best NextJS update ever
+                image:
+                  type: string
+                  format: binary
       responses:
         '201':
           description: Created
@@ -1011,15 +1074,31 @@ paths:
             schema:
               type: object
               properties:
-                topic:
+                topicID:
                   type: string
-                  example: Technology
+                  example: 6379fe8dad33ec4251700ded
                 title:
                   type: string
                   example: NextJS 13
                 description:
                   type: string
                   example: Best NextJS update ever
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                topic:
+                  type: string
+                  example: 6379fe8dad33ec4251700ded
+                title:
+                  type: string
+                  example: NextJS 13
+                description:
+                  type: string
+                  example: Best NextJS update ever
+                image:
+                  type: string
+                  format: binary
       responses:
         '200':
           description: OK
@@ -1492,6 +1571,28 @@ paths:
                 socialMedia:
                   type: string
                   example: instagram @anon
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: user@charum.com
+                userName:
+                  type: string
+                  example: charum-user
+                displayName:
+                  type: string
+                  example: charum user
+                biodata:
+                  type: string
+                  example: halo aku user
+                socialMedia:
+                  type: string
+                  example: instagram @anon
+                profilePicture:
+                  type: string
+                  format: binary
         required: true
       responses:
         '200':
@@ -2229,6 +2330,19 @@ paths:
                 description:
                   type: string
                   example: new Description
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                topic:
+                  type: string
+                  example: new Topic
+                description:
+                  type: string
+                  example: new Description
+                image:
+                  type: string
+                  format: binary
         required: true
       responses:
         '200':
@@ -3754,15 +3868,31 @@ paths:
             schema:
               type: object
               properties:
-                topic:
+                topicID:
                   type: string
-                  example: Technology
+                  example: 6379fe8dad33ec4251700ded
                 title:
                   type: string
                   example: NextJS 13
                 description:
                   type: string
                   example: Best NextJS update ever
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                topicID:
+                  type: string
+                  example: 6379fe8dad33ec4251700ded
+                title:
+                  type: string
+                  example: NextJS 13
+                description:
+                  type: string
+                  example: Best NextJS update ever
+                image:
+                  type: string
+                  format: binary
       responses:
         '200':
           description: OK
@@ -4210,6 +4340,15 @@ components:
         displayName:
           type: string
           example: charum user
+        biodata:
+          type: string
+          example: halo aku user
+        socialMedia:
+          type: string
+          example: instagram @anon
+        profilePictureURL:
+          type: string
+          example: https://res.cloudinary.com/ddensbwye/image/upload/v1670660428/charum/users/Screenshot%202022-11-04%20130108.png.png
         isActive:
           type: boolean
           example: true
@@ -4258,6 +4397,9 @@ components:
             description:
               type: string
               example: topic description
+            imageURL:
+              type: string
+              example: https://res.cloudinary.com/ddensbwye/image/upload/v1670660428/charum/users/Screenshot%202022-11-04%20130108.png.png
             createdAt:
               type: string
               example: 2022-11-26T23:05:11.806+07:00
@@ -4279,9 +4421,6 @@ components:
             displayName:
               type: string
               example: charum user
-            password:
-              type: string
-              example: secretpassword
             isActive:
               type: boolean
               example: true
@@ -4300,6 +4439,9 @@ components:
         description:
           type: string
           example: Best NextJS update ever
+        imageURL:
+          type: string
+          example: https://res.cloudinary.com/ddensbwye/image/upload/v1670660428/charum/users/Screenshot%202022-11-04%20130108.png.png
         likes:
          type: array
          items:
@@ -4365,6 +4507,9 @@ components:
             description:
               type: string
               example: Best NextJS update ever
+            imageURL:
+              type: string
+              example: https://res.cloudinary.com/ddensbwye/image/upload/v1670660428/charum/users/Screenshot%202022-11-04%20130108.png.png
             likes:
              type: array
              items:
@@ -4445,6 +4590,9 @@ components:
                 description:
                   type: string
                   example: topic description
+                imageURL:
+                  type: string
+                  example: https://res.cloudinary.com/ddensbwye/image/upload/v1670660428/charum/users/Screenshot%202022-11-04%20130108.png.png
                 createdAt:
                   type: string
                   example: 2022-11-26T23:05:11.806+07:00
@@ -4466,9 +4614,6 @@ components:
                 displayName:
                   type: string
                   example: charum user
-                password:
-                  type: string
-                  example: secretpassword
                 isActive:
                   type: boolean
                   example: true
@@ -4487,6 +4632,9 @@ components:
             description:
               type: string
               example: Best NextJS update ever
+            imageURL:
+              type: string
+              example: https://res.cloudinary.com/ddensbwye/image/upload/v1670660428/charum/users/Screenshot%202022-11-04%20130108.png.png
             likes:
              type: array
              items:
