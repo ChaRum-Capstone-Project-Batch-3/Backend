@@ -35,7 +35,7 @@ func Init() Function {
 }
 
 func (c *Cloudinary) Upload(folder string, file *multipart.FileHeader, filename string) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
 	profilePictureBuffer, err := file.Open()
@@ -57,7 +57,7 @@ func (c *Cloudinary) Upload(folder string, file *multipart.FileHeader, filename 
 }
 
 func (c *Cloudinary) Rename(folder string, oldFilename string, newFilename string) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
 	folder = fmt.Sprintf("%s/%s", util.GetConfig("CLOUDINARY_UPLOAD_FOLDER"), folder)
@@ -74,15 +74,14 @@ func (c *Cloudinary) Rename(folder string, oldFilename string, newFilename strin
 }
 
 func (c *Cloudinary) Delete(folder string, filename string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
 	folder = fmt.Sprintf("%s/%s", util.GetConfig("CLOUDINARY_UPLOAD_FOLDER"), folder)
 
-	resp, err := c.cloudinary.Upload.Destroy(ctx, uploader.DestroyParams{
+	_, err := c.cloudinary.Upload.Destroy(ctx, uploader.DestroyParams{
 		PublicID: fmt.Sprintf("%s/%s", folder, filename),
 	})
-	fmt.Println(resp)
 	if err != nil {
 		return err
 	}
