@@ -4,6 +4,7 @@ import (
 	dtoPagination "charum/dto/pagination"
 	dtoQuery "charum/dto/query"
 	dtoThread "charum/dto/threads"
+	"mime/multipart"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -15,6 +16,7 @@ type Domain struct {
 	Title         string             `json:"title" bson:"title"`
 	Description   string             `json:"description" bson:"description"`
 	Likes         []Like             `json:"likes" bson:"likes"`
+	ImageURL      string             `json:"imageURL" bson:"imageURL"`
 	SuspendStatus string             `json:"suspendStatus,omitempty" bson:"suspendStatus"`
 	SuspendDetail string             `json:"suspendDetail,omitempty" bson:"suspendDetail"`
 	CreatedAt     primitive.DateTime `json:"createdAt" bson:"createdAt"`
@@ -49,7 +51,7 @@ type Repository interface {
 
 type UseCase interface {
 	// Create
-	Create(domain *Domain) (Domain, error)
+	Create(domain *Domain, image *multipart.FileHeader) (Domain, error)
 	// Read
 	GetManyWithPagination(pagination dtoPagination.Request, domain *Domain) ([]Domain, int, int, error)
 	GetByID(id primitive.ObjectID) (Domain, error)
@@ -59,8 +61,8 @@ type UseCase interface {
 	DomainToResponse(domain Domain) (dtoThread.Response, error)
 	DomainsToResponseArray(domains []Domain) ([]dtoThread.Response, error)
 	// Update
-	UserUpdate(domain *Domain) (Domain, error)
-	AdminUpdate(domain *Domain) (Domain, error)
+	UserUpdate(domain *Domain, image *multipart.FileHeader) (Domain, error)
+	AdminUpdate(domain *Domain, image *multipart.FileHeader) (Domain, error)
 	SuspendByUserID(userID primitive.ObjectID) error
 	Like(userID primitive.ObjectID, threadID primitive.ObjectID) error
 	Unlike(userID primitive.ObjectID, threadID primitive.ObjectID) error
