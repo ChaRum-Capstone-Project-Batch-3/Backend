@@ -154,16 +154,16 @@ func (tu *TopicUseCase) Delete(id primitive.ObjectID) (Domain, error) {
 		return Domain{}, errors.New("failed to get topic")
 	}
 
-	err = tu.topicsRepository.Delete(id)
-	if err != nil {
-		return Domain{}, errors.New("failed to delete topic")
-	}
-
 	if result.ImageURL != "" {
 		err = tu.cloudinary.Delete("topic", helper.GetFilenameWithoutExtension(result.ImageURL))
 		if err != nil {
-			return Domain{}, errors.New("failed to delete profile picture")
+			return Domain{}, errors.New("failed to delete image")
 		}
+	}
+
+	err = tu.topicsRepository.Delete(id)
+	if err != nil {
+		return Domain{}, errors.New("failed to delete topic")
 	}
 
 	return result, nil

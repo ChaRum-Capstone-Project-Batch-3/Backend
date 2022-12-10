@@ -352,11 +352,6 @@ func (tu *ThreadUseCase) Delete(userID primitive.ObjectID, threadID primitive.Ob
 		return Domain{}, errors.New("failed to get thread")
 	}
 
-	_, err = tu.userRepository.GetByID(userID)
-	if err != nil {
-		return Domain{}, errors.New("failed to get user")
-	}
-
 	if thread.CreatorID != userID {
 		return Domain{}, errors.New("user are not the thread creator")
 	}
