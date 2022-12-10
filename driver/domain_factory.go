@@ -6,6 +6,7 @@ import (
 	threadDomain "charum/business/threads"
 	topicDomain "charum/business/topics"
 	userDomain "charum/business/users"
+	"charum/driver/cloudinary"
 	commentDB "charum/driver/mongo/comments"
 	followThreadDB "charum/driver/mongo/follow_threads"
 	threadDB "charum/driver/mongo/threads"
@@ -33,4 +34,8 @@ func NewCommentRepository(db *mongo.Database) commentDomain.Repository {
 
 func NewFollowThreadRepository(db *mongo.Database) followThreadDomain.Repository {
 	return followThreadDB.NewMongoRepository(db)
+}
+
+func NewCloudinaryRepository() cloudinary.Function {
+	return cloudinary.NewCloudinaryRepository()
 }

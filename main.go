@@ -8,7 +8,6 @@ import (
 
 	_route "charum/app/route"
 	_driver "charum/driver"
-	_cloudinary "charum/driver/cloudinary"
 	_mongo "charum/driver/mongo"
 	_util "charum/util"
 
@@ -35,7 +34,7 @@ func main() {
 	e := echo.New()
 
 	database := _mongo.Init(_util.GetConfig("DB_NAME"))
-	cloudinary := _cloudinary.Init()
+	cloudinary := _driver.NewCloudinaryRepository()
 
 	userRepository := _driver.NewUserRepository(database)
 	topicRepository := _driver.NewTopicRepository(database)
