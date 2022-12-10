@@ -8,6 +8,7 @@ import (
 
 	_route "charum/app/route"
 	_driver "charum/driver"
+	_cloudinary "charum/driver/cloudinary"
 	_mongo "charum/driver/mongo"
 	_util "charum/util"
 
@@ -34,6 +35,7 @@ func main() {
 	e := echo.New()
 
 	database := _mongo.Init(_util.GetConfig("DB_NAME"))
+	cloudinary := _cloudinary.Init()
 
 	userRepository := _driver.NewUserRepository(database)
 	topicRepository := _driver.NewTopicRepository(database)
@@ -41,7 +43,7 @@ func main() {
 	commentRepository := _driver.NewCommentRepository(database)
 	followThreadRepository := _driver.NewFollowThreadRepository(database)
 
-	userUsecase := _userUseCase.NewUserUseCase(userRepository)
+	userUsecase := _userUseCase.NewUserUseCase(userRepository, cloudinary)
 	topicUsecase := _topicUseCase.NewTopicUseCase(topicRepository)
 	threadUsecase := _threadUseCase.NewThreadUseCase(threadRepository, topicRepository, userRepository)
 	commentUsecase := _commentUseCase.NewCommentUseCase(commentRepository, threadRepository, userRepository)

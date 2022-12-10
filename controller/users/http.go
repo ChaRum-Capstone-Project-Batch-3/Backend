@@ -11,7 +11,9 @@ import (
 	"charum/helper"
 	"charum/util"
 	"errors"
+	"fmt"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -40,38 +42,65 @@ Create
 */
 
 func (userCtrl *UserController) Register(c echo.Context) error {
+	var validationErr []helper.ValidationError
+	profilePicture, _ := c.FormFile("profilePicture")
+	if profilePicture != nil {
+		profilePictureExt := filepath.Ext(profilePicture.Filename)
+		availableExt := []string{".jpg", ".jpeg", ".png"}
+
+		flagExt := false
+		for _, ext := range availableExt {
+			if profilePictureExt == ext {
+				flagExt = true
+			}
+		}
+
+		if !flagExt {
+			validationErr = append(validationErr, helper.ValidationError{
+				Field:   "profilePicture",
+				Message: "This field must be a file with .jpg, .jpeg, or .png extension",
+			})
+		}
+
+		if profilePicture.Size > 10000000 {
+			validationErr = append(validationErr, helper.ValidationError{
+				Field:   "profilePicture",
+				Message: "This field must be a file with size less than 10 MB",
+			})
+		}
+	}
+
 	userInput := request.Register{}
 	c.Bind(&userInput)
 
-	if err := userInput.Validate(); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "validation failed",
-			Data:    err,
-		})
-	}
-
 	if strings.Contains(userInput.UserName, " ") {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "validation failed",
-			Data: []helper.ValidationError{
-				{
-					Field:   "userName",
-					Message: "This field must not contain spaces",
-				},
-			},
+		validationErr = append(validationErr, helper.ValidationError{
+			Field:   "userName",
+			Message: "This field must not contain any space",
 		})
 	}
 
-	user, token, err := userCtrl.userUseCase.Register(userInput.ToDomain())
-
-	statusCode := http.StatusInternalServerError
-	if err == errors.New("email is already registered") || err == errors.New("username is already used") {
-		statusCode = http.StatusConflict
+	inputErr := userInput.Validate()
+	if inputErr != nil {
+		validationErr = append(validationErr, inputErr...)
 	}
+
+	if validationErr != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "validation failed",
+			Data:    validationErr,
+		})
+	}
+
+	user, token, err := userCtrl.userUseCase.Register(userInput.ToDomain(), profilePicture)
 
 	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if strings.Contains(err.Error(), "already") {
+			statusCode = http.StatusConflict
+		}
+
 		return c.JSON(statusCode, helper.BaseResponse{
 			Status:  statusCode,
 			Message: err.Error(),
@@ -282,47 +311,75 @@ func (userCtrl *UserController) AdminUpdate(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
-			Message: "invalid id",
+			Message: "invalid user id",
 			Data:    nil,
 		})
+	}
+
+	var validationErr []helper.ValidationError
+	profilePicture, _ := c.FormFile("profilePicture")
+	if profilePicture != nil {
+		profilePictureExt := filepath.Ext(profilePicture.Filename)
+		fmt.Println(profilePictureExt)
+		availableExt := []string{".jpg", ".jpeg", ".png"}
+
+		flagExt := false
+		for _, ext := range availableExt {
+			if profilePictureExt == ext {
+				flagExt = true
+			}
+		}
+
+		if !flagExt {
+			validationErr = append(validationErr, helper.ValidationError{
+				Field:   "profilePicture",
+				Message: "This field must be a file with .jpg, .jpeg, or .png extension",
+			})
+		}
+
+		if profilePicture.Size > 10000000 {
+			validationErr = append(validationErr, helper.ValidationError{
+				Field:   "profilePicture",
+				Message: "This field must be a file with size less than 10 MB",
+			})
+		}
 	}
 
 	userInput := request.Update{}
 	c.Bind(&userInput)
 
-	if err := userInput.Validate(); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "validation failed",
-			Data:    err,
+	if strings.Contains(userInput.UserName, " ") {
+		validationErr = append(validationErr, helper.ValidationError{
+			Field:   "userName",
+			Message: "This field must not contain any space",
 		})
 	}
 
-	if strings.Contains(userInput.UserName, " ") {
+	inputErr := userInput.Validate()
+	if inputErr != nil {
+		validationErr = append(validationErr, inputErr...)
+	}
+
+	if validationErr != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
 			Message: "validation failed",
-			Data: []helper.ValidationError{
-				{
-					Field:   "userName",
-					Message: "This field must not contain spaces",
-				},
-			},
+			Data:    validationErr,
 		})
 	}
 
 	userDomain := userInput.ToDomain()
 	userDomain.Id = userID
-	user, err := userCtrl.userUseCase.Update(userDomain)
-
-	statusCode := http.StatusInternalServerError
-	if err == errors.New("failed to get user") {
-		statusCode = http.StatusNotFound
-	} else if !(err == errors.New("username is already used") || err == errors.New("email is already used")) {
-		statusCode = http.StatusConflict
-	}
+	user, err := userCtrl.userUseCase.Update(userDomain, profilePicture)
 
 	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if err == errors.New("failed to get user") {
+			statusCode = http.StatusNotFound
+		} else if strings.Contains(err.Error(), "already") {
+			statusCode = http.StatusConflict
+		}
+
 		return c.JSON(statusCode, helper.BaseResponse{
 			Status:  statusCode,
 			Message: err.Error(),
@@ -349,42 +406,69 @@ func (userCtrl *UserController) UserUpdate(c echo.Context) error {
 		})
 	}
 
+	var validationErr []helper.ValidationError
+	profilePicture, _ := c.FormFile("profilePicture")
+	if profilePicture != nil {
+		profilePictureExt := filepath.Ext(profilePicture.Filename)
+		availableExt := []string{".jpg", ".jpeg", ".png"}
+
+		flagExt := false
+		for _, ext := range availableExt {
+			if profilePictureExt == ext {
+				flagExt = true
+			}
+		}
+
+		if !flagExt {
+			validationErr = append(validationErr, helper.ValidationError{
+				Field:   "profilePicture",
+				Message: "This field must be a file with .jpg, .jpeg, or .png extension",
+			})
+		}
+
+		if profilePicture.Size > 10000000 {
+			validationErr = append(validationErr, helper.ValidationError{
+				Field:   "profilePicture",
+				Message: "This field must be a file with size less than 10 MB",
+			})
+		}
+	}
+
 	userInput := request.Update{}
 	c.Bind(&userInput)
 
-	if err := userInput.Validate(); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "validation failed",
-			Data:    err,
+	if strings.Contains(userInput.UserName, " ") {
+		validationErr = append(validationErr, helper.ValidationError{
+			Field:   "userName",
+			Message: "This field must not contain any space",
 		})
 	}
 
-	if strings.Contains(userInput.UserName, " ") {
+	inputErr := userInput.Validate()
+	if inputErr != nil {
+		validationErr = append(validationErr, inputErr...)
+	}
+
+	if validationErr != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
 			Message: "validation failed",
-			Data: []helper.ValidationError{
-				{
-					Field:   "userName",
-					Message: "This field must not contain spaces",
-				},
-			},
+			Data:    validationErr,
 		})
 	}
 
 	userDomain := userInput.ToDomain()
 	userDomain.Id = userID
-	user, err := userCtrl.userUseCase.Update(userDomain)
-
-	statusCode := http.StatusInternalServerError
-	if err == errors.New("failed to get user") {
-		statusCode = http.StatusNotFound
-	} else if !(err == errors.New("username is already used") || err == errors.New("email is already used")) {
-		statusCode = http.StatusConflict
-	}
+	user, err := userCtrl.userUseCase.Update(userDomain, profilePicture)
 
 	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if err == errors.New("failed to get user") {
+			statusCode = http.StatusNotFound
+		} else if strings.Contains(err.Error(), "already") {
+			statusCode = http.StatusConflict
+		}
+
 		return c.JSON(statusCode, helper.BaseResponse{
 			Status:  statusCode,
 			Message: err.Error(),
@@ -406,7 +490,7 @@ func (userCtrl *UserController) Suspend(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
-			Message: "invalid id",
+			Message: "invalid user id",
 			Data:    nil,
 		})
 	}
@@ -477,7 +561,7 @@ func (userCtrl *UserController) Unsuspend(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
-			Message: "invalid id",
+			Message: "invalid user id",
 			Data:    nil,
 		})
 	}
@@ -485,9 +569,9 @@ func (userCtrl *UserController) Unsuspend(c echo.Context) error {
 	user, err := userCtrl.userUseCase.Unsuspend(userID)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
-		if err == errors.New("failed to get user") {
+		if strings.Contains(err.Error(), "failed to get") {
 			statusCode = http.StatusNotFound
-		} else if err == errors.New("user is not suspended") {
+		} else if strings.Contains(err.Error(), "user is not suspended") {
 			statusCode = http.StatusConflict
 		}
 
@@ -516,7 +600,7 @@ func (userCtrl *UserController) Delete(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
-			Message: "invalid id",
+			Message: "invalid user id",
 			Data:    nil,
 		})
 	}
