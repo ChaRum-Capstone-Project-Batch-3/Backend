@@ -7,6 +7,8 @@ import (
 
 	mock "github.com/stretchr/testify/mock"
 
+	multipart "mime/multipart"
+
 	pagination "charum/dto/pagination"
 
 	primitive "go.mongodb.org/mongo-driver/bson/primitive"
@@ -40,20 +42,20 @@ func (_m *UseCase) AdminDelete(threadID primitive.ObjectID) (threads.Domain, err
 	return r0, r1
 }
 
-// AdminUpdate provides a mock function with given fields: domain
-func (_m *UseCase) AdminUpdate(domain *threads.Domain) (threads.Domain, error) {
-	ret := _m.Called(domain)
+// AdminUpdate provides a mock function with given fields: domain, image
+func (_m *UseCase) AdminUpdate(domain *threads.Domain, image *multipart.FileHeader) (threads.Domain, error) {
+	ret := _m.Called(domain, image)
 
 	var r0 threads.Domain
-	if rf, ok := ret.Get(0).(func(*threads.Domain) threads.Domain); ok {
-		r0 = rf(domain)
+	if rf, ok := ret.Get(0).(func(*threads.Domain, *multipart.FileHeader) threads.Domain); ok {
+		r0 = rf(domain, image)
 	} else {
 		r0 = ret.Get(0).(threads.Domain)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*threads.Domain) error); ok {
-		r1 = rf(domain)
+	if rf, ok := ret.Get(1).(func(*threads.Domain, *multipart.FileHeader) error); ok {
+		r1 = rf(domain, image)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -61,20 +63,20 @@ func (_m *UseCase) AdminUpdate(domain *threads.Domain) (threads.Domain, error) {
 	return r0, r1
 }
 
-// Create provides a mock function with given fields: domain
-func (_m *UseCase) Create(domain *threads.Domain) (threads.Domain, error) {
-	ret := _m.Called(domain)
+// Create provides a mock function with given fields: domain, image
+func (_m *UseCase) Create(domain *threads.Domain, image *multipart.FileHeader) (threads.Domain, error) {
+	ret := _m.Called(domain, image)
 
 	var r0 threads.Domain
-	if rf, ok := ret.Get(0).(func(*threads.Domain) threads.Domain); ok {
-		r0 = rf(domain)
+	if rf, ok := ret.Get(0).(func(*threads.Domain, *multipart.FileHeader) threads.Domain); ok {
+		r0 = rf(domain, image)
 	} else {
 		r0 = ret.Get(0).(threads.Domain)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*threads.Domain) error); ok {
-		r1 = rf(domain)
+	if rf, ok := ret.Get(1).(func(*threads.Domain, *multipart.FileHeader) error); ok {
+		r1 = rf(domain, image)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -358,20 +360,20 @@ func (_m *UseCase) Unlike(userID primitive.ObjectID, threadID primitive.ObjectID
 	return r0
 }
 
-// UserUpdate provides a mock function with given fields: domain
-func (_m *UseCase) UserUpdate(domain *threads.Domain) (threads.Domain, error) {
-	ret := _m.Called(domain)
+// UserUpdate provides a mock function with given fields: domain, image
+func (_m *UseCase) UserUpdate(domain *threads.Domain, image *multipart.FileHeader) (threads.Domain, error) {
+	ret := _m.Called(domain, image)
 
 	var r0 threads.Domain
-	if rf, ok := ret.Get(0).(func(*threads.Domain) threads.Domain); ok {
-		r0 = rf(domain)
+	if rf, ok := ret.Get(0).(func(*threads.Domain, *multipart.FileHeader) threads.Domain); ok {
+		r0 = rf(domain, image)
 	} else {
 		r0 = ret.Get(0).(threads.Domain)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*threads.Domain) error); ok {
-		r1 = rf(domain)
+	if rf, ok := ret.Get(1).(func(*threads.Domain, *multipart.FileHeader) error); ok {
+		r1 = rf(domain, image)
 	} else {
 		r1 = ret.Error(1)
 	}
