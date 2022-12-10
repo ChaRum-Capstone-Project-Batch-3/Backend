@@ -160,9 +160,11 @@ func (uu *UserUseCase) Update(domain *Domain, profilePicture *multipart.FileHead
 	}
 
 	if profilePicture != nil {
-		err := uu.cloudinary.Delete("profilePicture", helper.GetFilenameWithoutExtension(user.ProfilePictureURL))
-		if err != nil {
-			return Domain{}, errors.New("failed to delete old profile picture")
+		if user.ProfilePictureURL != "" {
+			err := uu.cloudinary.Delete("profilePicture", helper.GetFilenameWithoutExtension(user.ProfilePictureURL))
+			if err != nil {
+				return Domain{}, errors.New("failed to delete old profile picture")
+			}
 		}
 
 		uploadResult, err := uu.cloudinary.Upload("profilePicture", profilePicture, helper.GenerateUUID())

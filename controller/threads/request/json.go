@@ -11,9 +11,9 @@ import (
 )
 
 type Thread struct {
-	TopicID     string `json:"topicID" validate:"required"`
-	Title       string `json:"title" validate:"required"`
-	Description string `json:"description" validate:"required"`
+	TopicID     string `json:"topicID" validate:"required" form:"topicID"`
+	Title       string `json:"title" validate:"required" form:"title"`
+	Description string `json:"description" validate:"required" form:"description"`
 }
 
 func (req *Thread) ToDomain() *threads.Domain {

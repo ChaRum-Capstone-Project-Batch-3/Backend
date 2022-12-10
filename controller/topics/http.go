@@ -11,6 +11,7 @@ import (
 	"charum/helper"
 	"errors"
 	"net/http"
+	"path/filepath"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
@@ -34,25 +35,51 @@ func NewTopicController(topicUC topics.UseCase, threadUC threads.UseCase, commen
 }
 
 func (topicCtrl *TopicController) Create(c echo.Context) error {
-	userInput := request.Topic{}
+	var validationErr []helper.ValidationError
+	image, _ := c.FormFile("image")
+	if image != nil {
+		imageExt := filepath.Ext(image.Filename)
+		availableExt := []string{".jpg", ".jpeg", ".png"}
 
-	if c.Bind(&userInput) != nil {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "fill all the required fields and make sure data type is correct",
-			Data:    nil,
-		})
+		flagExt := false
+		for _, ext := range availableExt {
+			if imageExt == ext {
+				flagExt = true
+			}
+		}
+
+		if !flagExt {
+			validationErr = append(validationErr, helper.ValidationError{
+				Field:   "image",
+				Message: "This field must be a file with .jpg, .jpeg, or .png extension",
+			})
+		}
+
+		if image.Size > 10000000 {
+			validationErr = append(validationErr, helper.ValidationError{
+				Field:   "image",
+				Message: "This field must be a file with size less than 10 MB",
+			})
+		}
+	}
+
+	userInput := request.Topic{}
+	c.Bind(&userInput)
+
+	inputErr := userInput.Validate()
+	if inputErr != nil {
+		validationErr = append(validationErr, inputErr...)
 	}
 
 	if err := userInput.Validate(); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
 			Message: "validation failed",
-			Data:    err,
+			Data:    validationErr,
 		})
 	}
 
-	topic, err := topicCtrl.TopicUseCase.CreateTopic(userInput.ToDomain())
+	topic, err := topicCtrl.TopicUseCase.Create(userInput.ToDomain(), image)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if err == errors.New("topic already exist") {
@@ -80,7 +107,7 @@ func (topicCtrl *TopicController) GetByID(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
-			Message: "invalid id",
+			Message: "invalid topic id",
 			Data:    nil,
 		})
 	}
@@ -225,29 +252,59 @@ func (topicCtrl *TopicController) Update(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
-			Message: "invalid id",
+			Message: "invalid topic id",
 			Data:    nil,
 		})
 	}
 
+	var validationErr []helper.ValidationError
+	image, _ := c.FormFile("image")
+	if image != nil {
+		imageExt := filepath.Ext(image.Filename)
+		availableExt := []string{".jpg", ".jpeg", ".png"}
+
+		flagExt := false
+		for _, ext := range availableExt {
+			if imageExt == ext {
+				flagExt = true
+			}
+		}
+
+		if !flagExt {
+			validationErr = append(validationErr, helper.ValidationError{
+				Field:   "image",
+				Message: "This field must be a file with .jpg, .jpeg, or .png extension",
+			})
+		}
+
+		if image.Size > 10000000 {
+			validationErr = append(validationErr, helper.ValidationError{
+				Field:   "image",
+				Message: "This field must be a file with size less than 10 MB",
+			})
+		}
+	}
+
 	userInput := request.Topic{}
-	if c.Bind(&userInput) != nil {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "fill all the required fields and make sure data type is correct",
-			Data:    nil,
-		})
+	c.Bind(&userInput)
+
+	inputErr := userInput.Validate()
+	if inputErr != nil {
+		validationErr = append(validationErr, inputErr...)
 	}
 
 	if err := userInput.Validate(); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
 			Message: "validation failed",
-			Data:    err,
+			Data:    validationErr,
 		})
 	}
 
-	topic, err := topicCtrl.TopicUseCase.UpdateTopic(topicID, userInput.ToDomain())
+	userInputDomain := userInput.ToDomain()
+	userInputDomain.Id = topicID
+
+	topic, err := topicCtrl.TopicUseCase.Update(userInputDomain, image)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if err == errors.New("topic already exist") {
@@ -279,12 +336,12 @@ func (topicCtrl *TopicController) Delete(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
-			Message: "invalid id",
+			Message: "invalid topic id",
 			Data:    nil,
 		})
 	}
 
-	deletedTopic, err := topicCtrl.TopicUseCase.DeleteTopic(topicID)
+	deletedTopic, err := topicCtrl.TopicUseCase.Delete(topicID)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, helper.BaseResponse{
 			Status:  http.StatusNotFound,

@@ -4,14 +4,15 @@ import (
 	"charum/business/topics"
 	"charum/helper"
 	"errors"
+	"strings"
+
 	"github.com/fatih/structs"
 	"github.com/go-playground/validator/v10"
-	"strings"
 )
 
 type Topic struct {
-	Topic       string `json:"topic" validate:"required"`
-	Description string `json:"description" validate:"required"`
+	Topic       string `json:"topic" validate:"required" form:"topic"`
+	Description string `json:"description" validate:"required" form:"description"`
 }
 
 func (req *Topic) ToDomain() *topics.Domain {

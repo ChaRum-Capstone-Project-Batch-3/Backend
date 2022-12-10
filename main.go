@@ -44,7 +44,7 @@ func main() {
 	followThreadRepository := _driver.NewFollowThreadRepository(database)
 
 	userUsecase := _userUseCase.NewUserUseCase(userRepository, cloudinary)
-	topicUsecase := _topicUseCase.NewTopicUseCase(topicRepository)
+	topicUsecase := _topicUseCase.NewTopicUseCase(topicRepository, cloudinary)
 	threadUsecase := _threadUseCase.NewThreadUseCase(threadRepository, topicRepository, userRepository)
 	commentUsecase := _commentUseCase.NewCommentUseCase(commentRepository, threadRepository, userRepository)
 	followThreadUsecase := _followThreadUseCase.NewFollowThreadUseCase(followThreadRepository, userRepository, threadRepository, commentRepository, threadUsecase)

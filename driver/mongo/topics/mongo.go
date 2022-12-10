@@ -26,7 +26,7 @@ func NewMongoRepository(db *mongo.Database) topics.Repository {
 Create
 */
 
-func (tr *topicRepository) CreateTopic(domain *topics.Domain) (topics.Domain, error) {
+func (tr *topicRepository) Create(domain *topics.Domain) (topics.Domain, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
@@ -115,7 +115,7 @@ func (tr *topicRepository) GetByTopic(topic string) (topics.Domain, error) {
 Update
 */
 
-func (tr *topicRepository) UpdateTopic(domain *topics.Domain) (topics.Domain, error) {
+func (tr *topicRepository) Update(domain *topics.Domain) (topics.Domain, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
@@ -140,7 +140,7 @@ func (tr *topicRepository) UpdateTopic(domain *topics.Domain) (topics.Domain, er
 Delete
 */
 
-func (tr *topicRepository) DeleteTopic(id primitive.ObjectID) error {
+func (tr *topicRepository) Delete(id primitive.ObjectID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
