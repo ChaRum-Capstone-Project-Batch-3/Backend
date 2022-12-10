@@ -22,7 +22,7 @@ type Cloudinary struct {
 	cloudinary *cloudinary.Cloudinary
 }
 
-func Init() Function {
+func NewCloudinaryRepository() Function {
 	cld, err := cloudinary.NewFromParams(util.GetConfig("CLOUDINARY_CLOUD_NAME"), util.GetConfig("CLOUDINARY_API_KEY"), util.GetConfig("CLOUDINARY_API_SECRET"))
 	if err != nil {
 		panic(err)
