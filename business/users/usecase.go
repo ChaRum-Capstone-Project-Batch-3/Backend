@@ -242,16 +242,16 @@ func (uu *UserUseCase) Delete(id primitive.ObjectID) (Domain, error) {
 		return Domain{}, errors.New("failed to get user")
 	}
 
-	err = uu.userRepository.Delete(id)
-	if err != nil {
-		return Domain{}, errors.New("failed to delete user")
-	}
-
 	if deletedUser.ProfilePictureURL != "" {
 		err = uu.cloudinary.Delete("profilePicture", helper.GetFilenameWithoutExtension(deletedUser.ProfilePictureURL))
 		if err != nil {
 			return Domain{}, errors.New("failed to delete profile picture")
 		}
+	}
+
+	err = uu.userRepository.Delete(id)
+	if err != nil {
+		return Domain{}, errors.New("failed to delete user")
 	}
 
 	return deletedUser, nil
