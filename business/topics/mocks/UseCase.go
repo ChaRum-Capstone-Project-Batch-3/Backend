@@ -3,9 +3,11 @@
 package mocks
 
 import (
-	pagination "charum/dto/pagination"
+	multipart "mime/multipart"
 
 	mock "github.com/stretchr/testify/mock"
+
+	pagination "charum/dto/pagination"
 
 	primitive "go.mongodb.org/mongo-driver/bson/primitive"
 
@@ -17,20 +19,20 @@ type UseCase struct {
 	mock.Mock
 }
 
-// CreateTopic provides a mock function with given fields: domain
-func (_m *UseCase) CreateTopic(domain *topics.Domain) (topics.Domain, error) {
-	ret := _m.Called(domain)
+// Create provides a mock function with given fields: domain, image
+func (_m *UseCase) Create(domain *topics.Domain, image *multipart.FileHeader) (topics.Domain, error) {
+	ret := _m.Called(domain, image)
 
 	var r0 topics.Domain
-	if rf, ok := ret.Get(0).(func(*topics.Domain) topics.Domain); ok {
-		r0 = rf(domain)
+	if rf, ok := ret.Get(0).(func(*topics.Domain, *multipart.FileHeader) topics.Domain); ok {
+		r0 = rf(domain, image)
 	} else {
 		r0 = ret.Get(0).(topics.Domain)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*topics.Domain) error); ok {
-		r1 = rf(domain)
+	if rf, ok := ret.Get(1).(func(*topics.Domain, *multipart.FileHeader) error); ok {
+		r1 = rf(domain, image)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -38,8 +40,8 @@ func (_m *UseCase) CreateTopic(domain *topics.Domain) (topics.Domain, error) {
 	return r0, r1
 }
 
-// DeleteTopic provides a mock function with given fields: id
-func (_m *UseCase) DeleteTopic(id primitive.ObjectID) (topics.Domain, error) {
+// Delete provides a mock function with given fields: id
+func (_m *UseCase) Delete(id primitive.ObjectID) (topics.Domain, error) {
 	ret := _m.Called(id)
 
 	var r0 topics.Domain
@@ -138,20 +140,20 @@ func (_m *UseCase) GetManyWithPagination(_a0 pagination.Request, domain *topics.
 	return r0, r1, r2, r3
 }
 
-// UpdateTopic provides a mock function with given fields: id, domain
-func (_m *UseCase) UpdateTopic(id primitive.ObjectID, domain *topics.Domain) (topics.Domain, error) {
-	ret := _m.Called(id, domain)
+// Update provides a mock function with given fields: domain, image
+func (_m *UseCase) Update(domain *topics.Domain, image *multipart.FileHeader) (topics.Domain, error) {
+	ret := _m.Called(domain, image)
 
 	var r0 topics.Domain
-	if rf, ok := ret.Get(0).(func(primitive.ObjectID, *topics.Domain) topics.Domain); ok {
-		r0 = rf(id, domain)
+	if rf, ok := ret.Get(0).(func(*topics.Domain, *multipart.FileHeader) topics.Domain); ok {
+		r0 = rf(domain, image)
 	} else {
 		r0 = ret.Get(0).(topics.Domain)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(primitive.ObjectID, *topics.Domain) error); ok {
-		r1 = rf(id, domain)
+	if rf, ok := ret.Get(1).(func(*topics.Domain, *multipart.FileHeader) error); ok {
+		r1 = rf(domain, image)
 	} else {
 		r1 = ret.Error(1)
 	}
