@@ -3,11 +3,14 @@ package threads
 import (
 	"charum/business/topics"
 	"charum/business/users"
+	"charum/driver/cloudinary"
 	dtoPagination "charum/dto/pagination"
 	dtoQuery "charum/dto/query"
 	dtoThread "charum/dto/threads"
+	"charum/helper"
 	"errors"
 	"math"
+	"mime/multipart"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -17,13 +20,15 @@ type ThreadUseCase struct {
 	threadRepository Repository
 	topicRepository  topics.Repository
 	userRepository   users.Repository
+	cloudinary       cloudinary.Function
 }
 
-func NewThreadUseCase(thr Repository, tor topics.Repository, ur users.Repository) UseCase {
+func NewThreadUseCase(thr Repository, tor topics.Repository, ur users.Repository, c cloudinary.Function) UseCase {
 	return &ThreadUseCase{
 		threadRepository: thr,
 		topicRepository:  tor,
 		userRepository:   ur,
+		cloudinary:       c,
 	}
 }
 
@@ -31,10 +36,19 @@ func NewThreadUseCase(thr Repository, tor topics.Repository, ur users.Repository
 Create
 */
 
-func (tu *ThreadUseCase) Create(domain *Domain) (Domain, error) {
+func (tu *ThreadUseCase) Create(domain *Domain, image *multipart.FileHeader) (Domain, error) {
 	_, err := tu.topicRepository.GetByID(domain.TopicID)
 	if err != nil {
 		return Domain{}, errors.New("failed to get topic")
+	}
+
+	if image != nil {
+		cloudinaryURL, err := tu.cloudinary.Upload("thread", image, helper.GenerateUUID())
+		if err != nil {
+			return Domain{}, errors.New("failed to upload image")
+		}
+
+		domain.ImageURL = cloudinaryURL
 	}
 
 	domain.Id = primitive.NewObjectID()
@@ -156,6 +170,7 @@ func (tu *ThreadUseCase) DomainToResponse(domain Domain) (dtoThread.Response, er
 		Description:   domain.Description,
 		Likes:         likes,
 		TotalLike:     len(domain.Likes),
+		ImageURL:      domain.ImageURL,
 		SuspendStatus: domain.SuspendStatus,
 		SuspendDetail: domain.SuspendDetail,
 		CreatedAt:     domain.CreatedAt,
@@ -181,7 +196,7 @@ func (tu *ThreadUseCase) DomainsToResponseArray(domains []Domain) ([]dtoThread.R
 Update
 */
 
-func (tu *ThreadUseCase) UserUpdate(domain *Domain) (Domain, error) {
+func (tu *ThreadUseCase) UserUpdate(domain *Domain, image *multipart.FileHeader) (Domain, error) {
 	_, err := tu.topicRepository.GetByID(domain.TopicID)
 	if err != nil {
 		return Domain{}, errors.New("failed to get topic")
@@ -194,6 +209,22 @@ func (tu *ThreadUseCase) UserUpdate(domain *Domain) (Domain, error) {
 
 	if thread.CreatorID != domain.CreatorID {
 		return Domain{}, errors.New("user are not the thread creator")
+	}
+
+	if image != nil {
+		if thread.ImageURL != "" {
+			err = tu.cloudinary.Delete("thread", helper.GetFilenameWithoutExtension(thread.ImageURL))
+			if err != nil {
+				return Domain{}, errors.New("failed to delete image")
+			}
+		}
+
+		cloudinaryURL, err := tu.cloudinary.Upload("thread", image, helper.GenerateUUID())
+		if err != nil {
+			return Domain{}, err
+		}
+
+		thread.ImageURL = cloudinaryURL
 	}
 
 	thread.TopicID = domain.TopicID
@@ -209,7 +240,7 @@ func (tu *ThreadUseCase) UserUpdate(domain *Domain) (Domain, error) {
 	return updatedThread, nil
 }
 
-func (tu *ThreadUseCase) AdminUpdate(domain *Domain) (Domain, error) {
+func (tu *ThreadUseCase) AdminUpdate(domain *Domain, image *multipart.FileHeader) (Domain, error) {
 	_, err := tu.topicRepository.GetByID(domain.TopicID)
 	if err != nil {
 		return Domain{}, errors.New("failed to get topic")
@@ -218,6 +249,22 @@ func (tu *ThreadUseCase) AdminUpdate(domain *Domain) (Domain, error) {
 	thread, err := tu.threadRepository.GetByID(domain.Id)
 	if err != nil {
 		return Domain{}, errors.New("failed to get thread")
+	}
+
+	if image != nil {
+		if thread.ImageURL != "" {
+			err = tu.cloudinary.Delete("thread", helper.GetFilenameWithoutExtension(thread.ImageURL))
+			if err != nil {
+				return Domain{}, errors.New("failed to delete image")
+			}
+		}
+
+		cloudinaryURL, err := tu.cloudinary.Upload("thread", image, helper.GenerateUUID())
+		if err != nil {
+			return Domain{}, err
+		}
+
+		thread.ImageURL = cloudinaryURL
 	}
 
 	thread.TopicID = domain.TopicID
@@ -314,6 +361,13 @@ func (tu *ThreadUseCase) Delete(userID primitive.ObjectID, threadID primitive.Ob
 		return Domain{}, errors.New("user are not the thread creator")
 	}
 
+	if thread.ImageURL != "" {
+		err = tu.cloudinary.Delete("thread", helper.GetFilenameWithoutExtension(thread.ImageURL))
+		if err != nil {
+			return Domain{}, errors.New("failed to delete image")
+		}
+	}
+
 	err = tu.threadRepository.Delete(threadID)
 	if err != nil {
 		return Domain{}, errors.New("failed to delete thread")
@@ -344,6 +398,13 @@ func (tu *ThreadUseCase) AdminDelete(threadID primitive.ObjectID) (Domain, error
 	thread, err := tu.threadRepository.GetByID(threadID)
 	if err != nil {
 		return Domain{}, errors.New("failed to get thread")
+	}
+
+	if thread.ImageURL != "" {
+		err = tu.cloudinary.Delete("thread", helper.GetFilenameWithoutExtension(thread.ImageURL))
+		if err != nil {
+			return Domain{}, errors.New("failed to delete image")
+		}
 	}
 
 	err = tu.threadRepository.Delete(threadID)

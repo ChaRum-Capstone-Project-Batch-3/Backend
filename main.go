@@ -48,7 +48,7 @@ func main() {
 
 	userUsecase := _userUseCase.NewUserUseCase(userRepository, cloudinary)
 	topicUsecase := _topicUseCase.NewTopicUseCase(topicRepository, cloudinary)
-	threadUsecase := _threadUseCase.NewThreadUseCase(threadRepository, topicRepository, userRepository)
+	threadUsecase := _threadUseCase.NewThreadUseCase(threadRepository, topicRepository, userRepository, cloudinary)
 	commentUsecase := _commentUseCase.NewCommentUseCase(commentRepository, threadRepository, userRepository)
 	followThreadUsecase := _followThreadUseCase.NewFollowThreadUseCase(followThreadRepository, userRepository, threadRepository, commentRepository, threadUsecase)
 	bookmarkUsecase := _bookmarkUseCase.NewBookmarkUseCase(bookmarkRepository, threadRepository, userRepository, topicRepository, threadUsecase)

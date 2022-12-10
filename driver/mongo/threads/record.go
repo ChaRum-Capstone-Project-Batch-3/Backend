@@ -13,6 +13,7 @@ type Model struct {
 	Title         string             `json:"title" bson:"title"`
 	Description   string             `json:"description" bson:"description"`
 	Likes         []threads.Like     `json:"likes" bson:"likes"`
+	ImageURL      string             `json:"imageURL" bson:"imageURL"`
 	SuspendStatus string             `json:"suspendStatus,omitempty" bson:"suspendStatus,omitempty"`
 	SuspendDetail string             `json:"suspendDetail,omitempty" bson:"suspendDetail,omitempty"`
 	CreatedAt     primitive.DateTime `json:"createdAt" bson:"createdAt"`
@@ -27,6 +28,7 @@ func FromDomain(domain *threads.Domain) *Model {
 		Title:         domain.Title,
 		Description:   domain.Description,
 		Likes:         domain.Likes,
+		ImageURL:      domain.ImageURL,
 		SuspendStatus: domain.SuspendStatus,
 		SuspendDetail: domain.SuspendDetail,
 		CreatedAt:     domain.CreatedAt,
@@ -42,6 +44,7 @@ func (thread *Model) ToDomain() threads.Domain {
 		Title:         thread.Title,
 		Description:   thread.Description,
 		Likes:         thread.Likes,
+		ImageURL:      thread.ImageURL,
 		SuspendStatus: thread.SuspendStatus,
 		SuspendDetail: thread.SuspendDetail,
 		CreatedAt:     thread.CreatedAt,
