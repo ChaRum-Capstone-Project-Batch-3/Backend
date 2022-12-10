@@ -13,6 +13,14 @@ tags:
     description: Operations about topic
   - name: Thread
     description: Operation about thread
+  - name: Follow Thread
+    description: Operation about follow thread
+  - name: Comment
+    description: Operation about comment
+  - name: Like
+    description: Operation about like
+  - name: Bookmark
+    description: Operation about bookmark
   - name: Admin
     description: Operations for admin
     
@@ -48,6 +56,31 @@ paths:
                 password:
                   type: string
                   example: secretpassword
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: user@charum.com
+                userName:
+                  type: string
+                  example: charum-user
+                displayName:
+                  type: string
+                  example: charum user
+                biodata:
+                  type: string
+                  example: halo aku user
+                socialMedia:
+                  type: string
+                  example: instagram @anon
+                password:
+                  type: string
+                  example: secretpassword
+                profilePicture:
+                  type: string
+                  format: binary
         required: true
       responses:
         '201':
@@ -68,7 +101,7 @@ paths:
                     properties:
                       token:
                         type: string
-                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2Mzc5ZmU4ZGFkMzNlYzQyNTE3MDBkZWQiLCJyb2xlIjoidXNlciIsImlzcyI6ImNoYXJ1bSIsImV4cCI6MTY2ODk0Nzg3NiwibmJmIjoxNjY4OTQ0Mjc2LCJpYXQiOjE2Njg5NDQyNzZ9._hk2Y2pt6tADTN0aHTukPNd2O_wRdHsgn3Vo4jIX_zc
+                        example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2Mzc5ZmU4ZGFkMzNlYzQyNTE3MDBkZWQiLCJyb2xlIjoidXNlciIsImlzcyI6ImNoYXJ1bSIsImV4cCI6MTY2ODk0Nzg3NiwibmJmIjoxNjY4OTQ0Mjc2LCJpYXQiOjE2Njg5NDQyNzZ9._hk2Y2pt6tADTN0aHTukPNd2O_wRdHsgn3Vo4jIX_zc
                       user:
                         $ref: '#/components/schemas/User'
         '400':
@@ -164,7 +197,7 @@ paths:
                     properties:
                       token:
                         type: string
-                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2Mzc5ZmU4ZGFkMzNlYzQyNTE3MDBkZWQiLCJyb2xlIjoidXNlciIsImlzcyI6ImNoYXJ1bSIsImV4cCI6MTY2ODk0Nzg3NiwibmJmIjoxNjY4OTQ0Mjc2LCJpYXQiOjE2Njg5NDQyNzZ9._hk2Y2pt6tADTN0aHTukPNd2O_wRdHsgn3Vo4jIX_zc
+                        example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2Mzc5ZmU4ZGFkMzNlYzQyNTE3MDBkZWQiLCJyb2xlIjoidXNlciIsImlzcyI6ImNoYXJ1bSIsImV4cCI6MTY2ODk0Nzg3NiwibmJmIjoxNjY4OTQ0Mjc2LCJpYXQiOjE2Njg5NDQyNzZ9._hk2Y2pt6tADTN0aHTukPNd2O_wRdHsgn3Vo4jIX_zc
                       user:
                         $ref: '#/components/schemas/User'
         '400':
@@ -299,6 +332,28 @@ paths:
                 socialMedia:
                   type: string
                   example: instagram @anon
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: user@charum.com
+                userName:
+                  type: string
+                  example: charum-user
+                displayName:
+                  type: string
+                  example: charum user
+                biodata:
+                  type: string
+                  example: halo aku user
+                socialMedia:
+                  type: string
+                  example: instagram @anon
+                profilePicture:
+                  type: string
+                  format: binary
         required: true
       responses:
         '200':
@@ -687,6 +742,22 @@ paths:
                 description:
                   type: string
                   example: Best NextJS update ever
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                topicID:
+                  type: string
+                  example: 6379fe8dad33ec4251700ded
+                title:
+                  type: string
+                  example: NextJS 13
+                description:
+                  type: string
+                  example: Best NextJS update ever
+                image:
+                  type: string
+                  format: binary
       responses:
         '201':
           description: Created
@@ -946,38 +1017,7 @@ paths:
                    type: object
                    properties:
                     thread:
-                      type: object
-                      properties:
-                        _id:
-                          type: string
-                          example: 6379fe8dad33ec4251700ded
-                        topic:
-                          $ref: '#/components/schemas/Topic'
-                        creator:
-                          $ref: '#/components/schemas/User'
-                        title:
-                          type: string
-                          example: NextJS 13
-                        description:
-                          type: string
-                          example: Best NextJS update ever
-                        likes:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              userID:
-                                type: string
-                                example: 6379fe8dad33ec4251700ded
-                              createdAt:
-                                type: string
-                                example: 2022-11-26T23:05:11.806+07:00
-                        createdAt:
-                          type: string
-                          example: 2022-11-26T23:05:11.806+07:00
-                        updatedAt:
-                          type: string
-                          example: 2022-11-26T23:05:11.806+07:00
+                      $ref: '#/components/schemas/Thread'
                     comments:
                       type: array
                       items:
@@ -1034,15 +1074,31 @@ paths:
             schema:
               type: object
               properties:
-                topic:
+                topicID:
                   type: string
-                  example: Technology
+                  example: 6379fe8dad33ec4251700ded
                 title:
                   type: string
                   example: NextJS 13
                 description:
                   type: string
                   example: Best NextJS update ever
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                topic:
+                  type: string
+                  example: 6379fe8dad33ec4251700ded
+                title:
+                  type: string
+                  example: NextJS 13
+                description:
+                  type: string
+                  example: Best NextJS update ever
+                image:
+                  type: string
+                  format: binary
       responses:
         '200':
           description: OK
@@ -1515,6 +1571,28 @@ paths:
                 socialMedia:
                   type: string
                   example: instagram @anon
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: user@charum.com
+                userName:
+                  type: string
+                  example: charum-user
+                displayName:
+                  type: string
+                  example: charum user
+                biodata:
+                  type: string
+                  example: halo aku user
+                socialMedia:
+                  type: string
+                  example: instagram @anon
+                profilePicture:
+                  type: string
+                  format: binary
         required: true
       responses:
         '200':
@@ -2252,6 +2330,19 @@ paths:
                 description:
                   type: string
                   example: new Description
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                topic:
+                  type: string
+                  example: new Topic
+                description:
+                  type: string
+                  example: new Description
+                image:
+                  type: string
+                  format: binary
         required: true
       responses:
         '200':
@@ -2404,7 +2495,7 @@ paths:
   /thread/comment/{thread-id}:
     post:
       tags:
-        - Thread
+        - Comment
       summary: Send commment to thread
       description: Send commment by thread id
       operationId: CreateComment
@@ -2532,7 +2623,7 @@ paths:
   /thread/comment/{comment-id}:
     put:
       tags:
-        - Thread
+        - Comment
       summary: Update commment
       description: Update commment by comment id
       operationId: UpdateComment
@@ -2656,7 +2747,7 @@ paths:
                     example: null
     delete:
       tags:
-        - Thread
+        - Comment
       summary: Delete commment from thread
       description: Delete commment by comment id
       operationId: DeleteComment
@@ -2772,7 +2863,7 @@ paths:
   /thread/follow:
     get:
       tags:
-        - Thread
+        - Follow Thread
       summary: Get user's following thread by token
       description: Get following thread by user's token
       operationId: GetFollowedThreadByToken
@@ -2860,7 +2951,7 @@ paths:
   /thread/follow/{user-id}:
     get:
       tags:
-        - Thread
+        - Follow Thread
       summary: Get user's following thread by user id
       description: Get following thread by user id
       operationId: GetFollowedThreadByUserID
@@ -2959,7 +3050,7 @@ paths:
   /thread/follow/{thread-id}:
     post:
       tags:
-        - Thread
+        - Follow Thread
       summary: Follow thread
       description: Create follow thread by thread id
       operationId: CreateFollowThread
@@ -3070,7 +3161,7 @@ paths:
                     example: null
     delete:
       tags:
-        - Thread
+        - Follow Thread
       summary: Unfollow thread
       description: Delete follow thread by thread id
       operationId: DeleteFollowThread
@@ -3167,7 +3258,7 @@ paths:
   /thread/like:
     get:
       tags:
-        - Thread
+        - Like
       summary: get users' liked thread by token
       description: get users' liked thread by user's token
       operationId: GetLikedThreadByToken
@@ -3223,7 +3314,7 @@ paths:
   /thread/like/{user-id}:
     get:
       tags:
-        - Thread
+        - Like
       summary: get users' liked thread by token
       description: get users' liked thread by user's token
       operationId: GetLikedThreadByUserID
@@ -3303,7 +3394,7 @@ paths:
   /thread/like/id/{thread-id}:
     post:
       tags:
-        - Thread
+        - Like
       summary: Like thread
       description: Like thread by User
       operationId: Like
@@ -3397,7 +3488,7 @@ paths:
                     example: null
     delete:
       tags:
-        - Thread
+        - Like
       summary: Unlike Thread
       description: Unlike Thread by User
       parameters:
@@ -3777,15 +3868,31 @@ paths:
             schema:
               type: object
               properties:
-                topic:
+                topicID:
                   type: string
-                  example: Technology
+                  example: 6379fe8dad33ec4251700ded
                 title:
                   type: string
                   example: NextJS 13
                 description:
                   type: string
                   example: Best NextJS update ever
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                topicID:
+                  type: string
+                  example: 6379fe8dad33ec4251700ded
+                title:
+                  type: string
+                  example: NextJS 13
+                description:
+                  type: string
+                  example: Best NextJS update ever
+                image:
+                  type: string
+                  format: binary
       responses:
         '200':
           description: OK
@@ -3966,7 +4073,251 @@ paths:
                   data:
                     type: string
                     example: null
-
+  /thread/bookmark:
+    get:
+      tags:
+        - Bookmark
+      summary: Get user's bookmark
+      description: Get user's bookmark by token
+      operationId: GetAllBookmarkByToken
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to craete bookmark
+                  data:
+                    $ref: '#/components/schemas/Bookmark'
+        '401':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: invalid token
+                  data:
+                    type: string
+                    example: null
+        '500':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to get all bookmark
+                  data:
+                    type: string
+                    example: null
+  /thread/bookmark/{thread-id}:
+    post:
+      tags:
+        - Bookmark
+      summary: Add thread to bookmark
+      description: Add thread to user's bookmark
+      operationId: CreateBookmark
+      parameters:
+        - in: path
+          name: thread-id
+          description: thread id
+          required: true
+          schema:
+            type: string
+            example: 6379fe8dad33ec4251700ded
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to get bookmarks
+                  data:
+                    $ref: '#/components/schemas/Bookmark'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: invalid thread id
+                  data:
+                    type: string
+                    example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: invalid token
+                  data:
+                    type: string
+                    example: null
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: failed to get bookmark
+                  data:
+                    type: string
+                    example: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to add thread to bookmark
+                  data:
+                    type: string
+                    example: null
+    delete:
+      tags:
+        - Bookmark
+      summary: Remove thread to bookmark
+      description: Remove thread to user's bookmark
+      operationId: DeleteBookmark
+      parameters:
+        - in: path
+          name: thread-id
+          description: thread id
+          required: true
+          schema:
+            type: string
+            example: 6379fe8dad33ec4251700ded
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success to delete bookmark
+                  data:
+                    $ref: '#/components/schemas/Bookmark'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: invalid thread id
+                  data:
+                    type: string
+                    example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: invalid token
+                  data:
+                    type: string
+                    example: null
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: failed to get bookmark
+                  data:
+                    type: string
+                    example: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: failed to delete bookmark
+                  data:
+                    type: string
+                    example: null
+                    
 components:
   securitySchemes:
     bearerAuth:
@@ -3989,9 +4340,15 @@ components:
         displayName:
           type: string
           example: charum user
-        password:
+        biodata:
           type: string
-          example: secretpassword
+          example: halo aku user
+        socialMedia:
+          type: string
+          example: instagram @anon
+        profilePictureURL:
+          type: string
+          example: https://res.cloudinary.com/ddensbwye/image/upload/v1670660428/charum/users/Screenshot%202022-11-04%20130108.png.png
         isActive:
           type: boolean
           example: true
@@ -4028,26 +4385,95 @@ components:
         _id:
           type: string
           example: 6379fe8dad33ec4251700ded
-        topicId:
-          type: string
-          example: 6379fe8dad33ec4251700ded
-        creatorId:
-          type: string
-          example: 6379fe8dad33ec4251700ded
+        topic:
+          type: object
+          properties:
+            _id:
+              type: string
+              example: 6379fe8dad33ec4251700ded
+            topic:
+              type: string
+              example: topic name
+            description:
+              type: string
+              example: topic description
+            imageURL:
+              type: string
+              example: https://res.cloudinary.com/ddensbwye/image/upload/v1670660428/charum/users/Screenshot%202022-11-04%20130108.png.png
+            createdAt:
+              type: string
+              example: 2022-11-26T23:05:11.806+07:00
+            updatedAt:
+              type: string
+              example: 2022-11-26T23:05:11.806+07:00
+        creator:
+          type: object
+          properties:
+            _id:
+              type: string
+              example: 6379fe8dad33ec4251700ded
+            email:
+              type: string
+              example: user@charum.com
+            userName:
+              type: string
+              example: charumuser
+            displayName:
+              type: string
+              example: charum user
+            isActive:
+              type: boolean
+              example: true
+            role:
+              type: string
+              example: user
+            createdAt:
+              type: string
+              example: 2022-11-26T23:05:11.806+07:00
+            updatedAt:
+              type: string
+              example: 2022-11-26T23:05:11.806+07:00
         title:
           type: string
           example: NextJS 13
         description:
           type: string
           example: Best NextJS update ever
+        imageURL:
+          type: string
+          example: https://res.cloudinary.com/ddensbwye/image/upload/v1670660428/charum/users/Screenshot%202022-11-04%20130108.png.png
         likes:
          type: array
          items:
           type: object
           properties:
-            userID:
-              type: string
-              example: 6379fe8dad33ec4251700ded
+            user:
+              type: object
+              properties:
+                _id:
+                  type: string
+                  example: 6379fe8dad33ec4251700ded
+                email:
+                  type: string
+                  example: user@charum.com
+                userName:
+                  type: string
+                  example: charumuser
+                displayName:
+                  type: string
+                  example: charum user
+                isActive:
+                  type: boolean
+                  example: true
+                role:
+                  type: string
+                  example: user
+                createdAt:
+                  type: string
+                  example: 2022-11-26T23:05:11.806+07:00
+                updatedAt:
+                  type: string
+                  example: 2022-11-26T23:05:11.806+07:00
             createdAt:
               type: string
               example: 2022-11-26T23:05:11.806+07:00
@@ -4063,12 +4489,71 @@ components:
         _id:
           type: string
           example: 6379fe8dad33ec4251700ded
-        threadID:
-          type: string
-          example: 6379fe8dad33ec4251700ded
-        userID:
-          type: string
-          example: 6379fe8dad33ec4251700ded
+        thread:
+          type: object
+          properties:
+            _id:
+              type: string
+              example: 6379fe8dad33ec4251700ded
+            topicId:
+              type: string
+              example: 6379fe8dad33ec4251700ded
+            creatorId:
+              type: string
+              example: 6379fe8dad33ec4251700ded
+            title:
+              type: string
+              example: NextJS 13
+            description:
+              type: string
+              example: Best NextJS update ever
+            imageURL:
+              type: string
+              example: https://res.cloudinary.com/ddensbwye/image/upload/v1670660428/charum/users/Screenshot%202022-11-04%20130108.png.png
+            likes:
+             type: array
+             items:
+              type: object
+              properties:
+                userID:
+                  type: string
+                  example: 6379fe8dad33ec4251700ded
+                createdAt:
+                  type: string
+                  example: 2022-11-26T23:05:11.806+07:00
+            createdAt:
+              type: string
+              example: 2022-11-26T23:05:11.806+07:00
+            updatedAt:
+              type: string
+              example: 2022-11-26T23:05:11.806+07:00
+        user:
+          type: object
+          properties:
+            _id:
+              type: string
+              example: 6379fe8dad33ec4251700ded
+            email:
+              type: string
+              example: user@charum.com
+            userName:
+              type: string
+              example: charumuser
+            displayName:
+              type: string
+              example: charum user
+            isActive:
+              type: boolean
+              example: true
+            role:
+              type: string
+              example: user
+            createdAt:
+              type: string
+              example: 2022-11-26T23:05:11.806+07:00
+            updatedAt:
+              type: string
+              example: 2022-11-26T23:05:11.806+07:00
         comment:
           type: string
           example: Very Excited to user NextJS 13
@@ -4078,26 +4563,101 @@ components:
         updatedAt:
           type: string
           example: 2022-11-26T23:05:11.806+07:00
-    FollowThread:
+    Bookmark:
       type: object
       properties:
         _id:
           type: string
           example: 6379fe8dad33ec4251700ded
-        threadID:
-          type: string
-          example: 6379fe8dad33ec4251700ded
         userID:
           type: string
           example: 6379fe8dad33ec4251700ded
-        notification:
-          type: integer
-          example: 1
+        thread:
+          type: object
+          properties:
+            _id:
+              type: string
+              example: 6379fe8dad33ec4251700ded
+            topic:
+              type: object
+              properties:
+                _id:
+                  type: string
+                  example: 6379fe8dad33ec4251700ded
+                topic:
+                  type: string
+                  example: topic name
+                description:
+                  type: string
+                  example: topic description
+                imageURL:
+                  type: string
+                  example: https://res.cloudinary.com/ddensbwye/image/upload/v1670660428/charum/users/Screenshot%202022-11-04%20130108.png.png
+                createdAt:
+                  type: string
+                  example: 2022-11-26T23:05:11.806+07:00
+                updatedAt:
+                  type: string
+                  example: 2022-11-26T23:05:11.806+07:00
+            creator:
+              type: object
+              properties:
+                _id:
+                  type: string
+                  example: 6379fe8dad33ec4251700ded
+                email:
+                  type: string
+                  example: user@charum.com
+                userName:
+                  type: string
+                  example: charumuser
+                displayName:
+                  type: string
+                  example: charum user
+                isActive:
+                  type: boolean
+                  example: true
+                role:
+                  type: string
+                  example: user
+                createdAt:
+                  type: string
+                  example: 2022-11-26T23:05:11.806+07:00
+                updatedAt:
+                  type: string
+                  example: 2022-11-26T23:05:11.806+07:00
+            title:
+              type: string
+              example: NextJS 13
+            description:
+              type: string
+              example: Best NextJS update ever
+            imageURL:
+              type: string
+              example: https://res.cloudinary.com/ddensbwye/image/upload/v1670660428/charum/users/Screenshot%202022-11-04%20130108.png.png
+            likes:
+             type: array
+             items:
+              type: object
+              properties:
+                userID:
+                  type: string
+                  example: 6379fe8dad33ec4251700ded
+                createdAt:
+                  type: string
+                  example: 2022-11-26T23:05:11.806+07:00
+            createdAt:
+              type: string
+              example: 2022-11-26T23:05:11.806+07:00
+            updatedAt:
+              type: string
+              example: 2022-11-26T23:05:11.806+07:00
         createdAt:
           type: string
           example: 2022-11-26T23:05:11.806+07:00
         updatedAt:
           type: string
           example: 2022-11-26T23:05:11.806+07:00
+          
 security:
   - bearerAuth: []
