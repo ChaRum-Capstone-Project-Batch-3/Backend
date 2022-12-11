@@ -99,6 +99,29 @@ func (_m *Repository) DeleteAllByUserID(userID primitive.ObjectID) error {
 	return r0
 }
 
+// GetAllByUserID provides a mock function with given fields: userID
+func (_m *Repository) GetAllByUserID(userID primitive.ObjectID) ([]comments.Domain, error) {
+	ret := _m.Called(userID)
+
+	var r0 []comments.Domain
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID) []comments.Domain); ok {
+		r0 = rf(userID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]comments.Domain)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(primitive.ObjectID) error); ok {
+		r1 = rf(userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetByID provides a mock function with given fields: id
 func (_m *Repository) GetByID(id primitive.ObjectID) (comments.Domain, error) {
 	ret := _m.Called(id)

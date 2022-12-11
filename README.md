@@ -6,7 +6,11 @@ Charum is application for forum group discussion for many topics. This applicati
 ## Technology Stack
 1. [Echo](https://echo.labstack.com/) - Web framework
 2. [Mongo](https://www.mongodb.com/) - Database
-3. [Testify](github.com/stretchr/testify) - Testing
+3. [Testify](https://github.com/stretchr/testify) - Testing
+4. [Cloudinary](https://cloudinary.com/) - Image storage
+5. [JWT](https://jwt.io/) - Authentication Strategy
+6. [AWS EC2](https://aws.amazon.com/ec2/) - Cloud Server
+7. Github Action - CI/CD
 
 ## How to use
 

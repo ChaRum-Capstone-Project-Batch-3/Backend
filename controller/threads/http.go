@@ -11,6 +11,7 @@ import (
 	"charum/helper"
 	"charum/util"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -50,14 +51,47 @@ func (tc *ThreadController) Create(c echo.Context) error {
 		})
 	}
 
+	var validationErr []helper.ValidationError
+	image, _ := c.FormFile("image")
+	if image != nil {
+		imageExt := filepath.Ext(image.Filename)
+		availableExt := []string{".jpg", ".jpeg", ".png"}
+
+		flagExt := false
+		for _, ext := range availableExt {
+			if imageExt == ext {
+				flagExt = true
+			}
+		}
+
+		if !flagExt {
+			validationErr = append(validationErr, helper.ValidationError{
+				Field:   "image",
+				Message: "This field must be a file with .jpg, .jpeg, or .png extension",
+			})
+		}
+
+		if image.Size > 10000000 {
+			validationErr = append(validationErr, helper.ValidationError{
+				Field:   "image",
+				Message: "This field must be a file with size less than 10 MB",
+			})
+		}
+	}
+
 	threadInput := request.Thread{}
 	c.Bind(&threadInput)
 
-	if err := threadInput.Validate(); err != nil {
+	inputErr := threadInput.Validate()
+	if inputErr != nil {
+		validationErr = append(validationErr, inputErr...)
+	}
+
+	if validationErr != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
 			Message: "validation failed",
-			Data:    err,
+			Data:    validationErr,
 		})
 	}
 
@@ -72,7 +106,7 @@ func (tc *ThreadController) Create(c echo.Context) error {
 		})
 	}
 
-	result, err := tc.threadUseCase.Create(threadDomain)
+	result, err := tc.threadUseCase.Create(threadDomain, image)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if strings.Contains(err.Error(), "failed to get") {
@@ -445,14 +479,47 @@ func (tc *ThreadController) UserUpdate(c echo.Context) error {
 		})
 	}
 
+	var validationErr []helper.ValidationError
+	image, _ := c.FormFile("image")
+	if image != nil {
+		imageExt := filepath.Ext(image.Filename)
+		availableExt := []string{".jpg", ".jpeg", ".png"}
+
+		flagExt := false
+		for _, ext := range availableExt {
+			if imageExt == ext {
+				flagExt = true
+			}
+		}
+
+		if !flagExt {
+			validationErr = append(validationErr, helper.ValidationError{
+				Field:   "image",
+				Message: "This field must be a file with .jpg, .jpeg, or .png extension",
+			})
+		}
+
+		if image.Size > 10000000 {
+			validationErr = append(validationErr, helper.ValidationError{
+				Field:   "image",
+				Message: "This field must be a file with size less than 10 MB",
+			})
+		}
+	}
+
 	threadInput := request.Thread{}
 	c.Bind(&threadInput)
 
-	if err := threadInput.Validate(); err != nil {
+	inputErr := threadInput.Validate()
+	if inputErr != nil {
+		validationErr = append(validationErr, inputErr...)
+	}
+
+	if validationErr != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
 			Message: "validation failed",
-			Data:    err,
+			Data:    validationErr,
 		})
 	}
 
@@ -470,7 +537,7 @@ func (tc *ThreadController) UserUpdate(c echo.Context) error {
 	threadDomain.TopicID = topicID
 	threadDomain.CreatorID = userID
 
-	result, err := tc.threadUseCase.UserUpdate(threadDomain)
+	result, err := tc.threadUseCase.UserUpdate(threadDomain, image)
 
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -515,14 +582,47 @@ func (tc *ThreadController) AdminUpdate(c echo.Context) error {
 		})
 	}
 
+	var validationErr []helper.ValidationError
+	image, _ := c.FormFile("image")
+	if image != nil {
+		imageExt := filepath.Ext(image.Filename)
+		availableExt := []string{".jpg", ".jpeg", ".png"}
+
+		flagExt := false
+		for _, ext := range availableExt {
+			if imageExt == ext {
+				flagExt = true
+			}
+		}
+
+		if !flagExt {
+			validationErr = append(validationErr, helper.ValidationError{
+				Field:   "image",
+				Message: "This field must be a file with .jpg, .jpeg, or .png extension",
+			})
+		}
+
+		if image.Size > 10000000 {
+			validationErr = append(validationErr, helper.ValidationError{
+				Field:   "image",
+				Message: "This field must be a file with size less than 10 MB",
+			})
+		}
+	}
+
 	threadInput := request.Thread{}
 	c.Bind(&threadInput)
 
-	if err := threadInput.Validate(); err != nil {
+	inputErr := threadInput.Validate()
+	if inputErr != nil {
+		validationErr = append(validationErr, inputErr...)
+	}
+
+	if validationErr != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
 			Message: "validation failed",
-			Data:    err,
+			Data:    validationErr,
 		})
 	}
 
@@ -539,7 +639,7 @@ func (tc *ThreadController) AdminUpdate(c echo.Context) error {
 	threadDomain.Id = threadID
 	threadDomain.TopicID = topicID
 
-	result, err := tc.threadUseCase.AdminUpdate(threadDomain)
+	result, err := tc.threadUseCase.AdminUpdate(threadDomain, image)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if strings.Contains(err.Error(), "failed to get") {

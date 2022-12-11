@@ -29,11 +29,11 @@ func Init(databaseName string) *mongo.Database {
 		panic(err)
 	}
 
-	//// Check the connection
-	//err = client.Ping(ctx, nil)
-	//if err != nil {
-	//	panic(err)
-	//}
+	// Check the connection
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		panic(err)
+	}
 
 	database := client.Database(databaseName)
 	return database

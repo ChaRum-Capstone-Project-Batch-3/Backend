@@ -7,7 +7,9 @@ import (
 	_threadMock "charum/business/threads/mocks"
 	"charum/business/users"
 	_userMock "charum/business/users/mocks"
+	_cloudinaryMock "charum/driver/cloudinary/mocks"
 	"errors"
+	"mime/multipart"
 	"testing"
 	"time"
 
@@ -17,17 +19,19 @@ import (
 )
 
 var (
-	commentRepository _commentMock.Repository
-	threadRepository  _threadMock.Repository
-	userRepository    _userMock.Repository
-	commentUseCase    comments.UseCase
-	commentDomain     comments.Domain
-	threadDomain      threads.Domain
-	userDomain        users.Domain
+	commentRepository    _commentMock.Repository
+	threadRepository     _threadMock.Repository
+	userRepository       _userMock.Repository
+	cloudinaryRepository _cloudinaryMock.Function
+	commentUseCase       comments.UseCase
+	commentDomain        comments.Domain
+	threadDomain         threads.Domain
+	userDomain           users.Domain
+	image                *multipart.FileHeader
 )
 
 func TestMain(m *testing.M) {
-	commentUseCase = comments.NewCommentUseCase(&commentRepository, &threadRepository, &userRepository)
+	commentUseCase = comments.NewCommentUseCase(&commentRepository, &threadRepository, &userRepository, &cloudinaryRepository)
 
 	userDomain = users.Domain{
 		Id:          primitive.NewObjectID(),
@@ -64,6 +68,8 @@ func TestMain(m *testing.M) {
 		UpdatedAt: primitive.NewDateTimeFromTime(time.Now()),
 	}
 
+	image = &multipart.FileHeader{}
+
 	m.Run()
 }
 
@@ -71,19 +77,20 @@ func TestCreate(t *testing.T) {
 	t.Run("Test case 1 | Valid create", func(t *testing.T) {
 		commentRepository.On("GetByIDAndThreadID", mock.Anything, mock.Anything).Return(commentDomain, nil).Once()
 		threadRepository.On("GetByID", commentDomain.ThreadID).Return(threadDomain, nil).Once()
+		cloudinaryRepository.On("Upload", mock.Anything, mock.Anything, mock.Anything).Return("test", nil).Once()
 		commentRepository.On("Create", mock.Anything).Return(commentDomain, nil).Once()
 
-		actualComment, err := commentUseCase.Create(&commentDomain)
+		actualComment, err := commentUseCase.Create(&commentDomain, image)
 
 		assert.Nil(t, err)
 		assert.NotEmpty(t, actualComment)
 	})
 
-	t.Run("Test case 2 | Invalid create | Failed To Get Parent Comment", func(t *testing.T) {
-		expectedErr := errors.New("failed to get parent comment")
+	t.Run("Test case 2 | Invalid create | Failed To Get Comment", func(t *testing.T) {
+		expectedErr := errors.New("failed to get comment")
 		commentRepository.On("GetByIDAndThreadID", mock.Anything, mock.Anything).Return(comments.Domain{}, expectedErr).Once()
 
-		actualComment, err := commentUseCase.Create(&commentDomain)
+		actualComment, err := commentUseCase.Create(&commentDomain, image)
 		assert.NotNil(t, err)
 		assert.Empty(t, actualComment)
 	})
@@ -93,18 +100,44 @@ func TestCreate(t *testing.T) {
 		commentRepository.On("GetByIDAndThreadID", mock.Anything, mock.Anything).Return(commentDomain, nil).Once()
 		threadRepository.On("GetByID", commentDomain.ThreadID).Return(threads.Domain{}, expectedErr).Once()
 
-		actualComment, err := commentUseCase.Create(&commentDomain)
+		actualComment, err := commentUseCase.Create(&commentDomain, image)
 		assert.NotNil(t, err)
 		assert.Empty(t, actualComment)
 	})
 
-	t.Run("Test case 4 | Invalid create | Failed To Create Comment", func(t *testing.T) {
+	t.Run("Test case 4 | Invalid create | Failed To Upload Image", func(t *testing.T) {
+		expectedErr := errors.New("failed to upload image")
+		commentRepository.On("GetByIDAndThreadID", mock.Anything, mock.Anything).Return(commentDomain, nil).Once()
+		threadRepository.On("GetByID", commentDomain.ThreadID).Return(threadDomain, nil).Once()
+		cloudinaryRepository.On("Upload", mock.Anything, mock.Anything, mock.Anything).Return("", expectedErr).Once()
+
+		actualComment, err := commentUseCase.Create(&commentDomain, image)
+		assert.NotNil(t, err)
+		assert.Empty(t, actualComment)
+	})
+
+	t.Run("Test case 5 | Invalid create | Failed To Create Comment", func(t *testing.T) {
 		expectedErr := errors.New("failed to create comment")
 		commentRepository.On("GetByIDAndThreadID", mock.Anything, mock.Anything).Return(commentDomain, nil).Once()
 		threadRepository.On("GetByID", commentDomain.ThreadID).Return(threadDomain, nil).Once()
+		cloudinaryRepository.On("Upload", mock.Anything, mock.Anything, mock.Anything).Return("test", nil).Once()
 		commentRepository.On("Create", mock.Anything).Return(comments.Domain{}, expectedErr).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
 
-		actualComment, err := commentUseCase.Create(&commentDomain)
+		actualComment, err := commentUseCase.Create(&commentDomain, image)
+		assert.NotNil(t, err)
+		assert.Empty(t, actualComment)
+	})
+
+	t.Run("Test case 6 | Invalid create | Failed To Delete Image", func(t *testing.T) {
+		expectedErr := errors.New("failed to delete image")
+		commentRepository.On("GetByIDAndThreadID", mock.Anything, mock.Anything).Return(commentDomain, nil).Once()
+		threadRepository.On("GetByID", commentDomain.ThreadID).Return(threadDomain, nil).Once()
+		cloudinaryRepository.On("Upload", mock.Anything, mock.Anything, mock.Anything).Return("test", nil).Once()
+		commentRepository.On("Create", mock.Anything).Return(commentDomain, expectedErr).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(expectedErr).Once()
+
+		actualComment, err := commentUseCase.Create(&commentDomain, image)
 		assert.NotNil(t, err)
 		assert.Empty(t, actualComment)
 	})
@@ -180,11 +213,13 @@ func TestDomainToResponseArray(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	t.Run("Test case 1 | Valid update", func(t *testing.T) {
-		commentRepository.On("GetByIDAndThreadID", commentDomain.Id, threadDomain.Id).Return(commentDomain, nil).Once()
+		commentRepository.On("GetByID", commentDomain.Id).Return(commentDomain, nil).Once()
 		threadRepository.On("GetByID", commentDomain.ThreadID).Return(threadDomain, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
+		cloudinaryRepository.On("Upload", mock.Anything, mock.Anything, mock.Anything).Return("test", nil).Once()
 		commentRepository.On("Update", mock.Anything).Return(commentDomain, nil).Once()
 
-		actualComment, err := commentUseCase.Update(&commentDomain)
+		actualComment, err := commentUseCase.Update(&commentDomain, image)
 
 		assert.Nil(t, err)
 		assert.NotEmpty(t, actualComment)
@@ -192,28 +227,30 @@ func TestUpdate(t *testing.T) {
 
 	t.Run("Test case 2 | Invalid update | Failed To Get Comment", func(t *testing.T) {
 		expectedErr := errors.New("failed to get comment")
-		commentRepository.On("GetByIDAndThreadID", commentDomain.Id, threadDomain.Id).Return(comments.Domain{}, expectedErr).Once()
+		commentRepository.On("GetByID", commentDomain.Id).Return(comments.Domain{}, expectedErr).Once()
 
-		_, err := commentUseCase.Update(&commentDomain)
+		_, err := commentUseCase.Update(&commentDomain, image)
 		assert.NotNil(t, err)
 	})
 
 	t.Run("Test case 3 | Invalid update | Failed To Get Thread", func(t *testing.T) {
 		expectedErr := errors.New("failed to get thread")
-		commentRepository.On("GetByIDAndThreadID", commentDomain.Id, threadDomain.Id).Return(commentDomain, nil).Once()
+		commentRepository.On("GetByID", commentDomain.Id).Return(commentDomain, nil).Once()
 		threadRepository.On("GetByID", commentDomain.ThreadID).Return(threads.Domain{}, expectedErr).Once()
 
-		_, err := commentUseCase.Update(&commentDomain)
+		_, err := commentUseCase.Update(&commentDomain, image)
 		assert.NotNil(t, err)
 	})
 
 	t.Run("Test case 4 | Invalid update | Failed To Update Comment", func(t *testing.T) {
 		expectedErr := errors.New("failed to update comment")
-		commentRepository.On("GetByIDAndThreadID", commentDomain.Id, threadDomain.Id).Return(commentDomain, nil).Once()
+		commentRepository.On("GetByID", commentDomain.Id).Return(commentDomain, nil).Once()
 		threadRepository.On("GetByID", commentDomain.ThreadID).Return(threadDomain, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
+		cloudinaryRepository.On("Upload", mock.Anything, mock.Anything, mock.Anything).Return("test", nil).Once()
 		commentRepository.On("Update", mock.Anything).Return(comments.Domain{}, expectedErr).Once()
 
-		_, err := commentUseCase.Update(&commentDomain)
+		_, err := commentUseCase.Update(&commentDomain, image)
 		assert.NotNil(t, err)
 	})
 
@@ -221,9 +258,30 @@ func TestUpdate(t *testing.T) {
 		copyDomain := commentDomain
 		copyDomain.UserID = primitive.NewObjectID()
 
-		commentRepository.On("GetByIDAndThreadID", commentDomain.Id, threadDomain.Id).Return(commentDomain, nil).Once()
+		commentRepository.On("GetByID", commentDomain.Id).Return(commentDomain, nil).Once()
 
-		_, err := commentUseCase.Update(&copyDomain)
+		_, err := commentUseCase.Update(&copyDomain, image)
+		assert.NotNil(t, err)
+	})
+
+	t.Run("Test case 6 | Invalid update | Failed To Delete Image", func(t *testing.T) {
+		expectedErr := errors.New("failed to delete image")
+		commentRepository.On("GetByID", commentDomain.Id).Return(commentDomain, nil).Once()
+		threadRepository.On("GetByID", commentDomain.ThreadID).Return(threadDomain, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(expectedErr).Once()
+
+		_, err := commentUseCase.Update(&commentDomain, image)
+		assert.NotNil(t, err)
+	})
+
+	t.Run("Test case 7 | Invalid update | Failed To Upload Image", func(t *testing.T) {
+		expectedErr := errors.New("failed to upload image")
+		commentRepository.On("GetByID", commentDomain.Id).Return(commentDomain, nil).Once()
+		threadRepository.On("GetByID", commentDomain.ThreadID).Return(threadDomain, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
+		cloudinaryRepository.On("Upload", mock.Anything, mock.Anything, mock.Anything).Return("", expectedErr).Once()
+
+		_, err := commentUseCase.Update(&commentDomain, image)
 		assert.NotNil(t, err)
 	})
 }
@@ -262,6 +320,7 @@ func TestDelete(t *testing.T) {
 	t.Run("Test case 1 | Valid delete", func(t *testing.T) {
 		commentRepository.On("GetByID", commentDomain.Id).Return(commentDomain, nil).Once()
 		threadRepository.On("GetByID", commentDomain.ThreadID).Return(threadDomain, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
 		commentRepository.On("Delete", commentDomain.Id).Return(nil).Once()
 
 		actaulComment, err := commentUseCase.Delete(commentDomain.Id, commentDomain.UserID)
@@ -292,6 +351,7 @@ func TestDelete(t *testing.T) {
 		expectedErr := errors.New("failed to delete comment")
 		commentRepository.On("GetByID", commentDomain.Id).Return(commentDomain, nil).Once()
 		threadRepository.On("GetByID", commentDomain.ThreadID).Return(threadDomain, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
 		commentRepository.On("Delete", commentDomain.Id).Return(expectedErr).Once()
 
 		_, err := commentUseCase.Delete(commentDomain.Id, commentDomain.UserID)
@@ -306,10 +366,22 @@ func TestDelete(t *testing.T) {
 		_, err := commentUseCase.Delete(commentDomain.Id, copyComment.UserID)
 		assert.NotNil(t, err)
 	})
+
+	t.Run("Test case 6 | Invalid delete | Failed To Delete Image", func(t *testing.T) {
+		expectedErr := errors.New("failed to delete image")
+		commentRepository.On("GetByID", commentDomain.Id).Return(commentDomain, nil).Once()
+		threadRepository.On("GetByID", commentDomain.ThreadID).Return(threadDomain, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(expectedErr).Once()
+
+		_, err := commentUseCase.Delete(commentDomain.Id, commentDomain.UserID)
+		assert.NotNil(t, err)
+	})
 }
 
 func TestDeleteAllByUserID(t *testing.T) {
 	t.Run("Test case 1 | Valid delete all by user id", func(t *testing.T) {
+		commentRepository.On("GetAllByUserID", commentDomain.UserID).Return([]comments.Domain{commentDomain}, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
 		commentRepository.On("DeleteAllByUserID", commentDomain.UserID).Return(nil).Once()
 
 		err := commentUseCase.DeleteAllByUserID(commentDomain.UserID)
@@ -319,7 +391,26 @@ func TestDeleteAllByUserID(t *testing.T) {
 
 	t.Run("Test case 2 | Invalid delete all by user id | Failed To Delete All Comment By User ID", func(t *testing.T) {
 		expectedErr := errors.New("failed to delete all comment by user id")
+		commentRepository.On("GetAllByUserID", commentDomain.UserID).Return([]comments.Domain{commentDomain}, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
 		commentRepository.On("DeleteAllByUserID", commentDomain.UserID).Return(expectedErr).Once()
+
+		err := commentUseCase.DeleteAllByUserID(commentDomain.UserID)
+		assert.NotNil(t, err)
+	})
+
+	t.Run("Test case 3 | Invalid delete all by user id | Failed To Get All Comment By User ID", func(t *testing.T) {
+		expectedErr := errors.New("failed to get all comment by user id")
+		commentRepository.On("GetAllByUserID", commentDomain.UserID).Return([]comments.Domain{}, expectedErr).Once()
+
+		err := commentUseCase.DeleteAllByUserID(commentDomain.UserID)
+		assert.NotNil(t, err)
+	})
+
+	t.Run("Test case 4 | Invalid delete all by user id | Failed To Delete Image", func(t *testing.T) {
+		expectedErr := errors.New("failed to delete image")
+		commentRepository.On("GetAllByUserID", commentDomain.UserID).Return([]comments.Domain{commentDomain}, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(expectedErr).Once()
 
 		err := commentUseCase.DeleteAllByUserID(commentDomain.UserID)
 		assert.NotNil(t, err)
@@ -328,6 +419,8 @@ func TestDeleteAllByUserID(t *testing.T) {
 
 func TestDeleteALlByThreadID(t *testing.T) {
 	t.Run("Test case 1 | Valid delete all by thread id", func(t *testing.T) {
+		commentRepository.On("GetByThreadID", commentDomain.ThreadID).Return([]comments.Domain{commentDomain}, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
 		commentRepository.On("DeleteAllByThreadID", commentDomain.ThreadID).Return(nil).Once()
 
 		err := commentUseCase.DeleteAllByThreadID(commentDomain.ThreadID)
@@ -337,7 +430,26 @@ func TestDeleteALlByThreadID(t *testing.T) {
 
 	t.Run("Test case 2 | Invalid delete all by thread id | Failed To Delete All Comment By Thread ID", func(t *testing.T) {
 		expectedErr := errors.New("failed to delete all comment by thread id")
+		commentRepository.On("GetByThreadID", commentDomain.ThreadID).Return([]comments.Domain{commentDomain}, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
 		commentRepository.On("DeleteAllByThreadID", commentDomain.ThreadID).Return(expectedErr).Once()
+
+		err := commentUseCase.DeleteAllByThreadID(commentDomain.ThreadID)
+		assert.NotNil(t, err)
+	})
+
+	t.Run("Test case 3 | Invalid delete all by thread id | Failed To Get All Comment By Thread ID", func(t *testing.T) {
+		expectedErr := errors.New("failed to get all comment by thread id")
+		commentRepository.On("GetByThreadID", commentDomain.ThreadID).Return([]comments.Domain{}, expectedErr).Once()
+
+		err := commentUseCase.DeleteAllByThreadID(commentDomain.ThreadID)
+		assert.NotNil(t, err)
+	})
+
+	t.Run("Test case 4 | Invalid delete all by thread id | Failed To Delete Image", func(t *testing.T) {
+		expectedErr := errors.New("failed to delete image")
+		commentRepository.On("GetByThreadID", commentDomain.ThreadID).Return([]comments.Domain{commentDomain}, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(expectedErr).Once()
 
 		err := commentUseCase.DeleteAllByThreadID(commentDomain.ThreadID)
 		assert.NotNil(t, err)

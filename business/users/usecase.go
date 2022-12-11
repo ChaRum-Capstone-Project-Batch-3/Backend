@@ -1,11 +1,14 @@
 package users
 
 import (
+	"charum/driver/cloudinary"
 	dtoPagination "charum/dto/pagination"
 	dtoQuery "charum/dto/query"
+	"charum/helper"
 	"charum/util"
 	"errors"
 	"math"
+	"mime/multipart"
 	"strings"
 	"time"
 
@@ -15,11 +18,13 @@ import (
 
 type UserUseCase struct {
 	userRepository Repository
+	cloudinary     cloudinary.Function
 }
 
-func NewUserUseCase(ur Repository) UseCase {
+func NewUserUseCase(ur Repository, cld cloudinary.Function) UseCase {
 	return &UserUseCase{
 		userRepository: ur,
+		cloudinary:     cld,
 	}
 }
 
@@ -27,7 +32,7 @@ func NewUserUseCase(ur Repository) UseCase {
 Create
 */
 
-func (uu *UserUseCase) Register(domain *Domain) (Domain, string, error) {
+func (uu *UserUseCase) Register(domain *Domain, profilePicture *multipart.FileHeader) (Domain, string, error) {
 	domain.UserName = strings.ToLower(domain.UserName)
 	_, err := uu.userRepository.GetByEmail(domain.Email)
 	if err == nil {
@@ -41,6 +46,15 @@ func (uu *UserUseCase) Register(domain *Domain) (Domain, string, error) {
 
 	encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte(domain.Password), bcrypt.DefaultCost)
 
+	if profilePicture != nil {
+		cloudinaryURL, err := uu.cloudinary.Upload("profilePicture", profilePicture, helper.GenerateUUID())
+		if err != nil {
+			return Domain{}, "", errors.New("failed to upload profile picture")
+		}
+
+		domain.ProfilePictureURL = cloudinaryURL
+	}
+
 	domain.Id = primitive.NewObjectID()
 	domain.Password = string(encryptedPassword)
 	domain.Role = "user"
@@ -49,8 +63,14 @@ func (uu *UserUseCase) Register(domain *Domain) (Domain, string, error) {
 	domain.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
 
 	user, err := uu.userRepository.Create(domain)
-
 	if err != nil {
+		if domain.ProfilePictureURL != "" {
+			err = uu.cloudinary.Delete("profilePicture", helper.GetFilenameWithoutExtension(domain.ProfilePictureURL))
+			if err != nil {
+				return Domain{}, "", errors.New("failed to delete profile picture")
+			}
+		}
+
 		return Domain{}, "", errors.New("failed to register user")
 	}
 
@@ -62,12 +82,12 @@ func (uu *UserUseCase) Register(domain *Domain) (Domain, string, error) {
 Read
 */
 
-func (uu *UserUseCase) Login(domain *Domain) (Domain, string, error) {
+func (uu *UserUseCase) Login(key string, password string) (Domain, string, error) {
 	var user Domain
 
-	user, err := uu.userRepository.GetByEmail(domain.Email)
+	user, err := uu.userRepository.GetByEmail(key)
 	if err != nil {
-		user, err = uu.userRepository.GetByUsername(domain.Email)
+		user, err = uu.userRepository.GetByUsername(key)
 		if err != nil {
 			return Domain{}, "", errors.New("email or username is not registered")
 		}
@@ -77,7 +97,7 @@ func (uu *UserUseCase) Login(domain *Domain) (Domain, string, error) {
 		return Domain{}, "", errors.New("user is suspended")
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(domain.Password))
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
 		return Domain{}, "", errors.New("wrong password")
 	}
@@ -125,7 +145,7 @@ func (uu *UserUseCase) GetByID(id primitive.ObjectID) (Domain, error) {
 Update
 */
 
-func (uu *UserUseCase) Update(domain *Domain) (Domain, error) {
+func (uu *UserUseCase) Update(domain *Domain, profilePicture *multipart.FileHeader) (Domain, error) {
 	user, err := uu.userRepository.GetByID(domain.Id)
 	if err != nil {
 		return Domain{}, errors.New("failed to get user")
@@ -143,6 +163,22 @@ func (uu *UserUseCase) Update(domain *Domain) (Domain, error) {
 		if err == nil {
 			return Domain{}, errors.New("username is already used")
 		}
+	}
+
+	if profilePicture != nil {
+		if user.ProfilePictureURL != "" {
+			err := uu.cloudinary.Delete("profilePicture", helper.GetFilenameWithoutExtension(user.ProfilePictureURL))
+			if err != nil {
+				return Domain{}, errors.New("failed to delete old profile picture")
+			}
+		}
+
+		cloudinaryURL, err := uu.cloudinary.Upload("profilePicture", profilePicture, helper.GenerateUUID())
+		if err != nil {
+			return Domain{}, errors.New("failed to upload profile picture")
+		}
+
+		user.ProfilePictureURL = cloudinaryURL
 	}
 
 	user.Email = domain.Email
@@ -210,6 +246,13 @@ func (uu *UserUseCase) Delete(id primitive.ObjectID) (Domain, error) {
 	deletedUser, err := uu.userRepository.GetByID(id)
 	if err != nil {
 		return Domain{}, errors.New("failed to get user")
+	}
+
+	if deletedUser.ProfilePictureURL != "" {
+		err = uu.cloudinary.Delete("profilePicture", helper.GetFilenameWithoutExtension(deletedUser.ProfilePictureURL))
+		if err != nil {
+			return Domain{}, errors.New("failed to delete profile picture")
+		}
 	}
 
 	err = uu.userRepository.Delete(id)

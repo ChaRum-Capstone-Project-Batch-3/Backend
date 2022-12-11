@@ -1,10 +1,13 @@
 package topics
 
 import (
+	_cloudinary "charum/driver/cloudinary"
 	dtoPagination "charum/dto/pagination"
 	dtoQuery "charum/dto/query"
+	"charum/helper"
 	"errors"
 	"math"
+	"mime/multipart"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -12,29 +15,40 @@ import (
 
 type TopicUseCase struct {
 	topicsRepository Repository
+	cloudinary       _cloudinary.Function
 }
 
-func NewTopicUseCase(tr Repository) UseCase {
+func NewTopicUseCase(tr Repository, cld _cloudinary.Function) UseCase {
 	return &TopicUseCase{
 		topicsRepository: tr,
+		cloudinary:       cld,
 	}
 }
 
 /*
-Create topic
+Create
 */
 
-func (tc *TopicUseCase) CreateTopic(domain *Domain) (Domain, error) {
-	_, err := tc.topicsRepository.GetByTopic(domain.Topic)
+func (tu *TopicUseCase) Create(domain *Domain, image *multipart.FileHeader) (Domain, error) {
+	_, err := tu.topicsRepository.GetByTopic(domain.Topic)
 	if err == nil {
 		return Domain{}, errors.New("topic already exist")
+	}
+
+	if image != nil {
+		cloudinaryURL, err := tu.cloudinary.Upload("topic", image, helper.GenerateUUID())
+		if err != nil {
+			return Domain{}, errors.New("failed to upload image")
+		}
+
+		domain.ImageURL = cloudinaryURL
 	}
 
 	domain.Id = primitive.NewObjectID()
 	domain.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
 	domain.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
 
-	result, err := tc.topicsRepository.CreateTopic(domain)
+	result, err := tu.topicsRepository.Create(domain)
 	if err != nil {
 		return Domain{}, errors.New("failed to create topic")
 	}
@@ -42,18 +56,18 @@ func (tc *TopicUseCase) CreateTopic(domain *Domain) (Domain, error) {
 }
 
 /*
-Get topic
+Read
 */
 
-func (tc *TopicUseCase) GetByID(id primitive.ObjectID) (Domain, error) {
-	result, err := tc.topicsRepository.GetByID(id)
+func (tu *TopicUseCase) GetByID(id primitive.ObjectID) (Domain, error) {
+	result, err := tu.topicsRepository.GetByID(id)
 	if err != nil {
 		return Domain{}, errors.New("failed to get topic")
 	}
 	return result, nil
 }
 
-func (tc *TopicUseCase) GetManyWithPagination(pagination dtoPagination.Request, domain *Domain) ([]Domain, int, int, error) {
+func (tu *TopicUseCase) GetManyWithPagination(pagination dtoPagination.Request, domain *Domain) ([]Domain, int, int, error) {
 	skip := pagination.Limit * (pagination.Page - 1)
 	var orderInMongo int
 
@@ -70,7 +84,7 @@ func (tc *TopicUseCase) GetManyWithPagination(pagination dtoPagination.Request, 
 		Sort:  pagination.Sort,
 	}
 
-	users, totalData, err := tc.topicsRepository.GetManyWithPagination(query, domain)
+	users, totalData, err := tu.topicsRepository.GetManyWithPagination(query, domain)
 	if err != nil {
 		return []Domain{}, 0, 0, errors.New("failed to get topics")
 	}
@@ -79,9 +93,8 @@ func (tc *TopicUseCase) GetManyWithPagination(pagination dtoPagination.Request, 
 	return users, int(totalPage), totalData, nil
 }
 
-// get by topic
-func (tc *TopicUseCase) GetByTopic(topic string) (Domain, error) {
-	result, err := tc.topicsRepository.GetByTopic(topic)
+func (tu *TopicUseCase) GetByTopic(topic string) (Domain, error) {
+	result, err := tu.topicsRepository.GetByTopic(topic)
 	if err != nil {
 		return Domain{}, errors.New("failed to get topic")
 	}
@@ -89,26 +102,42 @@ func (tc *TopicUseCase) GetByTopic(topic string) (Domain, error) {
 }
 
 /*
-Update topic
+Update
 */
-func (tc *TopicUseCase) UpdateTopic(id primitive.ObjectID, domain *Domain) (Domain, error) {
-	result, err := tc.topicsRepository.GetByID(id)
+
+func (tu *TopicUseCase) Update(domain *Domain, image *multipart.FileHeader) (Domain, error) {
+	result, err := tu.topicsRepository.GetByID(domain.Id)
 	if err != nil {
 		return Domain{}, errors.New("failed to get topic")
 	}
 
 	if domain.Topic != result.Topic {
-		_, err := tc.topicsRepository.GetByTopic(domain.Topic)
+		_, err := tu.topicsRepository.GetByTopic(domain.Topic)
 		if err == nil {
 			return Domain{}, errors.New("topic already exist")
 		}
 	}
 
-	result.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
-	// update topic and description
+	if image != nil {
+		if result.ImageURL != "" {
+			err = tu.cloudinary.Delete("topic", helper.GetFilenameWithoutExtension(result.ImageURL))
+			if err != nil {
+				return Domain{}, errors.New("failed to delete image")
+			}
+		}
+
+		cloudinaryURL, err := tu.cloudinary.Upload("topic", image, helper.GenerateUUID())
+		if err != nil {
+			return Domain{}, err
+		}
+
+		result.ImageURL = cloudinaryURL
+	}
+
 	result.Topic = domain.Topic
 	result.Description = domain.Description
-	updatedResult, err := tc.topicsRepository.UpdateTopic(&result)
+	result.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
+	updatedResult, err := tu.topicsRepository.Update(&result)
 	if err != nil {
 		return Domain{}, errors.New("failed to update topic")
 	}
@@ -116,18 +145,26 @@ func (tc *TopicUseCase) UpdateTopic(id primitive.ObjectID, domain *Domain) (Doma
 }
 
 /*
-Delete topic
+Delete
 */
 
-func (tc *TopicUseCase) DeleteTopic(id primitive.ObjectID) (Domain, error) {
-	result, err := tc.topicsRepository.GetByID(id)
+func (tu *TopicUseCase) Delete(id primitive.ObjectID) (Domain, error) {
+	result, err := tu.topicsRepository.GetByID(id)
 	if err != nil {
 		return Domain{}, errors.New("failed to get topic")
 	}
 
-	err = tc.topicsRepository.DeleteTopic(id)
+	if result.ImageURL != "" {
+		err = tu.cloudinary.Delete("topic", helper.GetFilenameWithoutExtension(result.ImageURL))
+		if err != nil {
+			return Domain{}, errors.New("failed to delete image")
+		}
+	}
+
+	err = tu.topicsRepository.Delete(id)
 	if err != nil {
 		return Domain{}, errors.New("failed to delete topic")
 	}
+
 	return result, nil
 }

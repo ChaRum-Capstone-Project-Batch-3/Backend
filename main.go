@@ -8,6 +8,7 @@ import (
 
 	_route "charum/app/route"
 	_driver "charum/driver"
+	_cloudinary "charum/driver/cloudinary"
 	_mongo "charum/driver/mongo"
 	_util "charum/util"
 
@@ -37,6 +38,7 @@ func main() {
 	e := echo.New()
 
 	database := _mongo.Init(_util.GetConfig("DB_NAME"))
+	cloudinary := _cloudinary.Init(_util.GetConfig("CLOUDINARY_UPLOAD_FOLDER"))
 
 	userRepository := _driver.NewUserRepository(database)
 	topicRepository := _driver.NewTopicRepository(database)
@@ -45,10 +47,10 @@ func main() {
 	followThreadRepository := _driver.NewFollowThreadRepository(database)
 	bookmarkRepository := _driver.NewBookmarkRepository(database)
 
-	userUsecase := _userUseCase.NewUserUseCase(userRepository)
-	topicUsecase := _topicUseCase.NewTopicUseCase(topicRepository)
-	threadUsecase := _threadUseCase.NewThreadUseCase(threadRepository, topicRepository, userRepository)
-	commentUsecase := _commentUseCase.NewCommentUseCase(commentRepository, threadRepository, userRepository)
+	userUsecase := _userUseCase.NewUserUseCase(userRepository, cloudinary)
+	topicUsecase := _topicUseCase.NewTopicUseCase(topicRepository, cloudinary)
+	threadUsecase := _threadUseCase.NewThreadUseCase(threadRepository, topicRepository, userRepository, cloudinary)
+	commentUsecase := _commentUseCase.NewCommentUseCase(commentRepository, threadRepository, userRepository, cloudinary)
 	followThreadUsecase := _followThreadUseCase.NewFollowThreadUseCase(followThreadRepository, userRepository, threadRepository, commentRepository, threadUsecase)
 	bookmarkUsecase := _bookmarkUseCase.NewBookmarkUseCase(bookmarkRepository, threadRepository, userRepository, topicRepository, threadUsecase)
 

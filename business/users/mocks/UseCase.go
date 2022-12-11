@@ -3,9 +3,11 @@
 package mocks
 
 import (
-	pagination "charum/dto/pagination"
+	multipart "mime/multipart"
 
 	mock "github.com/stretchr/testify/mock"
+
+	pagination "charum/dto/pagination"
 
 	primitive "go.mongodb.org/mongo-driver/bson/primitive"
 
@@ -124,27 +126,27 @@ func (_m *UseCase) Login(domain *users.Domain) (users.Domain, string, error) {
 	return r0, r1, r2
 }
 
-// Register provides a mock function with given fields: domain
-func (_m *UseCase) Register(domain *users.Domain) (users.Domain, string, error) {
-	ret := _m.Called(domain)
+// Register provides a mock function with given fields: domain, profilePicture
+func (_m *UseCase) Register(domain *users.Domain, profilePicture *multipart.FileHeader) (users.Domain, string, error) {
+	ret := _m.Called(domain, profilePicture)
 
 	var r0 users.Domain
-	if rf, ok := ret.Get(0).(func(*users.Domain) users.Domain); ok {
-		r0 = rf(domain)
+	if rf, ok := ret.Get(0).(func(*users.Domain, *multipart.FileHeader) users.Domain); ok {
+		r0 = rf(domain, profilePicture)
 	} else {
 		r0 = ret.Get(0).(users.Domain)
 	}
 
 	var r1 string
-	if rf, ok := ret.Get(1).(func(*users.Domain) string); ok {
-		r1 = rf(domain)
+	if rf, ok := ret.Get(1).(func(*users.Domain, *multipart.FileHeader) string); ok {
+		r1 = rf(domain, profilePicture)
 	} else {
 		r1 = ret.Get(1).(string)
 	}
 
 	var r2 error
-	if rf, ok := ret.Get(2).(func(*users.Domain) error); ok {
-		r2 = rf(domain)
+	if rf, ok := ret.Get(2).(func(*users.Domain, *multipart.FileHeader) error); ok {
+		r2 = rf(domain, profilePicture)
 	} else {
 		r2 = ret.Error(2)
 	}
@@ -194,20 +196,20 @@ func (_m *UseCase) Unsuspend(id primitive.ObjectID) (users.Domain, error) {
 	return r0, r1
 }
 
-// Update provides a mock function with given fields: domain
-func (_m *UseCase) Update(domain *users.Domain) (users.Domain, error) {
-	ret := _m.Called(domain)
+// Update provides a mock function with given fields: domain, profilePicture
+func (_m *UseCase) Update(domain *users.Domain, profilePicture *multipart.FileHeader) (users.Domain, error) {
+	ret := _m.Called(domain, profilePicture)
 
 	var r0 users.Domain
-	if rf, ok := ret.Get(0).(func(*users.Domain) users.Domain); ok {
-		r0 = rf(domain)
+	if rf, ok := ret.Get(0).(func(*users.Domain, *multipart.FileHeader) users.Domain); ok {
+		r0 = rf(domain, profilePicture)
 	} else {
 		r0 = ret.Get(0).(users.Domain)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*users.Domain) error); ok {
-		r1 = rf(domain)
+	if rf, ok := ret.Get(1).(func(*users.Domain, *multipart.FileHeader) error); ok {
+		r1 = rf(domain, profilePicture)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -16,8 +16,8 @@ type Repository struct {
 	mock.Mock
 }
 
-// CreateTopic provides a mock function with given fields: domain
-func (_m *Repository) CreateTopic(domain *topics.Domain) (topics.Domain, error) {
+// Create provides a mock function with given fields: domain
+func (_m *Repository) Create(domain *topics.Domain) (topics.Domain, error) {
 	ret := _m.Called(domain)
 
 	var r0 topics.Domain
@@ -37,8 +37,8 @@ func (_m *Repository) CreateTopic(domain *topics.Domain) (topics.Domain, error) 
 	return r0, r1
 }
 
-// DeleteTopic provides a mock function with given fields: id
-func (_m *Repository) DeleteTopic(id primitive.ObjectID) error {
+// Delete provides a mock function with given fields: id
+func (_m *Repository) Delete(id primitive.ObjectID) error {
 	ret := _m.Called(id)
 
 	var r0 error
@@ -123,8 +123,8 @@ func (_m *Repository) GetManyWithPagination(_a0 query.Request, domain *topics.Do
 	return r0, r1, r2
 }
 
-// UpdateTopic provides a mock function with given fields: domain
-func (_m *Repository) UpdateTopic(domain *topics.Domain) (topics.Domain, error) {
+// Update provides a mock function with given fields: domain
+func (_m *Repository) Update(domain *topics.Domain) (topics.Domain, error) {
 	ret := _m.Called(domain)
 
 	var r0 topics.Domain

@@ -3,9 +3,11 @@ package users_test
 import (
 	"charum/business/users"
 	_userMock "charum/business/users/mocks"
+	_cloudinaryMock "charum/driver/cloudinary/mocks"
 	dtoPagination "charum/dto/pagination"
 	dtoQuery "charum/dto/query"
 	"errors"
+	"mime/multipart"
 	"testing"
 	"time"
 
@@ -16,24 +18,31 @@ import (
 )
 
 var (
-	userRepository _userMock.Repository
-	userUseCase    users.UseCase
-	userDomain     users.Domain
+	userRepository       _userMock.Repository
+	cloudinaryRepository _cloudinaryMock.Function
+	userUseCase          users.UseCase
+	userDomain           users.Domain
+	image                *multipart.FileHeader
 )
 
 func TestMain(m *testing.M) {
-	userUseCase = users.NewUserUseCase(&userRepository)
+	userUseCase = users.NewUserUseCase(&userRepository, &cloudinaryRepository)
 
 	userDomain = users.Domain{
-		Id:        primitive.NewObjectID(),
-		Email:     "test@charum.com",
-		Password:  "!Test123",
-		UserName:  "tester",
-		Role:      "user",
-		IsActive:  true,
-		CreatedAt: primitive.NewDateTimeFromTime(time.Now()),
-		UpdatedAt: primitive.NewDateTimeFromTime(time.Now()),
+		Id:                primitive.NewObjectID(),
+		Email:             "test@charum.com",
+		Password:          "!Test123",
+		UserName:          "tester",
+		Biodata:           "",
+		SocialMedia:       "",
+		ProfilePictureURL: "image",
+		Role:              "user",
+		IsActive:          true,
+		CreatedAt:         primitive.NewDateTimeFromTime(time.Now()),
+		UpdatedAt:         primitive.NewDateTimeFromTime(time.Now()),
 	}
+
+	image = &multipart.FileHeader{}
 
 	m.Run()
 }
@@ -42,49 +51,85 @@ func TestUserRegister(t *testing.T) {
 	t.Run("Test Case 1 | Valid Register", func(t *testing.T) {
 		userRepository.On("GetByEmail", userDomain.Email).Return(users.Domain{}, errors.New("not found")).Once()
 		userRepository.On("GetByUsername", userDomain.UserName).Return(users.Domain{}, errors.New("not found")).Once()
+		cloudinaryRepository.On("Upload", mock.Anything, mock.Anything, mock.Anything).Return("image", nil).Once()
 		userRepository.On("Create", mock.Anything).Return(userDomain, nil).Once()
 
-		actualUser, token, err := userUseCase.Register(&userDomain)
+		actualUser, token, err := userUseCase.Register(&userDomain, image)
 
 		assert.NotNil(t, actualUser)
 		assert.NotEmpty(t, token)
 		assert.Nil(t, err)
 	})
 
-	t.Run("Test Case 2 | Invalid Register | Email already registered", func(t *testing.T) {
+	t.Run("Test Case 2 | Invalid Register | Email is already registered", func(t *testing.T) {
 		expectedErr := errors.New("email is already registered")
-		userRepository.On("GetByEmail", userDomain.Email).Return(userDomain, nil).Once()
+		copyDomain := userDomain
+		userRepository.On("GetByEmail", copyDomain.Email).Return(copyDomain, nil).Once()
 
-		actualUser, token, err := userUseCase.Register(&userDomain)
+		actualUser, token, err := userUseCase.Register(&userDomain, image)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Empty(t, token)
-		assert.Equal(t, err, expectedErr)
+		assert.Equal(t, expectedErr, err)
 	})
 
-	t.Run("Test Case 3 | Invalid Register | Username already used", func(t *testing.T) {
+	t.Run("Test Case 3 | Invalid Register | Username is already used", func(t *testing.T) {
 		expectedErr := errors.New("username is already used")
-		userRepository.On("GetByEmail", userDomain.Email).Return(users.Domain{}, errors.New("not found")).Once()
-		userRepository.On("GetByUsername", userDomain.UserName).Return(userDomain, nil).Once()
+		copyDomain := userDomain
+		userRepository.On("GetByEmail", copyDomain.Email).Return(users.Domain{}, errors.New("not found")).Once()
+		userRepository.On("GetByUsername", copyDomain.UserName).Return(copyDomain, nil).Once()
 
-		actualUser, token, err := userUseCase.Register(&userDomain)
+		actualUser, token, err := userUseCase.Register(&userDomain, image)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Empty(t, token)
-		assert.Equal(t, err, expectedErr)
+		assert.Equal(t, expectedErr, err)
 	})
 
-	t.Run("Test Case 4 | Invalid Register | Error when creating user", func(t *testing.T) {
+	t.Run("Test Case 4 | Invalid Register | Failed to upload profile picture", func(t *testing.T) {
+		expectedErr := errors.New("failed to upload profile picture")
+		copyDomain := userDomain
+		userRepository.On("GetByEmail", copyDomain.Email).Return(users.Domain{}, errors.New("not found")).Once()
+		userRepository.On("GetByUsername", copyDomain.UserName).Return(users.Domain{}, errors.New("not found")).Once()
+		cloudinaryRepository.On("Upload", mock.Anything, mock.Anything, mock.Anything).Return("", expectedErr).Once()
+
+		actualUser, token, err := userUseCase.Register(&userDomain, image)
+
+		assert.Equal(t, users.Domain{}, actualUser)
+		assert.Empty(t, token)
+		assert.Equal(t, expectedErr, err)
+	})
+
+	t.Run("Test Case 4 | Invalid Register | Failed to register user", func(t *testing.T) {
 		expectedErr := errors.New("failed to register user")
+
 		userRepository.On("GetByEmail", userDomain.Email).Return(users.Domain{}, errors.New("not found")).Once()
 		userRepository.On("GetByUsername", userDomain.UserName).Return(users.Domain{}, errors.New("not found")).Once()
-		userRepository.On("Create", mock.Anything).Return(users.Domain{}, expectedErr).Once()
+		cloudinaryRepository.On("Upload", mock.Anything, mock.Anything, mock.Anything).Return("image", nil).Once()
+		userRepository.On("Create", mock.Anything).Return(userDomain, expectedErr).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
 
-		actualUser, token, err := userUseCase.Register(&userDomain)
+		actualUser, token, err := userUseCase.Register(&userDomain, image)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Empty(t, token)
-		assert.Equal(t, err, expectedErr)
+		assert.Equal(t, expectedErr, err)
+	})
+
+	t.Run("Test Case 5 | Invalid Register | Failed to delete profile picture", func(t *testing.T) {
+		expectedErr := errors.New("failed to delete profile picture")
+
+		userRepository.On("GetByEmail", userDomain.Email).Return(users.Domain{}, errors.New("not found")).Once()
+		userRepository.On("GetByUsername", userDomain.UserName).Return(users.Domain{}, errors.New("not found")).Once()
+		cloudinaryRepository.On("Upload", mock.Anything, mock.Anything, mock.Anything).Return("image", nil).Once()
+		userRepository.On("Create", mock.Anything).Return(userDomain, errors.New("failed to register user")).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(expectedErr).Once()
+
+		actualUser, token, err := userUseCase.Register(&userDomain, image)
+
+		assert.Equal(t, users.Domain{}, actualUser)
+		assert.Empty(t, token)
+		assert.Equal(t, expectedErr, err)
 	})
 }
 
@@ -95,7 +140,7 @@ func TestLogin(t *testing.T) {
 		copyDomain.Password = string(encryptedPassword)
 		userRepository.On("GetByEmail", copyDomain.Email).Return(copyDomain, nil).Once()
 
-		actualUser, token, err := userUseCase.Login(&userDomain)
+		actualUser, token, err := userUseCase.Login(copyDomain.UserName, copyDomain.Password)
 
 		assert.NotNil(t, actualUser)
 		assert.NotEmpty(t, token)
@@ -108,7 +153,7 @@ func TestLogin(t *testing.T) {
 		copyDomain.Password = "wrong password"
 		userRepository.On("GetByEmail", copyDomain.Email).Return(copyDomain, nil).Once()
 
-		actualUser, token, err := userUseCase.Login(&userDomain)
+		actualUser, token, err := userUseCase.Login(userDomain.Email, userDomain.Password)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Empty(t, token)
@@ -120,7 +165,7 @@ func TestLogin(t *testing.T) {
 		userRepository.On("GetByEmail", userDomain.Email).Return(users.Domain{}, expectedErr).Once()
 		userRepository.On("GetByUsername", userDomain.Email).Return(users.Domain{}, expectedErr).Once()
 
-		actualUser, token, err := userUseCase.Login(&userDomain)
+		actualUser, token, err := userUseCase.Login(userDomain.Email, userDomain.Password)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Empty(t, token)
@@ -133,7 +178,7 @@ func TestLogin(t *testing.T) {
 		copyDomain.IsActive = false
 		userRepository.On("GetByEmail", userDomain.Email).Return(copyDomain, nil).Once()
 
-		actualUser, token, err := userUseCase.Login(&userDomain)
+		actualUser, token, err := userUseCase.Login(userDomain.Email, userDomain.Password)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Empty(t, token)
@@ -223,9 +268,11 @@ func TestUpdate(t *testing.T) {
 		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
 		userRepository.On("GetByEmail", copyDomain.Email).Return(users.Domain{}, errors.New("not found")).Once()
 		userRepository.On("GetByUsername", copyDomain.UserName).Return(users.Domain{}, errors.New("not found")).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
+		cloudinaryRepository.On("Upload", mock.Anything, mock.Anything, mock.Anything).Return("image", nil).Once()
 		userRepository.On("Update", mock.Anything).Return(copyDomain, nil).Once()
 
-		actualUser, actualErr := userUseCase.Update(&copyDomain)
+		actualUser, actualErr := userUseCase.Update(&copyDomain, image)
 
 		assert.NotNil(t, actualUser)
 		assert.Nil(t, actualErr)
@@ -235,7 +282,7 @@ func TestUpdate(t *testing.T) {
 		expectedErr := errors.New("failed to get user")
 		userRepository.On("GetByID", userDomain.Id).Return(users.Domain{}, expectedErr).Once()
 
-		actualUser, actualErr := userUseCase.Update(&userDomain)
+		actualUser, actualErr := userUseCase.Update(&userDomain, image)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Equal(t, expectedErr, actualErr)
@@ -244,9 +291,11 @@ func TestUpdate(t *testing.T) {
 	t.Run("Test Case 3 | Invalid Update | Error when updating user", func(t *testing.T) {
 		expectedErr := errors.New("failed to update user")
 		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
+		cloudinaryRepository.On("Upload", mock.Anything, mock.Anything, mock.Anything).Return("image", nil).Once()
 		userRepository.On("Update", mock.Anything).Return(users.Domain{}, expectedErr).Once()
 
-		actualUser, actualErr := userUseCase.Update(&userDomain)
+		actualUser, actualErr := userUseCase.Update(&userDomain, image)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Equal(t, expectedErr, actualErr)
@@ -259,7 +308,7 @@ func TestUpdate(t *testing.T) {
 		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
 		userRepository.On("GetByEmail", copyDomain.Email).Return(copyDomain, nil).Once()
 
-		actualUser, actualErr := userUseCase.Update(&copyDomain)
+		actualUser, actualErr := userUseCase.Update(&copyDomain, image)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Equal(t, expectedErr, actualErr)
@@ -273,7 +322,36 @@ func TestUpdate(t *testing.T) {
 		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
 		userRepository.On("GetByUsername", copyDomain.UserName).Return(copyDomain, nil).Once()
 
-		actualUser, actualErr := userUseCase.Update(&copyDomain)
+		actualUser, actualErr := userUseCase.Update(&copyDomain, image)
+
+		assert.Equal(t, users.Domain{}, actualUser)
+		assert.Equal(t, expectedErr, actualErr)
+	})
+
+	t.Run("Test Case 6 | Invalid Update | Error when upload profile picture", func(t *testing.T) {
+		expectedErr := errors.New("failed to upload profile picture")
+
+		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
+		userRepository.On("GetByEmail", userDomain.Email).Return(users.Domain{}, errors.New("not found")).Once()
+		userRepository.On("GetByUsername", userDomain.UserName).Return(users.Domain{}, errors.New("not found")).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
+		cloudinaryRepository.On("Upload", mock.Anything, mock.Anything, mock.Anything).Return("image", expectedErr).Once()
+
+		actualUser, actualErr := userUseCase.Update(&userDomain, image)
+
+		assert.Equal(t, users.Domain{}, actualUser)
+		assert.Equal(t, expectedErr, actualErr)
+	})
+
+	t.Run("Test Case 7 | Invalid Update | Error when delete old profile picture", func(t *testing.T) {
+		expectedErr := errors.New("failed to delete old profile picture")
+
+		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
+		userRepository.On("GetByEmail", userDomain.Email).Return(users.Domain{}, errors.New("not found")).Once()
+		userRepository.On("GetByUsername", userDomain.UserName).Return(users.Domain{}, errors.New("not found")).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(expectedErr).Once()
+
+		actualUser, actualErr := userUseCase.Update(&userDomain, image)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Equal(t, expectedErr, actualErr)
@@ -283,6 +361,7 @@ func TestUpdate(t *testing.T) {
 func TestDelete(t *testing.T) {
 	t.Run("Test Case 1 | Valid Delete", func(t *testing.T) {
 		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
 		userRepository.On("Delete", userDomain.Id).Return(nil).Once()
 
 		actualUser, actualErr := userUseCase.Delete(userDomain.Id)
@@ -304,7 +383,19 @@ func TestDelete(t *testing.T) {
 	t.Run("Test Case 3 | Invalid Delete | Error when deleting user", func(t *testing.T) {
 		expectedErr := errors.New("failed to delete user")
 		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
 		userRepository.On("Delete", userDomain.Id).Return(expectedErr).Once()
+
+		actualUser, actualErr := userUseCase.Delete(userDomain.Id)
+
+		assert.Equal(t, users.Domain{}, actualUser)
+		assert.Equal(t, expectedErr, actualErr)
+	})
+
+	t.Run("Test Case 4 | Invalid Delete | Error when deleting profile picture", func(t *testing.T) {
+		expectedErr := errors.New("failed to delete profile picture")
+		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(expectedErr).Once()
 
 		actualUser, actualErr := userUseCase.Delete(userDomain.Id)
 

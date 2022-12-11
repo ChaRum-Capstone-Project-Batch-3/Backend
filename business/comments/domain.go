@@ -2,6 +2,7 @@ package comments
 
 import (
 	dtoComment "charum/dto/comments"
+	"mime/multipart"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -11,6 +12,7 @@ type Domain struct {
 	ThreadID  primitive.ObjectID `json:"threadID" bson:"threadID"`
 	UserID    primitive.ObjectID `json:"userID" bson:"userID"`
 	ParentID  primitive.ObjectID `json:"parentID,omitempty" bson:"parentID,omitempty"`
+	ImageURL  string             `json:"imageURL,omitempty" bson:"imageURL,omitempty"`
 	Comment   string             `json:"comment" bson:"commment"`
 	CreatedAt primitive.DateTime `json:"createdAt" bson:"createdAt"`
 	UpdatedAt primitive.DateTime `json:"updatedAt" bson:"updatedAt"`
@@ -24,6 +26,7 @@ type Repository interface {
 	GetByThreadID(threadID primitive.ObjectID) ([]Domain, error)
 	CountByThreadID(threadID primitive.ObjectID) (int, error)
 	GetByIDAndThreadID(id primitive.ObjectID, threadID primitive.ObjectID) (Domain, error)
+	GetAllByUserID(userID primitive.ObjectID) ([]Domain, error)
 	// Update
 	Update(domain *Domain) (Domain, error)
 	// Delete
@@ -34,14 +37,14 @@ type Repository interface {
 
 type UseCase interface {
 	// Create
-	Create(domain *Domain) (Domain, error)
+	Create(domain *Domain, image *multipart.FileHeader) (Domain, error)
 	// Read
 	GetByThreadID(threadID primitive.ObjectID) ([]Domain, error)
 	DomainToResponse(comment Domain) (dtoComment.Response, error)
 	DomainToResponseArray(comments []Domain) ([]dtoComment.Response, error)
 	CountByThreadID(threadID primitive.ObjectID) (int, error)
 	// Update
-	Update(domain *Domain) (Domain, error)
+	Update(domain *Domain, image *multipart.FileHeader) (Domain, error)
 	// Delete
 	Delete(id primitive.ObjectID, userID primitive.ObjectID) (Domain, error)
 	DeleteAllByUserID(userID primitive.ObjectID) error
