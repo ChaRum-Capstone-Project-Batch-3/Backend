@@ -82,12 +82,12 @@ func (uu *UserUseCase) Register(domain *Domain, profilePicture *multipart.FileHe
 Read
 */
 
-func (uu *UserUseCase) Login(domain *Domain) (Domain, string, error) {
+func (uu *UserUseCase) Login(key string, password string) (Domain, string, error) {
 	var user Domain
 
-	user, err := uu.userRepository.GetByEmail(domain.Email)
+	user, err := uu.userRepository.GetByEmail(key)
 	if err != nil {
-		user, err = uu.userRepository.GetByUsername(domain.Email)
+		user, err = uu.userRepository.GetByUsername(key)
 		if err != nil {
 			return Domain{}, "", errors.New("email or username is not registered")
 		}
@@ -97,7 +97,7 @@ func (uu *UserUseCase) Login(domain *Domain) (Domain, string, error) {
 		return Domain{}, "", errors.New("user is suspended")
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(domain.Password))
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
 		return Domain{}, "", errors.New("wrong password")
 	}

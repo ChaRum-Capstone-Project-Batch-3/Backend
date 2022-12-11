@@ -140,7 +140,7 @@ func TestLogin(t *testing.T) {
 		copyDomain.Password = string(encryptedPassword)
 		userRepository.On("GetByEmail", copyDomain.Email).Return(copyDomain, nil).Once()
 
-		actualUser, token, err := userUseCase.Login(&userDomain)
+		actualUser, token, err := userUseCase.Login(copyDomain.UserName, copyDomain.Password)
 
 		assert.NotNil(t, actualUser)
 		assert.NotEmpty(t, token)
@@ -153,7 +153,7 @@ func TestLogin(t *testing.T) {
 		copyDomain.Password = "wrong password"
 		userRepository.On("GetByEmail", copyDomain.Email).Return(copyDomain, nil).Once()
 
-		actualUser, token, err := userUseCase.Login(&userDomain)
+		actualUser, token, err := userUseCase.Login(userDomain.Email, userDomain.Password)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Empty(t, token)
@@ -165,7 +165,7 @@ func TestLogin(t *testing.T) {
 		userRepository.On("GetByEmail", userDomain.Email).Return(users.Domain{}, expectedErr).Once()
 		userRepository.On("GetByUsername", userDomain.Email).Return(users.Domain{}, expectedErr).Once()
 
-		actualUser, token, err := userUseCase.Login(&userDomain)
+		actualUser, token, err := userUseCase.Login(userDomain.Email, userDomain.Password)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Empty(t, token)
@@ -178,7 +178,7 @@ func TestLogin(t *testing.T) {
 		copyDomain.IsActive = false
 		userRepository.On("GetByEmail", userDomain.Email).Return(copyDomain, nil).Once()
 
-		actualUser, token, err := userUseCase.Login(&userDomain)
+		actualUser, token, err := userUseCase.Login(userDomain.Email, userDomain.Password)
 
 		assert.Equal(t, users.Domain{}, actualUser)
 		assert.Empty(t, token)

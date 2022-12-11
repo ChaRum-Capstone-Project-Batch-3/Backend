@@ -41,7 +41,7 @@ type UseCase interface {
 	// Create
 	Register(domain *Domain, profilePicture *multipart.FileHeader) (Domain, string, error)
 	// Read
-	Login(domain *Domain) (Domain, string, error)
+	Login(key string, password string) (Domain, string, error)
 	GetManyWithPagination(pagination dtoPagination.Request, domain *Domain) ([]Domain, int, int, error)
 	GetByID(id primitive.ObjectID) (Domain, error)
 	// Update
