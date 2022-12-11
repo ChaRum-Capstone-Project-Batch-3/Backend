@@ -2519,6 +2519,19 @@ paths:
                 comment:
                   type: string
                   example: very excited
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                parentID:
+                  type: string
+                  example: 6379fe8dad33ec4251700ded
+                comment:
+                  type: string
+                  example: very excited
+                image:
+                  type: string
+                  format: binary
       responses:
         '200':
           description: OK
@@ -2644,6 +2657,19 @@ paths:
                 comment:
                   type: string
                   example: very excited
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                parentID:
+                  type: string
+                  example: 6379fe8dad33ec4251700ded
+                comment:
+                  type: string
+                  example: very excited
+                image:
+                  type: string
+                  format: binary
       responses:
         '200':
           description: OK
