@@ -22,11 +22,17 @@ type Cloudinary struct {
 	cloudinary *cloudinary.Cloudinary
 }
 
-func NewCloudinaryRepository() Function {
+var (
+	folderBase string
+)
+
+func Init(folderName string) Function {
 	cld, err := cloudinary.NewFromParams(util.GetConfig("CLOUDINARY_CLOUD_NAME"), util.GetConfig("CLOUDINARY_API_KEY"), util.GetConfig("CLOUDINARY_API_SECRET"))
 	if err != nil {
 		panic(err)
 	}
+
+	folderBase = folderName
 
 	cld.Config.URL.Secure = true
 	return &Cloudinary{
@@ -46,7 +52,7 @@ func (c *Cloudinary) Upload(folder string, file *multipart.FileHeader, filename 
 	resp, err := c.cloudinary.Upload.Upload(ctx, profilePictureBuffer, uploader.UploadParams{
 		PublicID:       filename,
 		UniqueFilename: api.Bool(false),
-		Folder:         fmt.Sprintf("%s/%s", util.GetConfig("CLOUDINARY_UPLOAD_FOLDER"), folder),
+		Folder:         fmt.Sprintf("%s/%s", folderBase, folder),
 		Overwrite:      api.Bool(true),
 	})
 	if err != nil {
@@ -60,11 +66,9 @@ func (c *Cloudinary) Rename(folder string, oldFilename string, newFilename strin
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	folder = fmt.Sprintf("%s/%s", util.GetConfig("CLOUDINARY_UPLOAD_FOLDER"), folder)
-
 	resp, err := c.cloudinary.Upload.Rename(ctx, uploader.RenameParams{
-		FromPublicID: fmt.Sprintf("%s/%s", folder, oldFilename),
-		ToPublicID:   fmt.Sprintf("%s/%s", folder, newFilename),
+		FromPublicID: fmt.Sprintf("%s/%s/%s", folderBase, folder, oldFilename),
+		ToPublicID:   fmt.Sprintf("%s/%s/%s", folderBase, folder, newFilename),
 	})
 	if err != nil {
 		return "", err
@@ -77,10 +81,8 @@ func (c *Cloudinary) Delete(folder string, filename string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	folder = fmt.Sprintf("%s/%s", util.GetConfig("CLOUDINARY_UPLOAD_FOLDER"), folder)
-
 	_, err := c.cloudinary.Upload.Destroy(ctx, uploader.DestroyParams{
-		PublicID: fmt.Sprintf("%s/%s", folder, filename),
+		PublicID: fmt.Sprintf("%s/%s/%s", folderBase, folder, filename),
 	})
 	if err != nil {
 		return err

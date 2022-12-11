@@ -58,6 +58,13 @@ func (tu *ThreadUseCase) Create(domain *Domain, image *multipart.FileHeader) (Do
 
 	thread, err := tu.threadRepository.Create(domain)
 	if err != nil {
+		if domain.ImageURL != "" {
+			err := tu.cloudinary.Delete("thread", helper.GetFilenameWithoutExtension(domain.ImageURL))
+			if err != nil {
+				return Domain{}, errors.New("failed to delete image")
+			}
+		}
+
 		return Domain{}, errors.New("failed to create thread")
 	}
 

@@ -87,7 +87,7 @@ func (tc *ThreadController) Create(c echo.Context) error {
 		validationErr = append(validationErr, inputErr...)
 	}
 
-	if err := threadInput.Validate(); err != nil {
+	if validationErr != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
 			Message: "validation failed",
@@ -515,7 +515,7 @@ func (tc *ThreadController) UserUpdate(c echo.Context) error {
 		validationErr = append(validationErr, inputErr...)
 	}
 
-	if err := threadInput.Validate(); err != nil {
+	if validationErr != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
 			Message: "validation failed",
@@ -618,7 +618,7 @@ func (tc *ThreadController) AdminUpdate(c echo.Context) error {
 		validationErr = append(validationErr, inputErr...)
 	}
 
-	if err := threadInput.Validate(); err != nil {
+	if validationErr != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
 			Message: "validation failed",

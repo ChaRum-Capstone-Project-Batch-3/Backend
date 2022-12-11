@@ -7,6 +7,7 @@ import (
 	"charum/helper"
 	"charum/util"
 	"net/http"
+	"path/filepath"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -48,20 +49,53 @@ func (cc *CommentController) Create(c echo.Context) error {
 		})
 	}
 
+	var validationErr []helper.ValidationError
+	image, _ := c.FormFile("image")
+	if image != nil {
+		imageExt := filepath.Ext(image.Filename)
+		availableExt := []string{".jpg", ".jpeg", ".png"}
+
+		flagExt := false
+		for _, ext := range availableExt {
+			if imageExt == ext {
+				flagExt = true
+			}
+		}
+
+		if !flagExt {
+			validationErr = append(validationErr, helper.ValidationError{
+				Field:   "image",
+				Message: "This field must be a file with .jpg, .jpeg, or .png extension",
+			})
+		}
+
+		if image.Size > 10000000 {
+			validationErr = append(validationErr, helper.ValidationError{
+				Field:   "image",
+				Message: "This field must be a file with size less than 10 MB",
+			})
+		}
+	}
+
 	commentInput := request.Comment{}
 	c.Bind(&commentInput)
 	commentInput.UserID = uid
 	commentInput.ThreadID = threadID
 
-	if err := commentInput.Validate(); err != nil {
+	inputErr := commentInput.Validate()
+	if inputErr != nil {
+		validationErr = append(validationErr, inputErr...)
+	}
+
+	if validationErr != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
 			Message: "validation failed",
-			Data:    err,
+			Data:    validationErr,
 		})
 	}
 
-	comment, err := cc.CommentUseCase.Create(commentInput.ToDomain())
+	comment, err := cc.CommentUseCase.Create(commentInput.ToDomain(), image)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if strings.Contains(err.Error(), "failed to get") {
@@ -129,14 +163,47 @@ func (cc *CommentController) Update(c echo.Context) error {
 		})
 	}
 
+	var validationErr []helper.ValidationError
+	image, _ := c.FormFile("image")
+	if image != nil {
+		imageExt := filepath.Ext(image.Filename)
+		availableExt := []string{".jpg", ".jpeg", ".png"}
+
+		flagExt := false
+		for _, ext := range availableExt {
+			if imageExt == ext {
+				flagExt = true
+			}
+		}
+
+		if !flagExt {
+			validationErr = append(validationErr, helper.ValidationError{
+				Field:   "image",
+				Message: "This field must be a file with .jpg, .jpeg, or .png extension",
+			})
+		}
+
+		if image.Size > 10000000 {
+			validationErr = append(validationErr, helper.ValidationError{
+				Field:   "image",
+				Message: "This field must be a file with size less than 10 MB",
+			})
+		}
+	}
+
 	commentInput := request.Comment{}
 	c.Bind(&commentInput)
 
-	if err := commentInput.Validate(); err != nil {
+	inputErr := commentInput.Validate()
+	if inputErr != nil {
+		validationErr = append(validationErr, inputErr...)
+	}
+
+	if validationErr != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
 			Message: "validation failed",
-			Data:    err,
+			Data:    validationErr,
 		})
 	}
 
@@ -144,7 +211,7 @@ func (cc *CommentController) Update(c echo.Context) error {
 	commentDomain.Id = commentID
 	commentDomain.UserID = uid
 
-	comment, err := cc.CommentUseCase.Update(commentDomain)
+	comment, err := cc.CommentUseCase.Update(commentDomain, image)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if err.Error() == "failed to get comment" {

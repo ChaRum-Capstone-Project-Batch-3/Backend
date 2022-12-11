@@ -1,7 +1,7 @@
 package users
 
 import (
-	_cloudinary "charum/driver/cloudinary"
+	"charum/driver/cloudinary"
 	dtoPagination "charum/dto/pagination"
 	dtoQuery "charum/dto/query"
 	"charum/helper"
@@ -18,10 +18,10 @@ import (
 
 type UserUseCase struct {
 	userRepository Repository
-	cloudinary     _cloudinary.Function
+	cloudinary     cloudinary.Function
 }
 
-func NewUserUseCase(ur Repository, cld _cloudinary.Function) UseCase {
+func NewUserUseCase(ur Repository, cld cloudinary.Function) UseCase {
 	return &UserUseCase{
 		userRepository: ur,
 		cloudinary:     cld,
@@ -47,12 +47,12 @@ func (uu *UserUseCase) Register(domain *Domain, profilePicture *multipart.FileHe
 	encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte(domain.Password), bcrypt.DefaultCost)
 
 	if profilePicture != nil {
-		uploadResult, err := uu.cloudinary.Upload("profilePicture", profilePicture, helper.GenerateUUID())
+		cloudinaryURL, err := uu.cloudinary.Upload("profilePicture", profilePicture, helper.GenerateUUID())
 		if err != nil {
 			return Domain{}, "", errors.New("failed to upload profile picture")
 		}
 
-		domain.ProfilePictureURL = uploadResult
+		domain.ProfilePictureURL = cloudinaryURL
 	}
 
 	domain.Id = primitive.NewObjectID()
@@ -63,8 +63,14 @@ func (uu *UserUseCase) Register(domain *Domain, profilePicture *multipart.FileHe
 	domain.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
 
 	user, err := uu.userRepository.Create(domain)
-
 	if err != nil {
+		if domain.ProfilePictureURL != "" {
+			err = uu.cloudinary.Delete("profilePicture", helper.GetFilenameWithoutExtension(domain.ProfilePictureURL))
+			if err != nil {
+				return Domain{}, "", errors.New("failed to delete profile picture")
+			}
+		}
+
 		return Domain{}, "", errors.New("failed to register user")
 	}
 
@@ -167,12 +173,12 @@ func (uu *UserUseCase) Update(domain *Domain, profilePicture *multipart.FileHead
 			}
 		}
 
-		uploadResult, err := uu.cloudinary.Upload("profilePicture", profilePicture, helper.GenerateUUID())
+		cloudinaryURL, err := uu.cloudinary.Upload("profilePicture", profilePicture, helper.GenerateUUID())
 		if err != nil {
 			return Domain{}, errors.New("failed to upload profile picture")
 		}
 
-		user.ProfilePictureURL = uploadResult
+		user.ProfilePictureURL = cloudinaryURL
 	}
 
 	user.Email = domain.Email
