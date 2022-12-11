@@ -379,7 +379,21 @@ func (tu *ThreadUseCase) Delete(userID primitive.ObjectID, threadID primitive.Ob
 }
 
 func (tu *ThreadUseCase) DeleteAllByUserID(userID primitive.ObjectID) error {
-	err := tu.threadRepository.DeleteAllByUserID(userID)
+	threads, err := tu.threadRepository.GetAllByUserID(userID)
+	if err != nil {
+		return errors.New("failed to get user threads")
+	}
+
+	for _, thread := range threads {
+		if thread.ImageURL != "" {
+			err = tu.cloudinary.Delete("thread", helper.GetFilenameWithoutExtension(thread.ImageURL))
+			if err != nil {
+				return errors.New("failed to delete image")
+			}
+		}
+	}
+
+	err = tu.threadRepository.DeleteAllByUserID(userID)
 	if err != nil {
 		return errors.New("failed to delete user threads")
 	}
@@ -388,7 +402,19 @@ func (tu *ThreadUseCase) DeleteAllByUserID(userID primitive.ObjectID) error {
 }
 
 func (tu *ThreadUseCase) DeleteByThreadID(threadID primitive.ObjectID) error {
-	err := tu.threadRepository.Delete(threadID)
+	thread, err := tu.threadRepository.GetByID(threadID)
+	if err != nil {
+		return errors.New("failed to get thread")
+	}
+
+	if thread.ImageURL != "" {
+		err = tu.cloudinary.Delete("thread", helper.GetFilenameWithoutExtension(thread.ImageURL))
+		if err != nil {
+			return errors.New("failed to delete image")
+		}
+	}
+
+	err = tu.threadRepository.Delete(threadID)
 	if err != nil {
 		return errors.New("failed to delete thread")
 	}

@@ -223,7 +223,21 @@ func (cu *CommentUseCase) Delete(id primitive.ObjectID, userID primitive.ObjectI
 }
 
 func (cu *CommentUseCase) DeleteAllByUserID(userID primitive.ObjectID) error {
-	err := cu.commentRepository.DeleteAllByUserID(userID)
+	comments, err := cu.commentRepository.GetAllByUserID(userID)
+	if err != nil {
+		return errors.New("failed to get user's comments")
+	}
+
+	for _, comment := range comments {
+		if comment.ImageURL != "" {
+			err := cu.cloudinary.Delete("comment", helper.GetFilenameWithoutExtension(comment.ImageURL))
+			if err != nil {
+				return errors.New("failed to delete image")
+			}
+		}
+	}
+
+	err = cu.commentRepository.DeleteAllByUserID(userID)
 	if err != nil {
 		return errors.New("failed to delete user's comments")
 	}
@@ -232,7 +246,21 @@ func (cu *CommentUseCase) DeleteAllByUserID(userID primitive.ObjectID) error {
 }
 
 func (cu *CommentUseCase) DeleteAllByThreadID(threadID primitive.ObjectID) error {
-	err := cu.commentRepository.DeleteAllByThreadID(threadID)
+	comments, err := cu.commentRepository.GetByThreadID(threadID)
+	if err != nil {
+		return errors.New("failed to get thread's comments")
+	}
+
+	for _, comment := range comments {
+		if comment.ImageURL != "" {
+			err := cu.cloudinary.Delete("thread", helper.GetFilenameWithoutExtension(comment.ImageURL))
+			if err != nil {
+				return errors.New("failed to delete image")
+			}
+		}
+	}
+
+	err = cu.commentRepository.DeleteAllByThreadID(threadID)
 	if err != nil {
 		return errors.New("failed to delete thread's comments")
 	}

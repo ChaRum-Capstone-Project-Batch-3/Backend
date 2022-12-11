@@ -26,6 +26,7 @@ type Repository interface {
 	GetByThreadID(threadID primitive.ObjectID) ([]Domain, error)
 	CountByThreadID(threadID primitive.ObjectID) (int, error)
 	GetByIDAndThreadID(id primitive.ObjectID, threadID primitive.ObjectID) (Domain, error)
+	GetAllByUserID(userID primitive.ObjectID) ([]Domain, error)
 	// Update
 	Update(domain *Domain) (Domain, error)
 	// Delete
