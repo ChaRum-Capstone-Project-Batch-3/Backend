@@ -253,7 +253,7 @@ func (cu *CommentUseCase) DeleteAllByThreadID(threadID primitive.ObjectID) error
 
 	for _, comment := range comments {
 		if comment.ImageURL != "" {
-			err := cu.cloudinary.Delete("thread", helper.GetFilenameWithoutExtension(comment.ImageURL))
+			err := cu.cloudinary.Delete("comment", helper.GetFilenameWithoutExtension(comment.ImageURL))
 			if err != nil {
 				return errors.New("failed to delete image")
 			}

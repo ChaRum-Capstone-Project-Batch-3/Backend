@@ -68,6 +68,7 @@ func TestMain(m *testing.M) {
 				Timestamp: primitive.NewDateTimeFromTime(time.Now()),
 			},
 		},
+		ImageURL:  "image",
 		CreatedAt: primitive.NewDateTimeFromTime(time.Now()),
 		UpdatedAt: primitive.NewDateTimeFromTime(time.Now()),
 	}
@@ -107,6 +108,7 @@ func TestCreate(t *testing.T) {
 		topicRepository.On("GetByID", threadDomain.TopicID).Return(topics.Domain{}, nil).Once()
 		cloudinaryRepository.On("Upload", mock.Anything, mock.Anything, mock.Anything).Return("image", nil).Once()
 		threadRepository.On("Create", &threadDomain).Return(threads.Domain{}, expectedErr).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
 
 		result, err := threadUseCase.Create(&threadDomain, image)
 
@@ -118,6 +120,19 @@ func TestCreate(t *testing.T) {
 		expectedErr := errors.New("failed to upload image")
 		topicRepository.On("GetByID", threadDomain.TopicID).Return(topics.Domain{}, nil).Once()
 		cloudinaryRepository.On("Upload", mock.Anything, mock.Anything, mock.Anything).Return("", expectedErr).Once()
+
+		result, err := threadUseCase.Create(&threadDomain, image)
+
+		assert.Equal(t, threads.Domain{}, result)
+		assert.Equal(t, err, expectedErr)
+	})
+
+	t.Run("Test case 5 | Invalid create thread | Error when deleting image", func(t *testing.T) {
+		expectedErr := errors.New("failed to delete image")
+		topicRepository.On("GetByID", threadDomain.TopicID).Return(topics.Domain{}, nil).Once()
+		cloudinaryRepository.On("Upload", mock.Anything, mock.Anything, mock.Anything).Return("image", nil).Once()
+		threadRepository.On("Create", &threadDomain).Return(threads.Domain{}, errors.New("failed to create")).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(expectedErr).Once()
 
 		result, err := threadUseCase.Create(&threadDomain, image)
 
@@ -695,6 +710,8 @@ func TestDelete(t *testing.T) {
 
 func TestDeleteAllByUserID(t *testing.T) {
 	t.Run("Test case 1 | Valid delete all thread by user id", func(t *testing.T) {
+		threadRepository.On("GetAllByUserID", threadDomain.CreatorID).Return([]threads.Domain{threadDomain}, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
 		threadRepository.On("DeleteAllByUserID", mock.Anything).Return(nil).Once()
 
 		err := threadUseCase.DeleteAllByUserID(threadDomain.CreatorID)
@@ -704,7 +721,28 @@ func TestDeleteAllByUserID(t *testing.T) {
 
 	t.Run("Test case 2 | Invalid delete all thread by user id | Error when deleting thread by user id", func(t *testing.T) {
 		expectedErr := errors.New("failed to delete user threads")
+		threadRepository.On("GetAllByUserID", threadDomain.CreatorID).Return([]threads.Domain{threadDomain}, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
 		threadRepository.On("DeleteAllByUserID", mock.Anything).Return(expectedErr).Once()
+
+		err := threadUseCase.DeleteAllByUserID(threadDomain.CreatorID)
+
+		assert.Equal(t, expectedErr, err)
+	})
+
+	t.Run("Test case 3 | Invalid delete all thread by user id | Error when deleting image", func(t *testing.T) {
+		expectedErr := errors.New("failed to delete image")
+		threadRepository.On("GetAllByUserID", threadDomain.CreatorID).Return([]threads.Domain{threadDomain}, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(expectedErr).Once()
+
+		err := threadUseCase.DeleteAllByUserID(threadDomain.CreatorID)
+
+		assert.Equal(t, expectedErr, err)
+	})
+
+	t.Run("Test case 4 | Invalid delete all thread by user id | Error when getting thread by user id", func(t *testing.T) {
+		expectedErr := errors.New("failed to get user threads")
+		threadRepository.On("GetAllByUserID", threadDomain.CreatorID).Return([]threads.Domain{}, expectedErr).Once()
 
 		err := threadUseCase.DeleteAllByUserID(threadDomain.CreatorID)
 
@@ -714,6 +752,8 @@ func TestDeleteAllByUserID(t *testing.T) {
 
 func TestDeleteByThreadID(t *testing.T) {
 	t.Run("Test case 1 | Valid delete thread by thread id", func(t *testing.T) {
+		threadRepository.On("GetByID", threadDomain.Id).Return(threadDomain, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
 		threadRepository.On("Delete", mock.Anything).Return(nil).Once()
 
 		err := threadUseCase.DeleteByThreadID(threadDomain.Id)
@@ -723,7 +763,28 @@ func TestDeleteByThreadID(t *testing.T) {
 
 	t.Run("Test case 2 | Invalid delete thread by thread id | Error when deleting thread by thread id", func(t *testing.T) {
 		expectedErr := errors.New("failed to delete thread")
+		threadRepository.On("GetByID", threadDomain.Id).Return(threadDomain, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
 		threadRepository.On("Delete", mock.Anything).Return(expectedErr).Once()
+
+		err := threadUseCase.DeleteByThreadID(threadDomain.Id)
+
+		assert.Equal(t, expectedErr, err)
+	})
+
+	t.Run("Test case 3 | Invalid delete thread by thread id | Error when deleting image", func(t *testing.T) {
+		expectedErr := errors.New("failed to delete image")
+		threadRepository.On("GetByID", threadDomain.Id).Return(threadDomain, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(expectedErr).Once()
+
+		err := threadUseCase.DeleteByThreadID(threadDomain.Id)
+
+		assert.Equal(t, expectedErr, err)
+	})
+
+	t.Run("Test case 4 | Invalid delete thread by thread id | Error when getting thread by thread id", func(t *testing.T) {
+		expectedErr := errors.New("failed to get thread")
+		threadRepository.On("GetByID", threadDomain.Id).Return(threads.Domain{}, expectedErr).Once()
 
 		err := threadUseCase.DeleteByThreadID(threadDomain.Id)
 
@@ -746,6 +807,27 @@ func TestAdminDelete(t *testing.T) {
 	t.Run("Test case 2 | Invalid admin delete thread | Error when getting thread by id", func(t *testing.T) {
 		expectedErr := errors.New("failed to get thread")
 		threadRepository.On("GetByID", threadDomain.Id).Return(threads.Domain{}, expectedErr).Once()
+
+		_, err := threadUseCase.AdminDelete(threadDomain.Id)
+
+		assert.Equal(t, expectedErr, err)
+	})
+
+	t.Run("Test case 3 | Invalid admin delete thread | Error when deleting thread", func(t *testing.T) {
+		expectedErr := errors.New("failed to delete thread")
+		threadRepository.On("GetByID", threadDomain.Id).Return(threadDomain, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
+		threadRepository.On("Delete", mock.Anything).Return(expectedErr).Once()
+
+		_, err := threadUseCase.AdminDelete(threadDomain.Id)
+
+		assert.Equal(t, expectedErr, err)
+	})
+
+	t.Run("Test case 4 | Invalid admin delete thread | Error when deleting image", func(t *testing.T) {
+		expectedErr := errors.New("failed to delete image")
+		threadRepository.On("GetByID", threadDomain.Id).Return(threadDomain, nil).Once()
+		cloudinaryRepository.On("Delete", mock.Anything, mock.Anything).Return(expectedErr).Once()
 
 		_, err := threadUseCase.AdminDelete(threadDomain.Id)
 
