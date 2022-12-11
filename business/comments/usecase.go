@@ -3,8 +3,11 @@ package comments
 import (
 	"charum/business/threads"
 	"charum/business/users"
+	"charum/driver/cloudinary"
 	dtoComment "charum/dto/comments"
+	"charum/helper"
 	"errors"
+	"mime/multipart"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -14,13 +17,15 @@ type CommentUseCase struct {
 	commentRepository Repository
 	threadRepository  threads.Repository
 	userRepository    users.Repository
+	cloudinary        cloudinary.Function
 }
 
-func NewCommentUseCase(cr Repository, tr threads.Repository, ur users.Repository) UseCase {
+func NewCommentUseCase(cr Repository, tr threads.Repository, ur users.Repository, c cloudinary.Function) UseCase {
 	return &CommentUseCase{
 		commentRepository: cr,
 		threadRepository:  tr,
 		userRepository:    ur,
+		cloudinary:        c,
 	}
 }
 
@@ -28,7 +33,7 @@ func NewCommentUseCase(cr Repository, tr threads.Repository, ur users.Repository
 Create
 */
 
-func (cu *CommentUseCase) Create(domain *Domain) (Domain, error) {
+func (cu *CommentUseCase) Create(domain *Domain, image *multipart.FileHeader) (Domain, error) {
 	var err error
 	if domain.ParentID != primitive.NilObjectID {
 		_, err := cu.commentRepository.GetByIDAndThreadID(domain.ParentID, domain.ThreadID)
@@ -42,12 +47,28 @@ func (cu *CommentUseCase) Create(domain *Domain) (Domain, error) {
 		return Domain{}, errors.New("failed to get thread")
 	}
 
+	if image != nil {
+		cloudinaryURL, err := cu.cloudinary.Upload("comment", image, helper.GenerateUUID())
+		if err != nil {
+			return Domain{}, errors.New("failed to upload image")
+		}
+
+		domain.ImageURL = cloudinaryURL
+	}
+
 	domain.Id = primitive.NewObjectID()
 	domain.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
 	domain.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
 
 	comment, err := cu.commentRepository.Create(domain)
 	if err != nil {
+		if domain.ImageURL != "" {
+			err := cu.cloudinary.Delete("comment", helper.GetFilenameWithoutExtension(domain.ImageURL))
+			if err != nil {
+				return Domain{}, errors.New("failed to delete image")
+			}
+		}
+
 		return Domain{}, errors.New("failed to create comment")
 	}
 
@@ -85,6 +106,7 @@ func (cu *CommentUseCase) DomainToResponse(comment Domain) (dtoComment.Response,
 	responseComment.ParentID = comment.ParentID
 	responseComment.User = user
 	responseComment.Comment = comment.Comment
+	responseComment.ImageURL = comment.ImageURL
 	responseComment.CreatedAt = comment.CreatedAt
 	responseComment.UpdatedAt = comment.UpdatedAt
 
@@ -124,8 +146,8 @@ func (cu *CommentUseCase) CountByThreadID(threadID primitive.ObjectID) (int, err
 Update
 */
 
-func (cu *CommentUseCase) Update(domain *Domain) (Domain, error) {
-	comment, err := cu.commentRepository.GetByIDAndThreadID(domain.Id, domain.ThreadID)
+func (cu *CommentUseCase) Update(domain *Domain, image *multipart.FileHeader) (Domain, error) {
+	comment, err := cu.commentRepository.GetByID(domain.Id)
 	if err != nil {
 		return Domain{}, errors.New("failed to get comment")
 	}
@@ -137,6 +159,22 @@ func (cu *CommentUseCase) Update(domain *Domain) (Domain, error) {
 	_, err = cu.threadRepository.GetByID(comment.ThreadID)
 	if err != nil {
 		return Domain{}, errors.New("failed to get thread")
+	}
+
+	if image != nil {
+		if comment.ImageURL != "" {
+			err := cu.cloudinary.Delete("comment", helper.GetFilenameWithoutExtension(comment.ImageURL))
+			if err != nil {
+				return Domain{}, errors.New("failed to delete image")
+			}
+		}
+
+		cloudinaryURL, err := cu.cloudinary.Upload("comment", image, helper.GenerateUUID())
+		if err != nil {
+			return Domain{}, errors.New("failed to upload image")
+		}
+
+		comment.ImageURL = cloudinaryURL
 	}
 
 	comment.Comment = domain.Comment
@@ -169,6 +207,13 @@ func (cu *CommentUseCase) Delete(id primitive.ObjectID, userID primitive.ObjectI
 		return Domain{}, errors.New("failed to get thread")
 	}
 
+	if comment.ImageURL != "" {
+		err := cu.cloudinary.Delete("comment", helper.GetFilenameWithoutExtension(comment.ImageURL))
+		if err != nil {
+			return Domain{}, errors.New("failed to delete image")
+		}
+	}
+
 	err = cu.commentRepository.Delete(id)
 	if err != nil {
 		return Domain{}, errors.New("failed to delete comment")
@@ -178,7 +223,21 @@ func (cu *CommentUseCase) Delete(id primitive.ObjectID, userID primitive.ObjectI
 }
 
 func (cu *CommentUseCase) DeleteAllByUserID(userID primitive.ObjectID) error {
-	err := cu.commentRepository.DeleteAllByUserID(userID)
+	comments, err := cu.commentRepository.GetAllByUserID(userID)
+	if err != nil {
+		return errors.New("failed to get user's comments")
+	}
+
+	for _, comment := range comments {
+		if comment.ImageURL != "" {
+			err := cu.cloudinary.Delete("comment", helper.GetFilenameWithoutExtension(comment.ImageURL))
+			if err != nil {
+				return errors.New("failed to delete image")
+			}
+		}
+	}
+
+	err = cu.commentRepository.DeleteAllByUserID(userID)
 	if err != nil {
 		return errors.New("failed to delete user's comments")
 	}
@@ -187,7 +246,21 @@ func (cu *CommentUseCase) DeleteAllByUserID(userID primitive.ObjectID) error {
 }
 
 func (cu *CommentUseCase) DeleteAllByThreadID(threadID primitive.ObjectID) error {
-	err := cu.commentRepository.DeleteAllByThreadID(threadID)
+	comments, err := cu.commentRepository.GetByThreadID(threadID)
+	if err != nil {
+		return errors.New("failed to get thread's comments")
+	}
+
+	for _, comment := range comments {
+		if comment.ImageURL != "" {
+			err := cu.cloudinary.Delete("comment", helper.GetFilenameWithoutExtension(comment.ImageURL))
+			if err != nil {
+				return errors.New("failed to delete image")
+			}
+		}
+	}
+
+	err = cu.commentRepository.DeleteAllByThreadID(threadID)
 	if err != nil {
 		return errors.New("failed to delete thread's comments")
 	}

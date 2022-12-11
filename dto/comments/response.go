@@ -12,6 +12,7 @@ type Response struct {
 	ParentID  primitive.ObjectID `json:"parentID,omitempty"`
 	User      users.Domain       `json:"user"`
 	Comment   string             `json:"comment"`
+	ImageURL  string             `json:"imageURL,omitempty"`
 	CreatedAt primitive.DateTime `json:"createdAt"`
 	UpdatedAt primitive.DateTime `json:"updatedAt"`
 }

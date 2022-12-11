@@ -8,6 +8,8 @@ import (
 
 	mock "github.com/stretchr/testify/mock"
 
+	multipart "mime/multipart"
+
 	primitive "go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -37,20 +39,20 @@ func (_m *UseCase) CountByThreadID(threadID primitive.ObjectID) (int, error) {
 	return r0, r1
 }
 
-// Create provides a mock function with given fields: domain
-func (_m *UseCase) Create(domain *comments.Domain) (comments.Domain, error) {
-	ret := _m.Called(domain)
+// Create provides a mock function with given fields: domain, image
+func (_m *UseCase) Create(domain *comments.Domain, image *multipart.FileHeader) (comments.Domain, error) {
+	ret := _m.Called(domain, image)
 
 	var r0 comments.Domain
-	if rf, ok := ret.Get(0).(func(*comments.Domain) comments.Domain); ok {
-		r0 = rf(domain)
+	if rf, ok := ret.Get(0).(func(*comments.Domain, *multipart.FileHeader) comments.Domain); ok {
+		r0 = rf(domain, image)
 	} else {
 		r0 = ret.Get(0).(comments.Domain)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*comments.Domain) error); ok {
-		r1 = rf(domain)
+	if rf, ok := ret.Get(1).(func(*comments.Domain, *multipart.FileHeader) error); ok {
+		r1 = rf(domain, image)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -174,20 +176,20 @@ func (_m *UseCase) GetByThreadID(threadID primitive.ObjectID) ([]comments.Domain
 	return r0, r1
 }
 
-// Update provides a mock function with given fields: domain
-func (_m *UseCase) Update(domain *comments.Domain) (comments.Domain, error) {
-	ret := _m.Called(domain)
+// Update provides a mock function with given fields: domain, image
+func (_m *UseCase) Update(domain *comments.Domain, image *multipart.FileHeader) (comments.Domain, error) {
+	ret := _m.Called(domain, image)
 
 	var r0 comments.Domain
-	if rf, ok := ret.Get(0).(func(*comments.Domain) comments.Domain); ok {
-		r0 = rf(domain)
+	if rf, ok := ret.Get(0).(func(*comments.Domain, *multipart.FileHeader) comments.Domain); ok {
+		r0 = rf(domain, image)
 	} else {
 		r0 = ret.Get(0).(comments.Domain)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*comments.Domain) error); ok {
-		r1 = rf(domain)
+	if rf, ok := ret.Get(1).(func(*comments.Domain, *multipart.FileHeader) error); ok {
+		r1 = rf(domain, image)
 	} else {
 		r1 = ret.Error(1)
 	}

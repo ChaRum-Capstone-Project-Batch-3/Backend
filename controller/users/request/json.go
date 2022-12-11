@@ -11,12 +11,12 @@ import (
 )
 
 type Register struct {
-	Email       string `json:"email" validate:"required,email" bson:"email"`
-	UserName    string `json:"userName" validate:"required" bson:"userName"`
-	DisplayName string `json:"displayName" validate:"required" bson:"displayName"`
-	Biodata     string `json:"biodata" bson:"biodata"`
-	SocialMedia string `json:"socialMedia" bson:"socialMedia"`
-	Password    string `json:"password" validate:"required,min=8,containsany=ABCDEFGHIJKLMNOPQRSTUVWXYZ,containsany=!@#$%^&*,containsany=abcdefghijklmnopqrstuvwxyz,containsany=0123456789" bson:"password"`
+	Email       string `json:"email" validate:"required,email" bson:"email" form:"email"`
+	UserName    string `json:"userName" validate:"required" bson:"userName" form:"userName"`
+	DisplayName string `json:"displayName" validate:"required" bson:"displayName" form:"displayName"`
+	Biodata     string `json:"biodata" bson:"biodata" form:"biodata"`
+	SocialMedia string `json:"socialMedia" bson:"socialMedia" form:"socialMedia"`
+	Password    string `json:"password" validate:"required,min=8,containsany=ABCDEFGHIJKLMNOPQRSTUVWXYZ,containsany=!@#$%^&*,containsany=abcdefghijklmnopqrstuvwxyz,containsany=0123456789" bson:"password" form:"password"`
 }
 
 func (req *Register) ToDomain() *users.Domain {
@@ -62,8 +62,8 @@ func (req *Register) Validate() []helper.ValidationError {
 }
 
 type Login struct {
-	Key      string `json:"key" validate:"required" bson:"key"`
-	Password string `json:"password" validate:"required,min=8,containsany=ABCDEFGHIJKLMNOPQRSTUVWXYZ,containsany=!@#$%^&*,containsany=abcdefghijklmnopqrstuvwxyz,containsany=0123456789" bson:"password"`
+	Key      string `json:"key" validate:"required" bson:"key" form:"key"`
+	Password string `json:"password" validate:"required,min=8,containsany=ABCDEFGHIJKLMNOPQRSTUVWXYZ,containsany=!@#$%^&*,containsany=abcdefghijklmnopqrstuvwxyz,containsany=0123456789" bson:"password" form:"password"`
 }
 
 func (req *Login) ToDomain() *users.Domain {
@@ -105,11 +105,11 @@ func (req *Login) Validate() []helper.ValidationError {
 }
 
 type Update struct {
-	Email       string `json:"email" validate:"required,email" bson:"email"`
-	UserName    string `json:"userName" validate:"required" bson:"userName"`
-	DisplayName string `json:"displayName" validate:"required" bson:"displayName"`
-	Biodata     string `json:"biodata" bson:"biodata"`
-	SocialMedia string `json:"socialMedia" bson:"socialMedia"`
+	Email       string `json:"email" validate:"required,email" bson:"email" form:"email"`
+	UserName    string `json:"userName" validate:"required" bson:"userName"  form:"userName"`
+	DisplayName string `json:"displayName" validate:"required" bson:"displayName"  form:"displayName"`
+	Biodata     string `json:"biodata" bson:"biodata"  form:"Biodata"`
+	SocialMedia string `json:"socialMedia" bson:"socialMedia"  form:"socialMedia"`
 }
 
 func (req *Update) ToDomain() *users.Domain {

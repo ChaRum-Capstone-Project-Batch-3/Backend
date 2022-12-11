@@ -114,6 +114,25 @@ func (cr *commentRepository) GetByIDAndThreadID(id primitive.ObjectID, threadID 
 	return result.ToDomain(), nil
 }
 
+func (cr *commentRepository) GetAllByUserID(userID primitive.ObjectID) ([]comments.Domain, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	var result []Model
+	cursor, err := cr.collection.Find(ctx, bson.M{
+		"userID": userID,
+	})
+	if err != nil {
+		return []comments.Domain{}, err
+	}
+
+	if err = cursor.All(ctx, &result); err != nil {
+		return []comments.Domain{}, err
+	}
+
+	return ToDomainArray(result), nil
+}
+
 /*
 Update
 */
