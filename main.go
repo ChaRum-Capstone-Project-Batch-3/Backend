@@ -30,6 +30,8 @@ import (
 	_bookmarkUseCase "charum/business/bookmarks"
 	_bookmarkController "charum/controller/bookmarks"
 
+	_forgotPasswordUseCase "charum/business/forgot_password"
+	_forgotPasswordController "charum/controller/forgot_password"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -46,29 +48,33 @@ func main() {
 	commentRepository := _driver.NewCommentRepository(database)
 	followThreadRepository := _driver.NewFollowThreadRepository(database)
 	bookmarkRepository := _driver.NewBookmarkRepository(database)
+	forgotPasswordRepository := _driver.NewForgotPasswordRepository(database)
 
 	userUsecase := _userUseCase.NewUserUseCase(userRepository, cloudinary)
 	topicUsecase := _topicUseCase.NewTopicUseCase(topicRepository, cloudinary)
 	threadUsecase := _threadUseCase.NewThreadUseCase(threadRepository, topicRepository, userRepository, cloudinary)
 	commentUsecase := _commentUseCase.NewCommentUseCase(commentRepository, threadRepository, userRepository, cloudinary)
 	followThreadUsecase := _followThreadUseCase.NewFollowThreadUseCase(followThreadRepository, userRepository, threadRepository, commentRepository, threadUsecase)
-	bookmarkUsecase := _bookmarkUseCase.NewBookmarkUseCase(bookmarkRepository, threadRepository, userRepository, topicRepository, threadUsecase)
+	bookmarkUsecase := _bookmarkUseCase.NewBookmarkUseCase(bookmarkRepository, threadRepository, userRepository, topicRepository)
+	forgotPasswordUseCase := _forgotPasswordUseCase.NewForgotPasswordUseCase(forgotPasswordRepository, userRepository)
 
 	userController := _userController.NewUserController(userUsecase, threadUsecase, commentUsecase, followThreadUsecase, bookmarkUsecase)
 	topicController := _topicController.NewTopicController(topicUsecase, threadUsecase, commentUsecase, followThreadUsecase, bookmarkUsecase)
 	threadController := _threadController.NewThreadController(threadUsecase, commentUsecase, followThreadUsecase, userUsecase, bookmarkUsecase)
 	commentController := _commentController.NewCommentController(commentUsecase, followThreadUsecase)
+	forgotPasswordController := _forgotPasswordController.NewForgotPasswordController(forgotPasswordUseCase, userUsecase)
 	followThreadController := _followThreadController.NewFollowThreadController(followThreadUsecase, bookmarkUsecase)
 	bookmarkController := _bookmarkController.NewBookmarkController(bookmarkUsecase, followThreadUsecase, commentUsecase)
 
 	routeController := _route.ControllerList{
-		UserRepository:         userRepository,
-		UserController:         userController,
-		TopicController:        topicController,
-		ThreadController:       threadController,
-		CommentController:      commentController,
-		FollowThreadController: followThreadController,
-		BookmarkController:     bookmarkController,
+		UserRepository:           userRepository,
+		UserController:           userController,
+		TopicController:          topicController,
+		ThreadController:         threadController,
+		CommentController:        commentController,
+		FollowThreadController:   followThreadController,
+		BookmarkController:       bookmarkController,
+		ForgotPasswordController: forgotPasswordController,
 	}
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{

@@ -6,6 +6,7 @@ import (
 	_bookmarkController "charum/controller/bookmarks"
 	"charum/controller/comments"
 	followThreads "charum/controller/follow_threads"
+	"charum/controller/forgot_password"
 	"charum/controller/threads"
 	"charum/controller/topics"
 	"charum/controller/users"
@@ -15,14 +16,15 @@ import (
 )
 
 type ControllerList struct {
-	LoggerMiddleware       echo.MiddlewareFunc
-	UserRepository         _usersDomain.Repository
-	UserController         *users.UserController
-	TopicController        *topics.TopicController
-	ThreadController       *threads.ThreadController
-	CommentController      *comments.CommentController
-	FollowThreadController *followThreads.FollowThreadController
-	BookmarkController     *_bookmarkController.BookmarkController
+	LoggerMiddleware         echo.MiddlewareFunc
+	UserRepository           _usersDomain.Repository
+	UserController           *users.UserController
+	TopicController          *topics.TopicController
+	ThreadController         *threads.ThreadController
+	CommentController        *comments.CommentController
+	FollowThreadController   *followThreads.FollowThreadController
+	BookmarkController       *_bookmarkController.BookmarkController
+	ForgotPasswordController *forgot_password.ForgotPasswordController
 }
 
 func (cl *ControllerList) Init(e *echo.Echo) {
@@ -41,6 +43,8 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	user := apiV1.Group("/user")
 	user.POST("/register", cl.UserController.Register)
 	user.POST("/login", cl.UserController.Login)
+	user.POST("/forgot-password", cl.ForgotPasswordController.Generate)
+	user.PATCH("/forgot-password/:token", cl.ForgotPasswordController.Update)
 	user.GET("/profile", cl.UserController.GetProfile, authMiddleware.Check)
 	user.PUT("/profile", cl.UserController.UserUpdate, authMiddleware.Check)
 	user.PUT("/change-password", cl.UserController.UpdatePassword, authMiddleware.Check)
