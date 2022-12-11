@@ -8,7 +8,6 @@ import (
 	"charum/business/topics"
 	"charum/controller/topics/request"
 	"charum/controller/topics/response"
-	"charum/driver/cloudinary"
 	dtoPagination "charum/dto/pagination"
 	"charum/helper"
 	"errors"
@@ -26,17 +25,15 @@ type TopicController struct {
 	CommentUseCase      comments.UseCase
 	FollowThreadUseCase followThreads.UseCase
 	bookmarkUseCase     bookmarks.UseCase
-	cloudinary          cloudinary.Function
 }
 
-func NewTopicController(topicUC topics.UseCase, threadUC threads.UseCase, commentUC comments.UseCase, followThreadUC followThreads.UseCase, bookmarkUC bookmarks.UseCase, cloudinary cloudinary.Function) *TopicController {
+func NewTopicController(topicUC topics.UseCase, threadUC threads.UseCase, commentUC comments.UseCase, followThreadUC followThreads.UseCase, bookmarkUC bookmarks.UseCase) *TopicController {
 	return &TopicController{
 		TopicUseCase:        topicUC,
 		ThreadUseCase:       threadUC,
 		CommentUseCase:      commentUC,
 		FollowThreadUseCase: followThreadUC,
 		bookmarkUseCase:     bookmarkUC,
-		cloudinary:          cloudinary,
 	}
 }
 
