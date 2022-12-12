@@ -58,8 +58,8 @@ type UseCase interface {
 	GetAllByTopicID(topicID primitive.ObjectID) ([]Domain, error)
 	GetAllByUserID(userID primitive.ObjectID) ([]Domain, error)
 	GetLikedByUserID(userID primitive.ObjectID) ([]Domain, error)
-	DomainToResponse(domain Domain) (dtoThread.Response, error)
-	DomainsToResponseArray(domains []Domain) ([]dtoThread.Response, error)
+	DomainToResponse(domain Domain, userID primitive.ObjectID) (dtoThread.Response, error)
+	DomainsToResponseArray(domains []Domain, userID primitive.ObjectID) ([]dtoThread.Response, error)
 	// Update
 	UserUpdate(domain *Domain, image *multipart.FileHeader) (Domain, error)
 	AdminUpdate(domain *Domain, image *multipart.FileHeader) (Domain, error)

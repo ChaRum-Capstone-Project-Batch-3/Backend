@@ -33,8 +33,9 @@ type UseCase interface {
 	// Read
 	GetAllByUserID(userID primitive.ObjectID) ([]Domain, error)
 	CountByThreadID(threadID primitive.ObjectID) (int, error)
-	DomainToResponse(domain Domain) (bookmarks.Response, error)
-	DomainsToResponseArray(domains []Domain) ([]bookmarks.Response, error)
+	CheckBookmarkedThread(userID primitive.ObjectID, threadID primitive.ObjectID) (bool, error)
+	DomainToResponse(domain Domain, userID primitive.ObjectID) (bookmarks.Response, error)
+	DomainsToResponseArray(domains []Domain, userID primitive.ObjectID) ([]bookmarks.Response, error)
 	// Delete
 	Delete(domain *Domain) (Domain, error)
 	DeleteAllByUserID(userID primitive.ObjectID) error
