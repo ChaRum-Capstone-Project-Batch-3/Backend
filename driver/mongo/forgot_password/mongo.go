@@ -73,10 +73,7 @@ func (fr *forgotPasswordRepository) Update(domain *forgot_password.Domain) (forg
 	_, err := fr.collection.UpdateOne(ctx, bson.M{
 		"_id": domain.Id,
 	}, bson.M{
-		"$set": bson.M{
-			"updatedAt": domain.UpdatedAt,
-			"isUsed":    domain.IsUsed,
-		},
+		"$set": FromDomain(domain),
 	})
 	if err != nil {
 		return forgot_password.Domain{}, err

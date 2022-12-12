@@ -48,9 +48,9 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	user.GET("/profile", cl.UserController.GetProfile, authMiddleware.Check)
 	user.PUT("/profile", cl.UserController.UserUpdate, authMiddleware.Check)
 	user.PUT("/change-password", cl.UserController.UpdatePassword, authMiddleware.Check)
-	user.POST("/bookmark/:thread_id", cl.BookmarkController.AddBookmark, authMiddleware.Check)
-	user.GET("/bookmark", cl.BookmarkController.GetAllBookmark, authMiddleware.Check)
-	user.DELETE("/bookmark/:thread_id", cl.BookmarkController.DeleteBookmark, authMiddleware.Check)
+	user.POST("/bookmark/:thread_id", cl.BookmarkController.Create, authMiddleware.Check)
+	user.GET("/bookmark", cl.BookmarkController.GetAllByToken, authMiddleware.Check)
+	user.DELETE("/bookmark/:thread_id", cl.BookmarkController.Delete, authMiddleware.Check)
 
 	topic := apiV1.Group("/topic")
 	topic.GET("/:page", cl.TopicController.GetManyWithPagination)

@@ -55,7 +55,7 @@ func main() {
 	threadUsecase := _threadUseCase.NewThreadUseCase(threadRepository, topicRepository, userRepository, cloudinary)
 	commentUsecase := _commentUseCase.NewCommentUseCase(commentRepository, threadRepository, userRepository, cloudinary)
 	followThreadUsecase := _followThreadUseCase.NewFollowThreadUseCase(followThreadRepository, userRepository, threadRepository, commentRepository, threadUsecase)
-	bookmarkUsecase := _bookmarkUseCase.NewBookmarkUseCase(bookmarkRepository, threadRepository, userRepository, topicRepository)
+	bookmarkUsecase := _bookmarkUseCase.NewBookmarkUseCase(bookmarkRepository, threadRepository, userRepository, topicRepository, threadUsecase)
 	forgotPasswordUseCase := _forgotPasswordUseCase.NewForgotPasswordUseCase(forgotPasswordRepository, userRepository)
 
 	userController := _userController.NewUserController(userUsecase, threadUsecase, commentUsecase, followThreadUsecase, bookmarkUsecase)

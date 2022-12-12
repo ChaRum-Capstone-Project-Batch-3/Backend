@@ -6,13 +6,13 @@ import (
 )
 
 type Model struct {
-	Id        primitive.ObjectID `bson:"_id" json:"id"`
-	Email     string             `json:"email"`
-	Token     string             `json:"token"`
-	CreatedAt primitive.DateTime `json:"createdAt"`
-	UpdatedAt primitive.DateTime `json:"updatedAt"`
-	ExpiredAt primitive.DateTime `json:"expiredAt"`
-	IsUsed    bool               `json:"isUsed"`
+	Id        primitive.ObjectID `json:"_id" bson:"_id"`
+	Email     string             `json:"email" bson:"email"`
+	Token     string             `json:"token" bson:"token"`
+	CreatedAt primitive.DateTime `json:"createdAt" bson:"createdAt"`
+	UpdatedAt primitive.DateTime `json:"updatedAt" bson:"updatedAt"`
+	ExpiredAt primitive.DateTime `json:"expiredAt" bson:"expiredAt"`
+	IsUsed    bool               `json:"isUsed" bson:"isUsed"`
 }
 
 func FromDomain(domain *forgot_password.Domain) *Model {
