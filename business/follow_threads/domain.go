@@ -37,10 +37,10 @@ type UseCase interface {
 	Create(domain *Domain) (Domain, error)
 	// Read
 	GetAllByUserID(userID primitive.ObjectID) ([]Domain, error)
-	DomainToResponse(domain Domain) (dtoFollowThread.Response, error)
-	DomainToResponseArray(domain []Domain) ([]dtoFollowThread.Response, error)
-	CountByThreadID(threadID primitive.ObjectID) (int, error)
+	DomainToResponse(domain Domain, userID primitive.ObjectID) (dtoFollowThread.Response, error)
+	DomainToResponseArray(domains []Domain, userID primitive.ObjectID) ([]dtoFollowThread.Response, error)
 	CheckFollowedThread(userID primitive.ObjectID, threadID primitive.ObjectID) (bool, error)
+	CountByThreadID(threadID primitive.ObjectID) (int, error)
 	// Update
 	UpdateNotification(threadID primitive.ObjectID) error
 	ResetNotification(threadID primitive.ObjectID, userID primitive.ObjectID) error
