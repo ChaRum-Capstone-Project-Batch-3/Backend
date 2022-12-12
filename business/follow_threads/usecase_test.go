@@ -204,14 +204,34 @@ func TestCountByThreadID(t *testing.T) {
 	})
 }
 
+func TestCheckFollowedThread(t *testing.T) {
+	t.Run("Test Case 1 | Valid Check Followed Thread", func(t *testing.T) {
+		followThreadRepositoryMock.On("GetByUserIDAndThreadID", followThreadDomain.UserID, followThreadDomain.ThreadID).Return(followThreadDomain, nil).Once()
+
+		result, err := followThreadUseCase.CheckFollowedThread(followThreadDomain.UserID, followThreadDomain.ThreadID)
+
+		assert.Nil(t, err)
+		assert.NotEmpty(t, result)
+	})
+
+	t.Run("Test Case 2 | Invalid Check Followed Thread | Repository Error", func(t *testing.T) {
+		followThreadRepositoryMock.On("GetByUserIDAndThreadID", followThreadDomain.UserID, followThreadDomain.ThreadID).Return(followThreads.Domain{}, errors.New("unexpected error")).Once()
+
+		result, err := followThreadUseCase.CheckFollowedThread(followThreadDomain.UserID, followThreadDomain.ThreadID)
+
+		assert.Nil(t, err)
+		assert.Equal(t, result, false)
+	})
+}
+
 func TestDomainToResponse(t *testing.T) {
 	t.Run("Test Case 1 | Valid Domain To Response", func(t *testing.T) {
 		userRepositoryMock.On("GetByID", followThreadDomain.UserID).Return(userDomain, nil).Once()
 		threadRepositoryMock.On("GetByID", followThreadDomain.ThreadID).Return(threadDomain, nil).Once()
-		threadUseCaseMock.On("DomainToResponse", mock.Anything).Return(responseThread, nil).Once()
+		threadUseCaseMock.On("DomainToResponse", mock.Anything, mock.Anything).Return(responseThread, nil).Once()
 		commentRepositoryMock.On("CountByThreadID", followThreadDomain.ThreadID).Return(1, nil).Once()
 
-		result, err := followThreadUseCase.DomainToResponse(followThreadDomain)
+		result, err := followThreadUseCase.DomainToResponse(followThreadDomain, userDomain.Id)
 
 		assert.Nil(t, err)
 		assert.NotEmpty(t, result)
@@ -220,7 +240,7 @@ func TestDomainToResponse(t *testing.T) {
 	t.Run("Test Case 2 | Invalid Domain To Response | User Not Found", func(t *testing.T) {
 		userRepositoryMock.On("GetByID", followThreadDomain.UserID).Return(users.Domain{}, errors.New("not found")).Once()
 
-		result, err := followThreadUseCase.DomainToResponse(followThreadDomain)
+		result, err := followThreadUseCase.DomainToResponse(followThreadDomain, userDomain.Id)
 
 		assert.NotNil(t, err)
 		assert.Equal(t, result, dtoFollowThread.Response{})
@@ -230,7 +250,7 @@ func TestDomainToResponse(t *testing.T) {
 		userRepositoryMock.On("GetByID", followThreadDomain.UserID).Return(userDomain, nil).Once()
 		threadRepositoryMock.On("GetByID", followThreadDomain.ThreadID).Return(threads.Domain{}, errors.New("not found")).Once()
 
-		result, err := followThreadUseCase.DomainToResponse(followThreadDomain)
+		result, err := followThreadUseCase.DomainToResponse(followThreadDomain, userDomain.Id)
 
 		assert.NotNil(t, err)
 		assert.Equal(t, result, dtoFollowThread.Response{})
@@ -239,10 +259,10 @@ func TestDomainToResponse(t *testing.T) {
 	t.Run("Test Case 4 | Invalid Domain To Response | Comment Count Error", func(t *testing.T) {
 		userRepositoryMock.On("GetByID", followThreadDomain.UserID).Return(userDomain, nil).Once()
 		threadRepositoryMock.On("GetByID", followThreadDomain.ThreadID).Return(threadDomain, nil).Once()
-		threadUseCaseMock.On("DomainToResponse", mock.Anything).Return(responseThread, nil).Once()
+		threadUseCaseMock.On("DomainToResponse", mock.Anything, mock.Anything).Return(responseThread, nil).Once()
 		commentRepositoryMock.On("CountByThreadID", followThreadDomain.ThreadID).Return(0, errors.New("unexpected error")).Once()
 
-		result, err := followThreadUseCase.DomainToResponse(followThreadDomain)
+		result, err := followThreadUseCase.DomainToResponse(followThreadDomain, userDomain.Id)
 
 		assert.NotNil(t, err)
 		assert.Equal(t, result, dtoFollowThread.Response{})
@@ -251,9 +271,9 @@ func TestDomainToResponse(t *testing.T) {
 	t.Run("Test Case 5 | Invalid Domain To Response | Thread Use Case Error", func(t *testing.T) {
 		userRepositoryMock.On("GetByID", followThreadDomain.UserID).Return(userDomain, nil).Once()
 		threadRepositoryMock.On("GetByID", followThreadDomain.ThreadID).Return(threadDomain, nil).Once()
-		threadUseCaseMock.On("DomainToResponse", mock.Anything).Return(dtoThreads.Response{}, errors.New("unexpected error")).Once()
+		threadUseCaseMock.On("DomainToResponse", mock.Anything, mock.Anything).Return(dtoThreads.Response{}, errors.New("unexpected error")).Once()
 
-		result, err := followThreadUseCase.DomainToResponse(followThreadDomain)
+		result, err := followThreadUseCase.DomainToResponse(followThreadDomain, userDomain.Id)
 
 		assert.NotNil(t, err)
 		assert.Equal(t, result, dtoFollowThread.Response{})
@@ -264,10 +284,10 @@ func TestDomainToResponseArray(t *testing.T) {
 	t.Run("Test Case 1 | Valid Domain To Response Array", func(t *testing.T) {
 		userRepositoryMock.On("GetByID", followThreadDomain.UserID).Return(userDomain, nil).Once()
 		threadRepositoryMock.On("GetByID", followThreadDomain.ThreadID).Return(threadDomain, nil).Once()
-		threadUseCaseMock.On("DomainToResponse", mock.Anything).Return(responseThread, nil).Once()
+		threadUseCaseMock.On("DomainToResponse", mock.Anything, mock.Anything).Return(responseThread, nil).Once()
 		commentRepositoryMock.On("CountByThreadID", followThreadDomain.ThreadID).Return(1, nil).Once()
 
-		result, err := followThreadUseCase.DomainToResponseArray([]followThreads.Domain{followThreadDomain})
+		result, err := followThreadUseCase.DomainToResponseArray([]followThreads.Domain{followThreadDomain}, userDomain.Id)
 
 		assert.Nil(t, err)
 		assert.NotEmpty(t, result)
@@ -276,7 +296,7 @@ func TestDomainToResponseArray(t *testing.T) {
 	t.Run("Test Case 2 | Invalid Domain To Response Array | User Not Found", func(t *testing.T) {
 		userRepositoryMock.On("GetByID", followThreadDomain.UserID).Return(users.Domain{}, errors.New("not found")).Once()
 
-		result, err := followThreadUseCase.DomainToResponseArray([]followThreads.Domain{followThreadDomain})
+		result, err := followThreadUseCase.DomainToResponseArray([]followThreads.Domain{followThreadDomain}, userDomain.Id)
 
 		assert.NotNil(t, err)
 		assert.Equal(t, result, []dtoFollowThread.Response{})
@@ -286,7 +306,7 @@ func TestDomainToResponseArray(t *testing.T) {
 		userRepositoryMock.On("GetByID", followThreadDomain.UserID).Return(userDomain, nil).Once()
 		threadRepositoryMock.On("GetByID", followThreadDomain.ThreadID).Return(threads.Domain{}, errors.New("not found")).Once()
 
-		result, err := followThreadUseCase.DomainToResponseArray([]followThreads.Domain{followThreadDomain})
+		result, err := followThreadUseCase.DomainToResponseArray([]followThreads.Domain{followThreadDomain}, userDomain.Id)
 
 		assert.NotNil(t, err)
 		assert.Equal(t, result, []dtoFollowThread.Response{})
@@ -295,10 +315,10 @@ func TestDomainToResponseArray(t *testing.T) {
 	t.Run("Test Case 4 | Invalid Domain To Response Array | Comment Count Error", func(t *testing.T) {
 		userRepositoryMock.On("GetByID", followThreadDomain.UserID).Return(userDomain, nil).Once()
 		threadRepositoryMock.On("GetByID", followThreadDomain.ThreadID).Return(threadDomain, nil).Once()
-		threadUseCaseMock.On("DomainToResponse", mock.Anything).Return(responseThread, nil).Once()
+		threadUseCaseMock.On("DomainToResponse", mock.Anything, mock.Anything).Return(responseThread, nil).Once()
 		commentRepositoryMock.On("CountByThreadID", followThreadDomain.ThreadID).Return(0, errors.New("unexpected error")).Once()
 
-		result, err := followThreadUseCase.DomainToResponseArray([]followThreads.Domain{followThreadDomain})
+		result, err := followThreadUseCase.DomainToResponseArray([]followThreads.Domain{followThreadDomain}, userDomain.Id)
 
 		assert.NotNil(t, err)
 		assert.Equal(t, result, []dtoFollowThread.Response{})

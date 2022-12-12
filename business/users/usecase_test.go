@@ -140,7 +140,7 @@ func TestLogin(t *testing.T) {
 		copyDomain.Password = string(encryptedPassword)
 		userRepository.On("GetByEmail", copyDomain.Email).Return(copyDomain, nil).Once()
 
-		actualUser, token, err := userUseCase.Login(copyDomain.UserName, copyDomain.Password)
+		actualUser, token, err := userUseCase.Login(copyDomain.Email, userDomain.Password)
 
 		assert.NotNil(t, actualUser)
 		assert.NotEmpty(t, token)
