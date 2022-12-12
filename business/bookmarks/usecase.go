@@ -82,13 +82,27 @@ func (bu *BookmarkUseCase) CountByThreadID(threadID primitive.ObjectID) (int, er
 	return result, nil
 }
 
-func (bu *BookmarkUseCase) DomainToResponse(domain Domain) (dtoBookmark.Response, error) {
+func (bu *BookmarkUseCase) CheckBookmarkedThread(userID primitive.ObjectID, threadID primitive.ObjectID) (bool, error) {
+	_, err := bu.threadRepository.GetByID(threadID)
+	if err != nil {
+		return false, errors.New("failed to get thread")
+	}
+
+	_, err = bu.bookmarkRepository.GetByUserIDAndThreadID(userID, threadID)
+	if err != nil {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (bu *BookmarkUseCase) DomainToResponse(domain Domain, userID primitive.ObjectID) (dtoBookmark.Response, error) {
 	thread, err := bu.threadRepository.GetByID(domain.ThreadID)
 	if err != nil {
 		return dtoBookmark.Response{}, errors.New("failed to get bookmark")
 	}
 
-	responseThread, err := bu.threadUseCase.DomainToResponse(thread)
+	responseThread, err := bu.threadUseCase.DomainToResponse(thread, userID)
 	if err != nil {
 		return dtoBookmark.Response{}, errors.New("failed to get bookmark")
 	}
@@ -102,10 +116,10 @@ func (bu *BookmarkUseCase) DomainToResponse(domain Domain) (dtoBookmark.Response
 	return responseBookmark, nil
 }
 
-func (bu *BookmarkUseCase) DomainsToResponseArray(domains []Domain) ([]dtoBookmark.Response, error) {
+func (bu *BookmarkUseCase) DomainsToResponseArray(domains []Domain, userID primitive.ObjectID) ([]dtoBookmark.Response, error) {
 	var responses []dtoBookmark.Response
 	for _, domain := range domains {
-		response, err := bu.DomainToResponse(domain)
+		response, err := bu.DomainToResponse(domain, userID)
 		if err != nil {
 			return []dtoBookmark.Response{}, errors.New("failed to get bookmark")
 		}

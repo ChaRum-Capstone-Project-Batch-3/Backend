@@ -40,6 +40,7 @@ type UseCase interface {
 	DomainToResponse(domain Domain) (dtoFollowThread.Response, error)
 	DomainToResponseArray(domain []Domain) ([]dtoFollowThread.Response, error)
 	CountByThreadID(threadID primitive.ObjectID) (int, error)
+	CheckFollowedThread(userID primitive.ObjectID, threadID primitive.ObjectID) (bool, error)
 	// Update
 	UpdateNotification(threadID primitive.ObjectID) error
 	ResetNotification(threadID primitive.ObjectID, userID primitive.ObjectID) error

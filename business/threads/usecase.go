@@ -145,7 +145,7 @@ func (tu *ThreadUseCase) GetLikedByUserID(userID primitive.ObjectID) ([]Domain, 
 	return threads, nil
 }
 
-func (tu *ThreadUseCase) DomainToResponse(domain Domain) (dtoThread.Response, error) {
+func (tu *ThreadUseCase) DomainToResponse(domain Domain, userID primitive.ObjectID) (dtoThread.Response, error) {
 	creator, err := tu.userRepository.GetByID(domain.CreatorID)
 	if err != nil {
 		return dtoThread.Response{}, errors.New("failed to get creator")
@@ -169,6 +169,17 @@ func (tu *ThreadUseCase) DomainToResponse(domain Domain) (dtoThread.Response, er
 		})
 	}
 
+	isLiked := false
+
+	if userID != primitive.NilObjectID {
+		for _, like := range domain.Likes {
+			if like.UserID == userID {
+				isLiked = true
+				break
+			}
+		}
+	}
+
 	return dtoThread.Response{
 		Id:            domain.Id,
 		Topic:         topic,
@@ -177,6 +188,9 @@ func (tu *ThreadUseCase) DomainToResponse(domain Domain) (dtoThread.Response, er
 		Description:   domain.Description,
 		Likes:         likes,
 		TotalLike:     len(domain.Likes),
+		IsLiked:       isLiked,
+		IsBookmarked:  false,
+		IsFollowed:    false,
 		ImageURL:      domain.ImageURL,
 		SuspendStatus: domain.SuspendStatus,
 		SuspendDetail: domain.SuspendDetail,
@@ -185,10 +199,10 @@ func (tu *ThreadUseCase) DomainToResponse(domain Domain) (dtoThread.Response, er
 	}, nil
 }
 
-func (tu *ThreadUseCase) DomainsToResponseArray(domains []Domain) ([]dtoThread.Response, error) {
+func (tu *ThreadUseCase) DomainsToResponseArray(domains []Domain, userID primitive.ObjectID) ([]dtoThread.Response, error) {
 	var responses []dtoThread.Response
 	for _, domain := range domains {
-		response, err := tu.DomainToResponse(domain)
+		response, err := tu.DomainToResponse(domain, userID)
 		if err != nil {
 			return []dtoThread.Response{}, errors.New("failed to get thread")
 		}

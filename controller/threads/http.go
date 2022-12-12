@@ -8,6 +8,7 @@ import (
 	"charum/business/users"
 	"charum/controller/threads/request"
 	dtoPagination "charum/dto/pagination"
+	dtoThread "charum/dto/threads"
 	"charum/helper"
 	"charum/util"
 	"net/http"
@@ -120,7 +121,7 @@ func (tc *ThreadController) Create(c echo.Context) error {
 		})
 	}
 
-	responseThread, err := tc.threadUseCase.DomainToResponse(result)
+	responseThread, err := tc.threadUseCase.DomainToResponse(result, userID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,
@@ -242,18 +243,10 @@ func (tc *ThreadController) GetManyWithPagination(c echo.Context) error {
 		})
 	}
 
-	responseThreads, err := tc.threadUseCase.DomainsToResponseArray(threads)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
-			Status:     http.StatusInternalServerError,
-			Message:    err.Error(),
-			Data:       nil,
-			Pagination: helper.Page{},
-		})
-	}
-
-	for i, thread := range responseThreads {
-		responseThreads[i].TotalFollow, err = tc.followThreadUseCase.CountByThreadID(thread.Id)
+	var responseThreads []dtoThread.Response
+	uid, err := util.GetUIDFromToken(c)
+	if err == nil {
+		responseThreads, err = tc.threadUseCase.DomainsToResponseArray(threads, uid)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
 				Status:     http.StatusInternalServerError,
@@ -263,7 +256,57 @@ func (tc *ThreadController) GetManyWithPagination(c echo.Context) error {
 			})
 		}
 
-		responseThreads[i].TotalComment, err = tc.commentUseCase.CountByThreadID(thread.Id)
+		for i, thread := range responseThreads {
+			responseThreads[i].IsFollowed, err = tc.followThreadUseCase.CheckFollowedThread(uid, thread.Id)
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+					Status:  http.StatusInternalServerError,
+					Message: err.Error(),
+					Data:    nil,
+				})
+			}
+
+			responseThreads[i].IsBookmarked, err = tc.bookmarkUseCase.CheckBookmarkedThread(uid, thread.Id)
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+					Status:  http.StatusInternalServerError,
+					Message: err.Error(),
+					Data:    nil,
+				})
+			}
+
+			responseThreads[i].TotalFollow, err = tc.followThreadUseCase.CountByThreadID(thread.Id)
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
+					Status:     http.StatusInternalServerError,
+					Message:    err.Error(),
+					Data:       nil,
+					Pagination: helper.Page{},
+				})
+			}
+
+			responseThreads[i].TotalComment, err = tc.commentUseCase.CountByThreadID(thread.Id)
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
+					Status:     http.StatusInternalServerError,
+					Message:    err.Error(),
+					Data:       nil,
+					Pagination: helper.Page{},
+				})
+			}
+
+			responseThreads[i].TotalBookmark, err = tc.bookmarkUseCase.CountByThreadID(thread.Id)
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
+					Status:     http.StatusInternalServerError,
+					Message:    err.Error(),
+					Data:       nil,
+					Pagination: helper.Page{},
+				})
+			}
+		}
+	} else {
+		responseThreads, err := tc.threadUseCase.DomainsToResponseArray(threads, primitive.NilObjectID)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
 				Status:     http.StatusInternalServerError,
@@ -273,14 +316,36 @@ func (tc *ThreadController) GetManyWithPagination(c echo.Context) error {
 			})
 		}
 
-		responseThreads[i].TotalBookmark, err = tc.bookmarkUseCase.CountByThreadID(thread.Id)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
-				Status:     http.StatusInternalServerError,
-				Message:    err.Error(),
-				Data:       nil,
-				Pagination: helper.Page{},
-			})
+		for i, thread := range responseThreads {
+			responseThreads[i].TotalFollow, err = tc.followThreadUseCase.CountByThreadID(thread.Id)
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
+					Status:     http.StatusInternalServerError,
+					Message:    err.Error(),
+					Data:       nil,
+					Pagination: helper.Page{},
+				})
+			}
+
+			responseThreads[i].TotalComment, err = tc.commentUseCase.CountByThreadID(thread.Id)
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
+					Status:     http.StatusInternalServerError,
+					Message:    err.Error(),
+					Data:       nil,
+					Pagination: helper.Page{},
+				})
+			}
+
+			responseThreads[i].TotalBookmark, err = tc.bookmarkUseCase.CountByThreadID(thread.Id)
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
+					Status:     http.StatusInternalServerError,
+					Message:    err.Error(),
+					Data:       nil,
+					Pagination: helper.Page{},
+				})
+			}
 		}
 	}
 
@@ -318,7 +383,7 @@ func (tc *ThreadController) GetManyByToken(c echo.Context) error {
 		})
 	}
 
-	responseThreads, err := tc.threadUseCase.DomainsToResponseArray(threads)
+	responseThreads, err := tc.threadUseCase.DomainsToResponseArray(threads, uid)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,
@@ -421,18 +486,46 @@ func (tc *ThreadController) GetByID(c echo.Context) error {
 		})
 	}
 
-	responseThread, err := tc.threadUseCase.DomainToResponse(thread)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
-			Status:  http.StatusInternalServerError,
-			Message: err.Error(),
-			Data:    nil,
-		})
-	}
-
+	var responseThread dtoThread.Response
 	uid, err := util.GetUIDFromToken(c)
 	if err == nil {
+		responseThread, err = tc.threadUseCase.DomainToResponse(thread, uid)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+				Status:  http.StatusInternalServerError,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
+
+		responseThread.IsFollowed, err = tc.followThreadUseCase.CheckFollowedThread(uid, threadID)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+				Status:  http.StatusInternalServerError,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
+
+		responseThread.IsBookmarked, err = tc.bookmarkUseCase.CheckBookmarkedThread(uid, threadID)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+				Status:  http.StatusInternalServerError,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
+
 		err = tc.followThreadUseCase.ResetNotification(threadID, uid)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+				Status:  http.StatusInternalServerError,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
+	} else {
+		responseThread, err = tc.threadUseCase.DomainToResponse(thread, primitive.NilObjectID)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 				Status:  http.StatusInternalServerError,
@@ -554,7 +647,7 @@ func (tc *ThreadController) UserUpdate(c echo.Context) error {
 		})
 	}
 
-	responseThread, err := tc.threadUseCase.DomainToResponse(result)
+	responseThread, err := tc.threadUseCase.DomainToResponse(result, userID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,
@@ -653,7 +746,7 @@ func (tc *ThreadController) AdminUpdate(c echo.Context) error {
 		})
 	}
 
-	responseThread, err := tc.threadUseCase.DomainToResponse(result)
+	responseThread, err := tc.threadUseCase.DomainToResponse(result, primitive.NilObjectID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,
@@ -690,7 +783,7 @@ func (tc *ThreadController) GetLikedThreadByToken(c echo.Context) error {
 		})
 	}
 
-	responseThreads, err := tc.threadUseCase.DomainsToResponseArray(result)
+	responseThreads, err := tc.threadUseCase.DomainsToResponseArray(result, primitive.NilObjectID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,
@@ -766,7 +859,7 @@ func (tc *ThreadController) GetLikedThreadByUserID(c echo.Context) error {
 		})
 	}
 
-	responseThreads, err := tc.threadUseCase.DomainsToResponseArray(result)
+	responseThreads, err := tc.threadUseCase.DomainsToResponseArray(result, userID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,
@@ -935,7 +1028,7 @@ func (tc *ThreadController) UserDelete(c echo.Context) error {
 		})
 	}
 
-	responseThread, err := tc.threadUseCase.DomainToResponse(deletedThread)
+	responseThread, err := tc.threadUseCase.DomainToResponse(deletedThread, userID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,
@@ -1006,7 +1099,7 @@ func (tc *ThreadController) AdminDelete(c echo.Context) error {
 		})
 	}
 
-	responseThread, err := tc.threadUseCase.DomainToResponse(deletedThread)
+	responseThread, err := tc.threadUseCase.DomainToResponse(deletedThread, primitive.NilObjectID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,

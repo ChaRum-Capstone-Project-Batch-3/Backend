@@ -84,6 +84,15 @@ func (ftu *FollowThreadUseCase) CountByThreadID(threadID primitive.ObjectID) (in
 	return result, nil
 }
 
+func (ftu *FollowThreadUseCase) CheckFollowedThread(userID primitive.ObjectID, threadID primitive.ObjectID) (bool, error) {
+	_, err := ftu.followThreadRepository.GetByUserIDAndThreadID(userID, threadID)
+	if err == nil {
+		return true, nil
+	}
+
+	return false, nil
+}
+
 func (ftu *FollowThreadUseCase) DomainToResponse(domain Domain) (dtoFollowThread.Response, error) {
 	user, err := ftu.userRepository.GetByID(domain.UserID)
 	if err != nil {
@@ -95,7 +104,7 @@ func (ftu *FollowThreadUseCase) DomainToResponse(domain Domain) (dtoFollowThread
 		return dtoFollowThread.Response{}, errors.New("failed to get thread")
 	}
 
-	responseThread, err := ftu.threadUseCase.DomainToResponse(thread)
+	responseThread, err := ftu.threadUseCase.DomainToResponse(thread, domain.UserID)
 	if err != nil {
 		return dtoFollowThread.Response{}, errors.New("failed to get response thread")
 	}
