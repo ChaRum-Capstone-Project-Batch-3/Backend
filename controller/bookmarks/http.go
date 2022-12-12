@@ -65,7 +65,7 @@ func (bc *BookmarkController) Create(c echo.Context) error {
 		})
 	}
 
-	response, err := bc.bookmarkUseCase.DomainToResponse(result)
+	response, err := bc.bookmarkUseCase.DomainToResponse(result, userID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,
@@ -107,7 +107,7 @@ func (bc *BookmarkController) GetAllByToken(c echo.Context) error {
 		})
 	}
 
-	responseBookmark, err := bc.bookmarkUseCase.DomainsToResponseArray(result)
+	responseBookmark, err := bc.bookmarkUseCase.DomainsToResponseArray(result, userID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,
@@ -136,6 +136,16 @@ func (bc *BookmarkController) GetAllByToken(c echo.Context) error {
 		}
 
 		responseBookmark[i].Thread.TotalBookmark, err = bc.bookmarkUseCase.CountByThreadID(boomark.Thread.Id)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+				Status:  http.StatusInternalServerError,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
+
+		responseBookmark[i].Thread.IsBookmarked = true
+		responseBookmark[i].Thread.IsFollowed, err = bc.followThreadUseCase.CheckFollowedThread(userID, boomark.Thread.Id)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 				Status:  http.StatusInternalServerError,

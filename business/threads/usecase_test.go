@@ -283,7 +283,7 @@ func TestDomainToResponse(t *testing.T) {
 		userRepository.On("GetByID", threadDomain.CreatorID).Return(userDomain, nil).Once()
 		topicRepository.On("GetByID", threadDomain.TopicID).Return(topicDomain, nil).Once()
 
-		result, actualErr := threadUseCase.DomainToResponse(threadDomain)
+		result, actualErr := threadUseCase.DomainToResponse(threadDomain, userDomain.Id)
 
 		assert.NotNil(t, result)
 		assert.Nil(t, actualErr)
@@ -293,7 +293,7 @@ func TestDomainToResponse(t *testing.T) {
 		expectedErr := errors.New("failed to get creator")
 		userRepository.On("GetByID", threadDomain.CreatorID).Return(users.Domain{}, expectedErr).Once()
 
-		result, actualErr := threadUseCase.DomainToResponse(threadDomain)
+		result, actualErr := threadUseCase.DomainToResponse(threadDomain, userDomain.Id)
 
 		assert.Equal(t, dtoThread.Response{}, result)
 		assert.Equal(t, expectedErr, actualErr)
@@ -304,7 +304,7 @@ func TestDomainToResponse(t *testing.T) {
 		userRepository.On("GetByID", threadDomain.CreatorID).Return(userDomain, nil).Once()
 		topicRepository.On("GetByID", threadDomain.TopicID).Return(topics.Domain{}, expectedErr).Once()
 
-		result, actualErr := threadUseCase.DomainToResponse(threadDomain)
+		result, actualErr := threadUseCase.DomainToResponse(threadDomain, primitive.NilObjectID)
 
 		assert.Equal(t, dtoThread.Response{}, result)
 		assert.Equal(t, expectedErr, actualErr)
@@ -337,7 +337,7 @@ func TestDomainToResponseArray(t *testing.T) {
 		userRepository.On("GetByID", threadDomain.CreatorID).Return(userDomain, nil).Once()
 		topicRepository.On("GetByID", threadDomain.TopicID).Return(topicDomain, nil).Once()
 
-		result, actualErr := threadUseCase.DomainsToResponseArray([]threads.Domain{threadDomain})
+		result, actualErr := threadUseCase.DomainsToResponseArray([]threads.Domain{threadDomain}, userDomain.Id)
 
 		assert.NotNil(t, result)
 		assert.Nil(t, actualErr)
@@ -347,7 +347,7 @@ func TestDomainToResponseArray(t *testing.T) {
 		expectedErr := errors.New("failed to get thread")
 		userRepository.On("GetByID", threadDomain.CreatorID).Return(users.Domain{}, expectedErr).Once()
 
-		result, actualErr := threadUseCase.DomainsToResponseArray([]threads.Domain{threadDomain})
+		result, actualErr := threadUseCase.DomainsToResponseArray([]threads.Domain{threadDomain}, primitive.NilObjectID)
 
 		assert.Equal(t, []dtoThread.Response{}, result)
 		assert.Equal(t, expectedErr, actualErr)

@@ -58,7 +58,7 @@ func main() {
 	topicController := _topicController.NewTopicController(topicUsecase, threadUsecase, commentUsecase, followThreadUsecase, bookmarkUsecase)
 	threadController := _threadController.NewThreadController(threadUsecase, commentUsecase, followThreadUsecase, userUsecase, bookmarkUsecase)
 	commentController := _commentController.NewCommentController(commentUsecase, followThreadUsecase)
-	followThreadController := _followThreadController.NewFollowThreadController(followThreadUsecase)
+	followThreadController := _followThreadController.NewFollowThreadController(followThreadUsecase, bookmarkUsecase)
 	bookmarkController := _bookmarkController.NewBookmarkController(bookmarkUsecase, followThreadUsecase, commentUsecase)
 
 	routeController := _route.ControllerList{

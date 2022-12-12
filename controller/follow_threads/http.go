@@ -1,6 +1,7 @@
 package follow_threads
 
 import (
+	"charum/business/bookmarks"
 	followthreads "charum/business/follow_threads"
 	"charum/helper"
 	"charum/util"
@@ -11,12 +12,14 @@ import (
 )
 
 type FollowThreadController struct {
+	bookmarkUseCase     bookmarks.UseCase
 	followThreadUseCase followthreads.UseCase
 }
 
-func NewFollowThreadController(followThreadUC followthreads.UseCase) *FollowThreadController {
+func NewFollowThreadController(followThreadUC followthreads.UseCase, bookmarkUC bookmarks.UseCase) *FollowThreadController {
 	return &FollowThreadController{
 		followThreadUseCase: followThreadUC,
+		bookmarkUseCase:     bookmarkUC,
 	}
 }
 
@@ -62,7 +65,7 @@ func (ftc *FollowThreadController) Create(c echo.Context) error {
 		})
 	}
 
-	responseThread, err := ftc.followThreadUseCase.DomainToResponse(thread)
+	responseThread, err := ftc.followThreadUseCase.DomainToResponse(thread, userID)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
@@ -84,43 +87,6 @@ func (ftc *FollowThreadController) Create(c echo.Context) error {
 Read
 */
 
-func (ftc *FollowThreadController) GeyAllByUserID(c echo.Context) error {
-	userID, err := util.GetUIDFromToken(c)
-	if err != nil {
-		return c.JSON(http.StatusUnauthorized, helper.BaseResponse{
-			Status:  http.StatusUnauthorized,
-			Message: "unauthorized",
-			Data:    nil,
-		})
-	}
-
-	domains, err := ftc.followThreadUseCase.GetAllByUserID(userID)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: err.Error(),
-			Data:    nil,
-		})
-	}
-
-	responseThreads, err := ftc.followThreadUseCase.DomainToResponseArray(domains)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: err.Error(),
-			Data:    nil,
-		})
-	}
-
-	return c.JSON(http.StatusOK, helper.BaseResponse{
-		Status:  http.StatusOK,
-		Message: "success to get all follow threads",
-		Data: map[string]interface{}{
-			"followThreads": responseThreads,
-		},
-	})
-}
-
 func (ftc *FollowThreadController) GetFollowedThreadByUserID(c echo.Context) error {
 	userID, err := primitive.ObjectIDFromHex(c.Param("user-id"))
 	if err != nil {
@@ -140,13 +106,33 @@ func (ftc *FollowThreadController) GetFollowedThreadByUserID(c echo.Context) err
 		})
 	}
 
-	responseThreads, err := ftc.followThreadUseCase.DomainToResponseArray(domains)
+	responseThreads, err := ftc.followThreadUseCase.DomainToResponseArray(domains, userID)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
 			Message: err.Error(),
 			Data:    nil,
 		})
+	}
+
+	for i, _ := range responseThreads {
+		responseThreads[i].Thread.IsBookmarked, err = ftc.bookmarkUseCase.CheckBookmarkedThread(userID, domains[i].ThreadID)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+				Status:  http.StatusBadRequest,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
+
+		responseThreads[i].Thread.IsFollowed, err = ftc.followThreadUseCase.CheckFollowedThread(userID, domains[i].ThreadID)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+				Status:  http.StatusBadRequest,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
 	}
 
 	return c.JSON(http.StatusOK, helper.BaseResponse{
@@ -177,13 +163,33 @@ func (ftc *FollowThreadController) GetFollowedThreadByToken(c echo.Context) erro
 		})
 	}
 
-	responseThreads, err := ftc.followThreadUseCase.DomainToResponseArray(domains)
+	responseThreads, err := ftc.followThreadUseCase.DomainToResponseArray(domains, userID)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
 			Message: err.Error(),
 			Data:    nil,
 		})
+	}
+
+	for i, _ := range responseThreads {
+		responseThreads[i].Thread.IsBookmarked, err = ftc.bookmarkUseCase.CheckBookmarkedThread(userID, domains[i].ThreadID)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+				Status:  http.StatusBadRequest,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
+
+		responseThreads[i].Thread.IsFollowed, err = ftc.followThreadUseCase.CheckFollowedThread(userID, domains[i].ThreadID)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+				Status:  http.StatusBadRequest,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
 	}
 
 	return c.JSON(http.StatusOK, helper.BaseResponse{
@@ -236,7 +242,7 @@ func (ftc *FollowThreadController) Delete(c echo.Context) error {
 		})
 	}
 
-	responseThread, err := ftc.followThreadUseCase.DomainToResponse(result)
+	responseThread, err := ftc.followThreadUseCase.DomainToResponse(result, userID)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, helper.BaseResponse{
 			Status:  http.StatusNotFound,

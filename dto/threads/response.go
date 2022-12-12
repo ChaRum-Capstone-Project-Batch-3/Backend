@@ -15,6 +15,9 @@ type Response struct {
 	Description   string             `json:"description"`
 	Likes         []Like             `json:"likes"`
 	ImageURL      string             `json:"imageURL"`
+	IsLiked       bool               `json:"isLiked"`
+	IsBookmarked  bool               `json:"isBookmarked"`
+	IsFollowed    bool               `json:"isFollowed"`
 	TotalLike     int                `json:"totalLike"`
 	TotalFollow   int                `json:"totalFollow"`
 	TotalComment  int                `json:"totalComment"`

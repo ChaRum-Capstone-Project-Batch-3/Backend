@@ -133,20 +133,20 @@ func (_m *UseCase) DeleteByThreadID(threadID primitive.ObjectID) error {
 	return r0
 }
 
-// DomainToResponse provides a mock function with given fields: domain
-func (_m *UseCase) DomainToResponse(domain threads.Domain) (dtothreads.Response, error) {
-	ret := _m.Called(domain)
+// DomainToResponse provides a mock function with given fields: domain, userID
+func (_m *UseCase) DomainToResponse(domain threads.Domain, userID primitive.ObjectID) (dtothreads.Response, error) {
+	ret := _m.Called(domain, userID)
 
 	var r0 dtothreads.Response
-	if rf, ok := ret.Get(0).(func(threads.Domain) dtothreads.Response); ok {
-		r0 = rf(domain)
+	if rf, ok := ret.Get(0).(func(threads.Domain, primitive.ObjectID) dtothreads.Response); ok {
+		r0 = rf(domain, userID)
 	} else {
 		r0 = ret.Get(0).(dtothreads.Response)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(threads.Domain) error); ok {
-		r1 = rf(domain)
+	if rf, ok := ret.Get(1).(func(threads.Domain, primitive.ObjectID) error); ok {
+		r1 = rf(domain, userID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -154,13 +154,13 @@ func (_m *UseCase) DomainToResponse(domain threads.Domain) (dtothreads.Response,
 	return r0, r1
 }
 
-// DomainsToResponseArray provides a mock function with given fields: domains
-func (_m *UseCase) DomainsToResponseArray(domains []threads.Domain) ([]dtothreads.Response, error) {
-	ret := _m.Called(domains)
+// DomainsToResponseArray provides a mock function with given fields: domains, userID
+func (_m *UseCase) DomainsToResponseArray(domains []threads.Domain, userID primitive.ObjectID) ([]dtothreads.Response, error) {
+	ret := _m.Called(domains, userID)
 
 	var r0 []dtothreads.Response
-	if rf, ok := ret.Get(0).(func([]threads.Domain) []dtothreads.Response); ok {
-		r0 = rf(domains)
+	if rf, ok := ret.Get(0).(func([]threads.Domain, primitive.ObjectID) []dtothreads.Response); ok {
+		r0 = rf(domains, userID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]dtothreads.Response)
@@ -168,8 +168,8 @@ func (_m *UseCase) DomainsToResponseArray(domains []threads.Domain) ([]dtothread
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func([]threads.Domain) error); ok {
-		r1 = rf(domains)
+	if rf, ok := ret.Get(1).(func([]threads.Domain, primitive.ObjectID) error); ok {
+		r1 = rf(domains, userID)
 	} else {
 		r1 = ret.Error(1)
 	}

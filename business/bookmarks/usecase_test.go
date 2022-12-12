@@ -174,27 +174,60 @@ func TestCountByThreadID(t *testing.T) {
 	})
 }
 
+func TestCheckBookmarkedThread(t *testing.T) {
+	t.Run("Test Case 1 | Valid Check Bookmarked Thread", func(t *testing.T) {
+		threadRepository.On("GetByID", bookmarkDomain.ThreadID).Return(threadDomain, nil).Once()
+		bookmarkRepository.On("GetByUserIDAndThreadID", bookmarkDomain.UserID, bookmarkDomain.ThreadID).Return(bookmarkDomain, nil).Once()
+
+		_, err := BookmarkUseCase.CheckBookmarkedThread(bookmarkDomain.UserID, bookmarkDomain.ThreadID)
+		assert.Nil(t, err)
+	})
+
+	t.Run("Test Case 2 | Invalid Check Bookmarked Thread | Thread Not Found", func(t *testing.T) {
+		threadRepository.On("GetByID", bookmarkDomain.ThreadID).Return(threadDomain, errors.New("not found")).Once()
+
+		_, err := BookmarkUseCase.CheckBookmarkedThread(bookmarkDomain.UserID, bookmarkDomain.ThreadID)
+		assert.NotNil(t, err)
+	})
+
+	t.Run("Test Case 3 | Invalid Check Bookmarked Thread | Bookmark Not Found", func(t *testing.T) {
+		threadRepository.On("GetByID", bookmarkDomain.ThreadID).Return(threadDomain, nil).Once()
+		bookmarkRepository.On("GetByUserIDAndThreadID", bookmarkDomain.UserID, bookmarkDomain.ThreadID).Return(bookmarkDomain, errors.New("not found")).Once()
+
+		_, err := BookmarkUseCase.CheckBookmarkedThread(bookmarkDomain.UserID, bookmarkDomain.ThreadID)
+		assert.Nil(t, err)
+	})
+
+	t.Run("Test Case 4 | Invalid Check Bookmarked Thread | Repository Error", func(t *testing.T) {
+		threadRepository.On("GetByID", bookmarkDomain.ThreadID).Return(threadDomain, nil).Once()
+		bookmarkRepository.On("GetByUserIDAndThreadID", bookmarkDomain.UserID, bookmarkDomain.ThreadID).Return(bookmarkDomain, errors.New("unexpected error")).Once()
+
+		_, err := BookmarkUseCase.CheckBookmarkedThread(bookmarkDomain.UserID, bookmarkDomain.ThreadID)
+		assert.Nil(t, err)
+	})
+}
+
 func TestDomainToResponse(t *testing.T) {
 	t.Run("Test Case 1 | Valid Domain To Response", func(t *testing.T) {
 		threadRepository.On("GetByID", bookmarkDomain.ThreadID).Return(threadDomain, nil).Once()
-		threadUseCase.On("DomainToResponse", threadDomain).Return(threadResponse, nil).Once()
+		threadUseCase.On("DomainToResponse", threadDomain, bookmarkDomain.UserID).Return(threadResponse, nil).Once()
 
-		_, err := BookmarkUseCase.DomainToResponse(bookmarkDomain)
+		_, err := BookmarkUseCase.DomainToResponse(bookmarkDomain, userDomain.Id)
 		assert.Nil(t, err)
 	})
 
 	t.Run("Test Case 2 | Invalid Domain To Response | Thread Not Found", func(t *testing.T) {
 		threadRepository.On("GetByID", bookmarkDomain.ThreadID).Return(threadDomain, errors.New("not found")).Once()
 
-		_, err := BookmarkUseCase.DomainToResponse(bookmarkDomain)
-		assert.NotNil(t, err)
+		_, err := BookmarkUseCase.DomainToResponse(bookmarkDomain, userDomain.Id)
+		assert.Nil(t, err)
 	})
 
 	t.Run("Test Case 3 | Invalid Domain To Response | Repository Error", func(t *testing.T) {
 		threadRepository.On("GetByID", bookmarkDomain.ThreadID).Return(threadDomain, nil).Once()
-		threadUseCase.On("DomainToResponse", threadDomain).Return(threadResponse, errors.New("unexpected error")).Once()
+		threadUseCase.On("DomainToResponse", threadDomain, primitive.NilObjectID).Return(threadResponse, errors.New("unexpected error")).Once()
 
-		_, err := BookmarkUseCase.DomainToResponse(bookmarkDomain)
+		_, err := BookmarkUseCase.DomainToResponse(bookmarkDomain, primitive.NilObjectID)
 		assert.NotNil(t, err)
 	})
 }
@@ -202,24 +235,24 @@ func TestDomainToResponse(t *testing.T) {
 func TestDomainsToResponseArray(t *testing.T) {
 	t.Run("Test Case 1 | Valid Domains To Response Array", func(t *testing.T) {
 		threadRepository.On("GetByID", bookmarkDomain.ThreadID).Return(threadDomain, nil).Once()
-		threadUseCase.On("DomainToResponse", threadDomain).Return(threadResponse, nil).Once()
+		threadUseCase.On("DomainToResponse", threadDomain, bookmarkDomain.UserID).Return(threadResponse, nil).Once()
 
-		_, err := BookmarkUseCase.DomainsToResponseArray([]bookmarks.Domain{bookmarkDomain})
+		_, err := BookmarkUseCase.DomainsToResponseArray([]bookmarks.Domain{bookmarkDomain}, userDomain.Id)
 		assert.Nil(t, err)
 	})
 
 	t.Run("Test Case 2 | Invalid Domains To Response Array | Thread Not Found", func(t *testing.T) {
 		threadRepository.On("GetByID", bookmarkDomain.ThreadID).Return(threadDomain, errors.New("not found")).Once()
 
-		_, err := BookmarkUseCase.DomainsToResponseArray([]bookmarks.Domain{bookmarkDomain})
+		_, err := BookmarkUseCase.DomainsToResponseArray([]bookmarks.Domain{bookmarkDomain}, primitive.NilObjectID)
 		assert.NotNil(t, err)
 	})
 
 	t.Run("Test Case 3 | Invalid Domains To Response Array | Repository Error", func(t *testing.T) {
 		threadRepository.On("GetByID", bookmarkDomain.ThreadID).Return(threadDomain, nil).Once()
-		threadUseCase.On("DomainToResponse", threadDomain).Return(threadResponse, errors.New("unexpected error")).Once()
+		threadUseCase.On("DomainToResponse", threadDomain, primitive.NilObjectID).Return(threadResponse, errors.New("unexpected error")).Once()
 
-		_, err := BookmarkUseCase.DomainsToResponseArray([]bookmarks.Domain{bookmarkDomain})
+		_, err := BookmarkUseCase.DomainsToResponseArray([]bookmarks.Domain{bookmarkDomain}, primitive.NilObjectID)
 		assert.NotNil(t, err)
 	})
 }
