@@ -35,8 +35,13 @@ func (ctrl *ForgotPasswordController) Generate(c echo.Context) error {
 
 	forgotPassword, err := ctrl.forgotPasswordUseCase.Generate(userInput.ToDomain())
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
+		statusCode := http.StatusInternalServerError
+
+		if err.Error() == "email is not registered" {
+			statusCode = http.StatusNotFound
+		}
+		return c.JSON(statusCode, helper.BaseResponse{
+			Status:  statusCode,
 			Message: err.Error(),
 			Data:    nil,
 		})
@@ -66,8 +71,17 @@ func (ctrl *ForgotPasswordController) Update(c echo.Context) error {
 
 	user, err := ctrl.forgotPasswordUseCase.UpdatePassword(userInput.ToDomain())
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
+		statusCode := http.StatusInternalServerError
+		if err.Error() == "email is not registered" {
+			statusCode = http.StatusNotFound
+		} else if err.Error() == "failed to update password" {
+			statusCode = http.StatusInternalServerError
+		} else if err.Error() == "failed to update token" {
+			statusCode = http.StatusInternalServerError
+		}
+
+		return c.JSON(statusCode, helper.BaseResponse{
+			Status:  statusCode,
 			Message: err.Error(),
 			Data:    nil,
 		})
@@ -84,9 +98,18 @@ func (ctrl *ForgotPasswordController) ValidateToken(c echo.Context) error {
 	token := c.Param("token")
 	forgotPassword, err := ctrl.forgotPasswordUseCase.ValidateToken(token)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "token invalid/not found",
+		statusCode := http.StatusInternalServerError
+		if err.Error() == "token invalid/not found" {
+			statusCode = http.StatusBadRequest
+		} else if err.Error() == "token has been used" {
+			statusCode = http.StatusUnauthorized
+		} else if err.Error() == "token has expired" {
+			statusCode = http.StatusUnauthorized
+		}
+
+		return c.JSON(statusCode, helper.BaseResponse{
+			Status:  statusCode,
+			Message: err.Error(),
 			Data:    nil,
 		})
 	}

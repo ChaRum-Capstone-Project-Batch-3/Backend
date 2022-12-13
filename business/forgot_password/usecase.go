@@ -50,7 +50,7 @@ func (fpu *ForgotPasswordUseCase) Generate(domain *Domain) (Domain, error) {
 	// sendmail from driver.mail
 	_, err = fpu.SendMail(domain)
 	if err != nil {
-		return Domain{}, err
+		return Domain{}, errors.New("failed to send email")
 	}
 
 	return forgotPassword, nil
@@ -78,7 +78,7 @@ func (fpu *ForgotPasswordUseCase) GetByToken(token string) (Domain, error) {
 func (fpu *ForgotPasswordUseCase) ValidateToken(token string) (Domain, error) {
 	tokenData, err := fpu.forgotPassword.GetByToken(token)
 	if err != nil {
-		return Domain{}, err
+		return Domain{}, errors.New("token invalid/not found")
 	}
 
 	if tokenData.IsUsed {
@@ -102,13 +102,13 @@ func (fpu *ForgotPasswordUseCase) UpdatePassword(domain *Domain) (Domain, error)
 
 	user, err := fpu.userRepository.GetByEmail(tokenData.Email)
 	if err != nil {
-		return Domain{}, err
+		return Domain{}, errors.New("email is not registered")
 	}
 
 	// hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(domain.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return Domain{}, err
+		return Domain{}, errors.New("failed to update password")
 	}
 
 	// update password
@@ -119,12 +119,12 @@ func (fpu *ForgotPasswordUseCase) UpdatePassword(domain *Domain) (Domain, error)
 
 	_, err = fpu.userRepository.UpdatePassword(&user)
 	if err != nil {
-		return Domain{}, err
+		return Domain{}, errors.New("failed to update password")
 	}
 
 	forgotPassword, err := fpu.forgotPassword.Update(&tokenData)
 	if err != nil {
-		return Domain{}, err
+		return Domain{}, errors.New("failed to update token")
 	}
 	return forgotPassword, nil
 }
