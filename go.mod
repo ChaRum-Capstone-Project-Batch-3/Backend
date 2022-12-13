@@ -3,10 +3,13 @@ module charum
 go 1.19
 
 require (
+	github.com/cloudinary/cloudinary-go/v2 v2.2.0
 	github.com/fatih/structs v1.1.0
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/golang-jwt/jwt/v4 v4.4.2
+	github.com/google/uuid v1.3.0
 	github.com/labstack/echo/v4 v4.9.1
+	github.com/mailgun/mailgun-go/v3 v3.6.4
 	github.com/spf13/viper v1.14.0
 	github.com/stretchr/testify v1.8.1
 	go.mongodb.org/mongo-driver v1.11.0
@@ -15,21 +18,21 @@ require (
 
 require (
 	github.com/cloudinary/cloudinary-go v1.7.0 // indirect
-	github.com/cloudinary/cloudinary-go/v2 v2.2.0 // indirect
 	github.com/creasty/defaults v1.5.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
+	github.com/go-chi/chi v4.0.0+incompatible // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/snappy v0.0.1 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/schema v1.2.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/labstack/gommon v0.4.0 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
+	github.com/mailru/easyjson v0.0.0-20180823135443-60711f1a8329 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect

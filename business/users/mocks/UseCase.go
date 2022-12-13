@@ -217,6 +217,27 @@ func (_m *UseCase) Update(domain *users.Domain, profilePicture *multipart.FileHe
 	return r0, r1
 }
 
+// UpdatePassword provides a mock function with given fields: domain
+func (_m *UseCase) UpdatePassword(domain *users.Domain) (users.Domain, error) {
+	ret := _m.Called(domain)
+
+	var r0 users.Domain
+	if rf, ok := ret.Get(0).(func(*users.Domain) users.Domain); ok {
+		r0 = rf(domain)
+	} else {
+		r0 = ret.Get(0).(users.Domain)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*users.Domain) error); ok {
+		r1 = rf(domain)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 type mockConstructorTestingTNewUseCase interface {
 	mock.TestingT
 	Cleanup(func())

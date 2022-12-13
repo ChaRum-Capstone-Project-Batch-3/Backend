@@ -358,6 +358,21 @@ func TestUpdate(t *testing.T) {
 	})
 }
 
+func TestUpdatePassword(t *testing.T) {
+	t.Run("Test Case 1 | Valid Update Password", func(t *testing.T) {
+		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
+		copyDomain := userDomain
+		copyDomain.OldPassword = userDomain.Password
+		copyDomain.NewPassword = "!Test1234"
+		userRepository.On("UpdatePassword", mock.Anything).Return(userDomain, nil).Once()
+		actualUser, actualErr := userUseCase.UpdatePassword(&copyDomain)
+		t.Log()
+		assert.NotNil(t, actualUser)
+		assert.Nil(t, actualErr)
+
+	})
+}
+
 func TestDelete(t *testing.T) {
 	t.Run("Test Case 1 | Valid Delete", func(t *testing.T) {
 		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()

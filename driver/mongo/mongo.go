@@ -30,10 +30,10 @@ func Init(databaseName string) *mongo.Database {
 	}
 
 	// Check the connection
-	err = client.Ping(ctx, nil)
-	if err != nil {
-		panic(err)
-	}
+	//err = client.Ping(ctx, nil)
+	//if err != nil {
+	//	panic(err)
+	//}
 
 	database := client.Database(databaseName)
 	return database

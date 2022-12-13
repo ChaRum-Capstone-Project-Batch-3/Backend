@@ -155,6 +155,30 @@ func (ur *userRepository) Update(domain *users.Domain) (users.Domain, error) {
 	return result, nil
 }
 
+func (ur *userRepository) UpdatePassword(domain *users.Domain) (users.Domain, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	_, err := ur.collection.UpdateOne(ctx, bson.M{
+		"_id": domain.Id,
+	}, bson.M{
+		"$set": bson.M{
+			"password":  domain.Password,
+			"updatedAt": domain.UpdatedAt,
+		},
+	})
+	if err != nil {
+		return users.Domain{}, err
+	}
+
+	result, err := ur.GetByID(domain.Id)
+	if err != nil {
+		return users.Domain{}, err
+	}
+
+	return result, nil
+}
+
 /*
 Delete
 */
