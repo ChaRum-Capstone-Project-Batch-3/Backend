@@ -51,7 +51,6 @@ func (ctrl *ForgotPasswordController) Generate(c echo.Context) error {
 	})
 }
 
-// update, read token from params and update password
 func (ctrl *ForgotPasswordController) Update(c echo.Context) error {
 	// get token from params and validate
 	token := c.Param("token")
@@ -80,5 +79,23 @@ func (ctrl *ForgotPasswordController) Update(c echo.Context) error {
 		Status:  http.StatusOK,
 		Message: "success",
 		Data:    user,
+	})
+}
+
+func (ctrl *ForgotPasswordController) ValidateToken(c echo.Context) error {
+	token := c.Param("token")
+	forgotPassword, err := ctrl.forgotPasswordUseCase.ValidateToken(token)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "token invalid/not found",
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "token valid",
+		Data:    forgotPassword,
 	})
 }

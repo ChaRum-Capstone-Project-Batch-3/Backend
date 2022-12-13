@@ -25,4 +25,7 @@ type UseCase interface {
 	// Create
 	Generate(domain *Domain) (Domain, error)
 	UpdatePassword(domain *Domain) (Domain, error)
+	// Read
+	GetByToken(token string) (Domain, error)
+	ValidateToken(token string) (Domain, error)
 }

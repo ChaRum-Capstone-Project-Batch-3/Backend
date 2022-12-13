@@ -3,8 +3,11 @@ package forgot_password
 import (
 	"charum/business/users"
 	"charum/util"
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/mailgun/mailgun-go/v3"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 	"time"
@@ -26,7 +29,6 @@ func NewForgotPasswordUseCase(fp Repository, ur users.Repository) UseCase {
 Create
 */
 
-// check if email is registered, and generate token
 func (fpu *ForgotPasswordUseCase) Generate(domain *Domain) (Domain, error) {
 	user, err := fpu.userRepository.GetByEmail(domain.Email)
 	fmt.Println(user)
@@ -46,6 +48,12 @@ func (fpu *ForgotPasswordUseCase) Generate(domain *Domain) (Domain, error) {
 	forgotPassword, err := fpu.forgotPassword.Generate(domain)
 	if err != nil {
 		return Domain{}, errors.New("failed to reset password")
+	}
+
+	// sendmail from driver.mail
+	_, err = fpu.SendMail(domain)
+	if err != nil {
+		return Domain{}, err
 	}
 
 	return forgotPassword, nil
@@ -122,4 +130,30 @@ func (fpu *ForgotPasswordUseCase) UpdatePassword(domain *Domain) (Domain, error)
 		return Domain{}, err
 	}
 	return forgotPassword, nil
+}
+
+func (fpu *ForgotPasswordUseCase) SendMail(domain *Domain) (string, error) {
+	// get mailgun_api_key from env
+	mailgunKey := util.GetConfig("MAILGUN_API_KEY")
+	mg := mailgun.NewMailgun("charum.razanfawwaz.xyz", mailgunKey)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+	defer cancel()
+
+	m := mg.NewMessage("Charum No-Reply <noreply@charum.razanfawwaz.xyz>", "Your Reset Password Link", "")
+	m.SetTemplate("charum")
+	if err := m.AddRecipient(domain.Email); err != nil {
+		return "", err
+	}
+
+	vars, err := json.Marshal(map[string]string{
+		"token": domain.Token,
+	})
+	if err != nil {
+		return "", err
+	}
+	m.AddHeader("X-Mailgun-Template-Variables", string(vars))
+
+	_, id, err := mg.Send(ctx, m)
+
+	return id, err
 }
