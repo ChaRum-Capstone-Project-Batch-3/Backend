@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/mailgun/mailgun-go/v3"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
@@ -30,14 +29,12 @@ Create
 */
 
 func (fpu *ForgotPasswordUseCase) Generate(domain *Domain) (Domain, error) {
-	user, err := fpu.userRepository.GetByEmail(domain.Email)
-	fmt.Println(user)
+	_, err := fpu.userRepository.GetByEmail(domain.Email)
 	if err != nil {
 		return Domain{}, errors.New("email is not registered")
 	}
 	// generate random string
 	token := util.GenerateRandomString(80)
-	fmt.Println(token)
 	domain.Id = primitive.NewObjectID()
 	domain.Token = token
 	domain.CreatedAt = primitive.NewDateTimeFromTime(time.Now())

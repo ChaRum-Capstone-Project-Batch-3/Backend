@@ -7,7 +7,6 @@ import (
 	"charum/helper"
 	"charum/util"
 	"errors"
-	"fmt"
 	"math"
 	"mime/multipart"
 	"strings"
@@ -204,7 +203,6 @@ func (uu *UserUseCase) UpdatePassword(domain *Domain) (Domain, error) {
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(domain.OldPassword))
-	fmt.Println(err)
 	if err != nil {
 		return Domain{}, errors.New("wrong password")
 	}
@@ -212,10 +210,8 @@ func (uu *UserUseCase) UpdatePassword(domain *Domain) (Domain, error) {
 	encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte(domain.NewPassword), bcrypt.DefaultCost)
 	user.Password = string(encryptedPassword)
 	user.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
-	fmt.Println(user.UpdatedAt)
 
 	updatedUser, err := uu.userRepository.UpdatePassword(&user)
-	fmt.Println(err)
 	if err != nil {
 		return Domain{}, errors.New("failed to update user password")
 	}

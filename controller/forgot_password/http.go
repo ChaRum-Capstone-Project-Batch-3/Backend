@@ -5,7 +5,6 @@ import (
 	"charum/business/users"
 	"charum/controller/forgot_password/request"
 	"charum/helper"
-	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -33,7 +32,6 @@ func (ctrl *ForgotPasswordController) Generate(c echo.Context) error {
 			Data:    err,
 		})
 	}
-	fmt.Println(userInput)
 
 	forgotPassword, err := ctrl.forgotPasswordUseCase.Generate(userInput.ToDomain())
 	if err != nil {
