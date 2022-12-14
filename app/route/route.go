@@ -43,7 +43,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	user := apiV1.Group("/user")
 	user.POST("/register", cl.UserController.Register)
 	user.POST("/login", cl.UserController.Login)
-	user.POST("/forgot-password/", cl.ForgotPasswordController.Generate)
+	user.POST("/forgot-password", cl.ForgotPasswordController.Generate)
 	user.GET("/forgot-password/:token", cl.ForgotPasswordController.ValidateToken)
 	user.POST("/forgot-password/:token", cl.ForgotPasswordController.Update)
 	user.GET("/profile", cl.UserController.GetProfile, authMiddleware.Check)
