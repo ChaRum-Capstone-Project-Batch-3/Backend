@@ -3,6 +3,7 @@ package forgot_password
 import (
 	"charum/business/forgot_password"
 	"charum/business/users"
+	"charum/controller/forgot_password/response"
 	"charum/controller/forgot_password/request"
 	"charum/helper"
 	"github.com/labstack/echo/v4"
@@ -50,7 +51,7 @@ func (ctrl *ForgotPasswordController) Generate(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
 		Message: "success",
-		Data:    forgotPassword,
+		Data:    response.FromDomain(forgotPassword),
 	})
 }
 
@@ -117,6 +118,6 @@ func (ctrl *ForgotPasswordController) ValidateToken(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
 		Message: "token valid",
-		Data:    forgotPassword,
+		Data:    response.FromDomain(forgotPassword),
 	})
 }
