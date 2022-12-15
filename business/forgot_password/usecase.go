@@ -2,25 +2,26 @@ package forgot_password
 
 import (
 	"charum/business/users"
+	_mailgun "charum/helper/mailgun"
 	"charum/util"
-	"context"
-	"encoding/json"
 	"errors"
-	"github.com/mailgun/mailgun-go/v3"
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
-	"time"
 )
 
 type ForgotPasswordUseCase struct {
 	forgotPassword Repository
 	userRepository users.Repository
+	mailgun        _mailgun.Function
 }
 
-func NewForgotPasswordUseCase(fp Repository, ur users.Repository) UseCase {
+func NewForgotPasswordUseCase(fp Repository, ur users.Repository, mg _mailgun.Function) UseCase {
 	return &ForgotPasswordUseCase{
 		forgotPassword: fp,
 		userRepository: ur,
+		mailgun:        mg,
 	}
 }
 
@@ -33,13 +34,13 @@ func (fpu *ForgotPasswordUseCase) Generate(domain *Domain) (Domain, error) {
 	if err != nil {
 		return Domain{}, errors.New("email is not registered")
 	}
-	// generate random string
+
 	token := util.GenerateRandomString(80)
 	domain.Id = primitive.NewObjectID()
 	domain.Token = token
 	domain.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
 	domain.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
-	domain.ExpiredAt = primitive.NewDateTimeFromTime(time.Now().Add(time.Minute * 30))
+	domain.ExpiredAt = primitive.NewDateTimeFromTime(time.Now().Add(30 * time.Minute))
 	domain.IsUsed = false
 
 	forgotPassword, err := fpu.forgotPassword.Generate(domain)
@@ -47,14 +48,22 @@ func (fpu *ForgotPasswordUseCase) Generate(domain *Domain) (Domain, error) {
 		return Domain{}, errors.New("failed to reset password")
 	}
 
-	// sendmail from driver.mail
-	_, err = fpu.SendMail(domain)
+	_, err = fpu.mailgun.SendMail(domain.Email, domain.Token)
 	if err != nil {
-		return Domain{}, errors.New("failed to send email")
+		delErr := fpu.forgotPassword.Delete(domain.Id)
+		if delErr != nil {
+			return Domain{}, errors.New("failed to reset password")
+		}
+
+		return Domain{}, err
 	}
 
 	return forgotPassword, nil
 }
+
+/*
+Read
+*/
 
 func (fpu *ForgotPasswordUseCase) GetByID(id primitive.ObjectID) (Domain, error) {
 	forgotPassword, err := fpu.forgotPassword.GetByID(id)
@@ -65,7 +74,6 @@ func (fpu *ForgotPasswordUseCase) GetByID(id primitive.ObjectID) (Domain, error)
 	return forgotPassword, nil
 }
 
-// get by token
 func (fpu *ForgotPasswordUseCase) GetByToken(token string) (Domain, error) {
 	forgotPassword, err := fpu.forgotPassword.GetByToken(token)
 	if err != nil {
@@ -78,7 +86,7 @@ func (fpu *ForgotPasswordUseCase) GetByToken(token string) (Domain, error) {
 func (fpu *ForgotPasswordUseCase) ValidateToken(token string) (Domain, error) {
 	tokenData, err := fpu.forgotPassword.GetByToken(token)
 	if err != nil {
-		return Domain{}, errors.New("token invalid/not found")
+		return Domain{}, errors.New("failed to get token")
 	}
 
 	if tokenData.IsUsed {
@@ -92,9 +100,11 @@ func (fpu *ForgotPasswordUseCase) ValidateToken(token string) (Domain, error) {
 	return tokenData, nil
 }
 
-// update password
+/*
+Update
+*/
+
 func (fpu *ForgotPasswordUseCase) UpdatePassword(domain *Domain) (Domain, error) {
-	// validate token
 	tokenData, err := fpu.ValidateToken(domain.Token)
 	if err != nil {
 		return Domain{}, err
@@ -105,13 +115,11 @@ func (fpu *ForgotPasswordUseCase) UpdatePassword(domain *Domain) (Domain, error)
 		return Domain{}, errors.New("email is not registered")
 	}
 
-	// hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(domain.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return Domain{}, errors.New("failed to update password")
 	}
 
-	// update password
 	user.Password = string(hashedPassword)
 	tokenData.IsUsed = true
 	user.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
@@ -126,31 +134,6 @@ func (fpu *ForgotPasswordUseCase) UpdatePassword(domain *Domain) (Domain, error)
 	if err != nil {
 		return Domain{}, errors.New("failed to update token")
 	}
+
 	return forgotPassword, nil
-}
-
-func (fpu *ForgotPasswordUseCase) SendMail(domain *Domain) (string, error) {
-	// get mailgun_api_key from env
-	mailgunKey := util.GetConfig("MAILGUN_API_KEY")
-	mg := mailgun.NewMailgun("charum.razanfawwaz.xyz", mailgunKey)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
-	defer cancel()
-
-	m := mg.NewMessage("Charum No-Reply <noreply@charum.razanfawwaz.xyz>", "Your Reset Password Link", "")
-	m.SetTemplate("charum")
-	if err := m.AddRecipient(domain.Email); err != nil {
-		return "", err
-	}
-
-	vars, err := json.Marshal(map[string]string{
-		"token": domain.Token,
-	})
-	if err != nil {
-		return "", err
-	}
-	m.AddHeader("X-Mailgun-Template-Variables", string(vars))
-
-	_, id, err := mg.Send(ctx, m)
-
-	return id, err
 }

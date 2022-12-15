@@ -4,7 +4,7 @@ import (
 	_cloudinary "charum/driver/cloudinary"
 	dtoPagination "charum/dto/pagination"
 	dtoQuery "charum/dto/query"
-	"charum/helper"
+	"charum/util"
 	"errors"
 	"math"
 	"mime/multipart"
@@ -36,7 +36,7 @@ func (tu *TopicUseCase) Create(domain *Domain, image *multipart.FileHeader) (Dom
 	}
 
 	if image != nil {
-		cloudinaryURL, err := tu.cloudinary.Upload("topic", image, helper.GenerateUUID())
+		cloudinaryURL, err := tu.cloudinary.Upload("topic", image, util.GenerateUUID())
 		if err != nil {
 			return Domain{}, errors.New("failed to upload image")
 		}
@@ -120,13 +120,13 @@ func (tu *TopicUseCase) Update(domain *Domain, image *multipart.FileHeader) (Dom
 
 	if image != nil {
 		if result.ImageURL != "" {
-			err = tu.cloudinary.Delete("topic", helper.GetFilenameWithoutExtension(result.ImageURL))
+			err = tu.cloudinary.Delete("topic", util.GetFilenameWithoutExtension(result.ImageURL))
 			if err != nil {
 				return Domain{}, errors.New("failed to delete image")
 			}
 		}
 
-		cloudinaryURL, err := tu.cloudinary.Upload("topic", image, helper.GenerateUUID())
+		cloudinaryURL, err := tu.cloudinary.Upload("topic", image, util.GenerateUUID())
 		if err != nil {
 			return Domain{}, err
 		}
@@ -155,7 +155,7 @@ func (tu *TopicUseCase) Delete(id primitive.ObjectID) (Domain, error) {
 	}
 
 	if result.ImageURL != "" {
-		err = tu.cloudinary.Delete("topic", helper.GetFilenameWithoutExtension(result.ImageURL))
+		err = tu.cloudinary.Delete("topic", util.GetFilenameWithoutExtension(result.ImageURL))
 		if err != nil {
 			return Domain{}, errors.New("failed to delete image")
 		}

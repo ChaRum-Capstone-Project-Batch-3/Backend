@@ -126,7 +126,7 @@ func (tr *threadRepository) GetAllByUserID(userID primitive.ObjectID) ([]threads
 
 	var result []Model
 	cursor, err := tr.collection.Find(ctx, bson.M{
-		"userId": userID,
+		"creatorId": userID,
 	})
 	if err != nil {
 		return []threads.Domain{}, err

@@ -3,11 +3,12 @@ package forgot_password
 import (
 	"charum/business/forgot_password"
 	"charum/business/users"
-	"charum/controller/forgot_password/response"
 	"charum/controller/forgot_password/request"
 	"charum/helper"
-	"github.com/labstack/echo/v4"
 	"net/http"
+	"strings"
+
+	"github.com/labstack/echo/v4"
 )
 
 type ForgotPasswordController struct {
@@ -34,13 +35,13 @@ func (ctrl *ForgotPasswordController) Generate(c echo.Context) error {
 		})
 	}
 
-	forgotPassword, err := ctrl.forgotPasswordUseCase.Generate(userInput.ToDomain())
+	_, err := ctrl.forgotPasswordUseCase.Generate(userInput.ToDomain())
 	if err != nil {
 		statusCode := http.StatusInternalServerError
-
-		if err.Error() == "email is not registered" {
+		if strings.Contains(err.Error(), "not registered") {
 			statusCode = http.StatusNotFound
 		}
+
 		return c.JSON(statusCode, helper.BaseResponse{
 			Status:  statusCode,
 			Message: err.Error(),
@@ -48,15 +49,14 @@ func (ctrl *ForgotPasswordController) Generate(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, helper.BaseResponse{
-		Status:  http.StatusOK,
-		Message: "success",
-		Data:    response.FromDomain(forgotPassword),
+	return c.JSON(http.StatusCreated, helper.BaseResponse{
+		Status:  http.StatusCreated,
+		Message: "success to generate token",
+		Data:    nil,
 	})
 }
 
 func (ctrl *ForgotPasswordController) Update(c echo.Context) error {
-	// get token from params and validate
 	token := c.Param("token")
 	userInput := request.Update{}
 	userInput.Token = token
@@ -70,15 +70,11 @@ func (ctrl *ForgotPasswordController) Update(c echo.Context) error {
 		})
 	}
 
-	user, err := ctrl.forgotPasswordUseCase.UpdatePassword(userInput.ToDomain())
+	_, err := ctrl.forgotPasswordUseCase.UpdatePassword(userInput.ToDomain())
 	if err != nil {
 		statusCode := http.StatusInternalServerError
-		if err.Error() == "email is not registered" {
+		if strings.Contains(err.Error(), "not registered") {
 			statusCode = http.StatusNotFound
-		} else if err.Error() == "failed to update password" {
-			statusCode = http.StatusInternalServerError
-		} else if err.Error() == "failed to update token" {
-			statusCode = http.StatusInternalServerError
 		}
 
 		return c.JSON(statusCode, helper.BaseResponse{
@@ -90,21 +86,19 @@ func (ctrl *ForgotPasswordController) Update(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
-		Message: "success",
-		Data:    user,
+		Message: "success to update password",
+		Data:    nil,
 	})
 }
 
 func (ctrl *ForgotPasswordController) ValidateToken(c echo.Context) error {
 	token := c.Param("token")
-	forgotPassword, err := ctrl.forgotPasswordUseCase.ValidateToken(token)
+	_, err := ctrl.forgotPasswordUseCase.ValidateToken(token)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
-		if err.Error() == "token invalid/not found" {
-			statusCode = http.StatusBadRequest
-		} else if err.Error() == "token has been used" {
-			statusCode = http.StatusUnauthorized
-		} else if err.Error() == "token has expired" {
+		if strings.Contains(err.Error(), "failed to get") {
+			statusCode = http.StatusNotFound
+		} else if strings.Contains(err.Error(), "token has") {
 			statusCode = http.StatusUnauthorized
 		}
 
@@ -118,6 +112,6 @@ func (ctrl *ForgotPasswordController) ValidateToken(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
 		Message: "token valid",
-		Data:    response.FromDomain(forgotPassword),
+		Data:    nil,
 	})
 }
