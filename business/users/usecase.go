@@ -4,7 +4,6 @@ import (
 	"charum/driver/cloudinary"
 	dtoPagination "charum/dto/pagination"
 	dtoQuery "charum/dto/query"
-	"charum/helper"
 	"charum/util"
 	"errors"
 	"math"
@@ -47,7 +46,7 @@ func (uu *UserUseCase) Register(domain *Domain, profilePicture *multipart.FileHe
 	encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte(domain.Password), bcrypt.DefaultCost)
 
 	if profilePicture != nil {
-		cloudinaryURL, err := uu.cloudinary.Upload("profilePicture", profilePicture, helper.GenerateUUID())
+		cloudinaryURL, err := uu.cloudinary.Upload("profilePicture", profilePicture, util.GenerateUUID())
 		if err != nil {
 			return Domain{}, "", errors.New("failed to upload profile picture")
 		}
@@ -65,7 +64,7 @@ func (uu *UserUseCase) Register(domain *Domain, profilePicture *multipart.FileHe
 	user, err := uu.userRepository.Create(domain)
 	if err != nil {
 		if domain.ProfilePictureURL != "" {
-			err = uu.cloudinary.Delete("profilePicture", helper.GetFilenameWithoutExtension(domain.ProfilePictureURL))
+			err = uu.cloudinary.Delete("profilePicture", util.GetFilenameWithoutExtension(domain.ProfilePictureURL))
 			if err != nil {
 				return Domain{}, "", errors.New("failed to delete profile picture")
 			}
@@ -167,13 +166,13 @@ func (uu *UserUseCase) Update(domain *Domain, profilePicture *multipart.FileHead
 
 	if profilePicture != nil {
 		if user.ProfilePictureURL != "" {
-			err := uu.cloudinary.Delete("profilePicture", helper.GetFilenameWithoutExtension(user.ProfilePictureURL))
+			err := uu.cloudinary.Delete("profilePicture", util.GetFilenameWithoutExtension(user.ProfilePictureURL))
 			if err != nil {
 				return Domain{}, errors.New("failed to delete old profile picture")
 			}
 		}
 
-		cloudinaryURL, err := uu.cloudinary.Upload("profilePicture", profilePicture, helper.GenerateUUID())
+		cloudinaryURL, err := uu.cloudinary.Upload("profilePicture", profilePicture, util.GenerateUUID())
 		if err != nil {
 			return Domain{}, errors.New("failed to upload profile picture")
 		}
@@ -213,7 +212,7 @@ func (uu *UserUseCase) UpdatePassword(domain *Domain) (Domain, error) {
 
 	updatedUser, err := uu.userRepository.UpdatePassword(&user)
 	if err != nil {
-		return Domain{}, errors.New("failed to update user password")
+		return Domain{}, errors.New("failed to update password")
 	}
 
 	return updatedUser, nil
@@ -272,7 +271,7 @@ func (uu *UserUseCase) Delete(id primitive.ObjectID) (Domain, error) {
 	}
 
 	if deletedUser.ProfilePictureURL != "" {
-		err = uu.cloudinary.Delete("profilePicture", helper.GetFilenameWithoutExtension(deletedUser.ProfilePictureURL))
+		err = uu.cloudinary.Delete("profilePicture", util.GetFilenameWithoutExtension(deletedUser.ProfilePictureURL))
 		if err != nil {
 			return Domain{}, errors.New("failed to delete profile picture")
 		}

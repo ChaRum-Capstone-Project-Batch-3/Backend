@@ -10,6 +10,7 @@ import (
 	_driver "charum/driver"
 	_cloudinary "charum/driver/cloudinary"
 	_mongo "charum/driver/mongo"
+	_mailgun "charum/helper/mailgun"
 	_util "charum/util"
 
 	_userUseCase "charum/business/users"
@@ -32,6 +33,7 @@ import (
 
 	_forgotPasswordUseCase "charum/business/forgot_password"
 	_forgotPasswordController "charum/controller/forgot_password"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -41,6 +43,7 @@ func main() {
 
 	database := _mongo.Init(_util.GetConfig("DB_NAME"))
 	cloudinary := _cloudinary.Init(_util.GetConfig("CLOUDINARY_UPLOAD_FOLDER"))
+	mailgun := _mailgun.Init(_util.GetConfig("MAILGUN_DOMAIN"), _util.GetConfig("MAILGUN_API_KEY"))
 
 	userRepository := _driver.NewUserRepository(database)
 	topicRepository := _driver.NewTopicRepository(database)
@@ -56,7 +59,7 @@ func main() {
 	commentUsecase := _commentUseCase.NewCommentUseCase(commentRepository, threadRepository, userRepository, cloudinary)
 	followThreadUsecase := _followThreadUseCase.NewFollowThreadUseCase(followThreadRepository, userRepository, threadRepository, commentRepository, threadUsecase)
 	bookmarkUsecase := _bookmarkUseCase.NewBookmarkUseCase(bookmarkRepository, threadRepository, userRepository, topicRepository, threadUsecase)
-	forgotPasswordUseCase := _forgotPasswordUseCase.NewForgotPasswordUseCase(forgotPasswordRepository, userRepository)
+	forgotPasswordUseCase := _forgotPasswordUseCase.NewForgotPasswordUseCase(forgotPasswordRepository, userRepository, mailgun)
 
 	userController := _userController.NewUserController(userUsecase, threadUsecase, commentUsecase, followThreadUsecase, bookmarkUsecase)
 	topicController := _topicController.NewTopicController(topicUsecase, threadUsecase, commentUsecase, followThreadUsecase, bookmarkUsecase)

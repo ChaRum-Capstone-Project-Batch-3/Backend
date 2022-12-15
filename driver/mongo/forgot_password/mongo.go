@@ -3,10 +3,11 @@ package forgot_password
 import (
 	"charum/business/forgot_password"
 	"context"
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"time"
 )
 
 type forgotPasswordRepository struct {
@@ -18,6 +19,10 @@ func NewMongoRepository(db *mongo.Database) forgot_password.Repository {
 		collection: db.Collection("forgotPassword"),
 	}
 }
+
+/*
+Create
+*/
 
 func (fr *forgotPasswordRepository) Generate(domain *forgot_password.Domain) (forgot_password.Domain, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
@@ -35,6 +40,10 @@ func (fr *forgotPasswordRepository) Generate(domain *forgot_password.Domain) (fo
 
 	return result, nil
 }
+
+/*
+Read
+*/
 
 func (fr *forgotPasswordRepository) GetByID(id primitive.ObjectID) (forgot_password.Domain, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
@@ -66,6 +75,10 @@ func (fr *forgotPasswordRepository) GetByToken(token string) (forgot_password.Do
 	return result.ToDomain(), nil
 }
 
+/*
+Update
+*/
+
 func (fr *forgotPasswordRepository) Update(domain *forgot_password.Domain) (forgot_password.Domain, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
@@ -85,4 +98,22 @@ func (fr *forgotPasswordRepository) Update(domain *forgot_password.Domain) (forg
 	}
 
 	return result, nil
+}
+
+/*
+Delete
+*/
+
+func (fr *forgotPasswordRepository) Delete(id primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	_, err := fr.collection.DeleteOne(ctx, bson.M{
+		"_id": id,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

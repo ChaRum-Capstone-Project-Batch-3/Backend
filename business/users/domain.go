@@ -9,19 +9,19 @@ import (
 )
 
 type Domain struct {
-	Id          primitive.ObjectID `json:"_id" bson:"_id"`
-	Email       string             `json:"email" bson:"email"`
-	UserName    string             `json:"userName" bson:"userName"`
-	DisplayName string             `json:"displayName" bson:"displayName"`
-	Biodata     string             `json:"biodata" bson:"biodata"`
-	SocialMedia string             `json:"socialMedia" bson:"socialMedia"`
-	Password    string             `json:"-"`
-	OldPassword string             `json:"-"`
-	NewPassword string             `json:"-"`
-	IsActive    bool               `json:"isActive" bson:"isActive"`
-	Role        string             `json:"role" bson:"role"`
-	CreatedAt   primitive.DateTime `json:"createdAt" bson:"createdAt"`
-	UpdatedAt   primitive.DateTime `json:"updatedAt" bson:"updatedAt"`
+	Id                primitive.ObjectID `json:"_id" bson:"_id"`
+	Email             string             `json:"email" bson:"email"`
+	UserName          string             `json:"userName" bson:"userName"`
+	DisplayName       string             `json:"displayName" bson:"displayName"`
+	Biodata           string             `json:"biodata" bson:"biodata"`
+	SocialMedia       string             `json:"socialMedia" bson:"socialMedia"`
+	Password          string             `json:"-"`
+	OldPassword       string             `json:"-"`
+	NewPassword       string             `json:"-"`
+	IsActive          bool               `json:"isActive" bson:"isActive"`
+	Role              string             `json:"role" bson:"role"`
+	CreatedAt         primitive.DateTime `json:"createdAt" bson:"createdAt"`
+	UpdatedAt         primitive.DateTime `json:"updatedAt" bson:"updatedAt"`
 	ProfilePictureURL string             `json:"profilePictureURL" bson:"profilePictureURL"`
 }
 

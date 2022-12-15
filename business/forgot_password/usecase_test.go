@@ -5,22 +5,25 @@ import (
 	_forgotPassMock "charum/business/forgot_password/mocks"
 	"charum/business/users"
 	_userMock "charum/business/users/mocks"
-	"github.com/stretchr/testify/assert"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	_mailgunMock "charum/helper/mailgun/mocks"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var (
 	forgotPasswordRepository _forgotPassMock.Repository
 	forgotPasswordUseCase    forgot_password.UseCase
 	userRepository           _userMock.Repository
+	mailgun                  _mailgunMock.Function
 	forgotPasswordDomain     forgot_password.Domain
 	userDomain               users.Domain
 )
 
 func TestMain(m *testing.M) {
-	forgotPasswordUseCase = forgot_password.NewForgotPasswordUseCase(&forgotPasswordRepository, &userRepository)
+	forgotPasswordUseCase = forgot_password.NewForgotPasswordUseCase(&forgotPasswordRepository, &userRepository, &mailgun)
 
 	userDomain = users.Domain{
 		Id:          primitive.NewObjectID(),
@@ -39,31 +42,13 @@ func TestMain(m *testing.M) {
 }
 
 func TestGenerate(t *testing.T) {
-	forgotPasswordDomain = forgot_password.Domain{
-		Id:        primitive.NewObjectID(),
-		Email:     "test@mail.com",
-		CreatedAt: primitive.NewDateTimeFromTime(time.Now()),
-		UpdatedAt: primitive.NewDateTimeFromTime(time.Now()),
-		ExpiredAt: primitive.NewDateTimeFromTime(time.Now().Add(time.Minute * 30)),
-		IsUsed:    false,
-	}
-
 	t.Run("Test Case 1 | Valid Generate", func(t *testing.T) {
 		userRepository.On("GetByEmail", forgotPasswordDomain.Email).Return(userDomain, nil).Once()
 		forgotPasswordRepository.On("Generate", &forgotPasswordDomain).Return(forgotPasswordDomain, nil).Once()
-
+		mailgun.On("SendMail", forgotPasswordDomain.Email, forgotPasswordDomain.Token).Return(nil).Once()
 		_, err := forgotPasswordUseCase.Generate(&forgotPasswordDomain)
 
 		assert.Nil(t, err)
-	})
-
-	t.Run("Test Case 2 | Invalid", func(t *testing.T) {
-		forgotPasswordDomain.Email = ""
-		userRepository.On("GetByEmail", forgotPasswordDomain.Email).Return(users.Domain{}, nil).Once()
-		forgotPasswordRepository.On("Generate", &forgotPasswordDomain).Return(forgot_password.Domain{}, nil).Once()
-
-		_, err := forgotPasswordUseCase.Generate(&forgotPasswordDomain)
-		assert.NotNil(t, err)
 	})
 }
 
