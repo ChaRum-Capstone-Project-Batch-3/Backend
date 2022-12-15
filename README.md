@@ -4,13 +4,20 @@
 Charum is application for forum group discussion for many topics. This application will be used by end user and admin. The end users are the main users who use the application to perform a discussion and admin are manager all data like discussions, users, and other related data. End user can discuss certain topics while admin can manage the discussions.
 
 ## Technology Stack
-1. [Echo](https://echo.labstack.com/) - Web framework
+1. [Echo](https://echo.labstack.com/) - Web Framework
 2. [Mongo](https://www.mongodb.com/) - Database
 3. [Testify](https://github.com/stretchr/testify) - Testing
-4. [Cloudinary](https://cloudinary.com/) - Image storage
+4. [Cloudinary](https://cloudinary.com/) - Image Storage
 5. [JWT](https://jwt.io/) - Authentication Strategy
 6. [AWS EC2](https://aws.amazon.com/ec2/) - Cloud Server
 7. Github Action - CI/CD
+8. [Mailgun](https://www.mailgun.com/) - Email Service
+9. [Swagger](https://swagger.io/) - API Documentation
+10. Mockery - Mocking
+
+## API Documentation
+
+Here is the API documentation for Charum Backend. You can access it [here](https://app.swaggerhub.com/apis-docs/timmtimm/charum/1.0.0#/).
 
 ## How to use
 

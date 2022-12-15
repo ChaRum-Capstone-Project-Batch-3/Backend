@@ -15,6 +15,20 @@ type Repository struct {
 	mock.Mock
 }
 
+// Delete provides a mock function with given fields: id
+func (_m *Repository) Delete(id primitive.ObjectID) error {
+	ret := _m.Called(id)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID) error); ok {
+		r0 = rf(id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Generate provides a mock function with given fields: domain
 func (_m *Repository) Generate(domain *forgot_password.Domain) (forgot_password.Domain, error) {
 	ret := _m.Called(domain)

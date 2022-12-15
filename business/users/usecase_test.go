@@ -360,16 +360,61 @@ func TestUpdate(t *testing.T) {
 
 func TestUpdatePassword(t *testing.T) {
 	t.Run("Test Case 1 | Valid Update Password", func(t *testing.T) {
-		userRepository.On("GetByID", userDomain.Id).Return(userDomain, nil).Once()
 		copyDomain := userDomain
+		encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte(userDomain.Password), bcrypt.DefaultCost)
+		copyDomain.Password = string(encryptedPassword)
 		copyDomain.OldPassword = userDomain.Password
-		copyDomain.NewPassword = "!Test1234"
-		userRepository.On("UpdatePassword", mock.Anything).Return(userDomain, nil).Once()
+		copyDomain.NewPassword = "newpassword"
+
+		userRepository.On("GetByID", userDomain.Id).Return(copyDomain, nil).Once()
+		userRepository.On("UpdatePassword", mock.Anything).Return(copyDomain, nil).Once()
 		actualUser, actualErr := userUseCase.UpdatePassword(&copyDomain)
-		t.Log()
+
 		assert.NotNil(t, actualUser)
 		assert.Nil(t, actualErr)
+	})
 
+	t.Run("Test Case 2 | Invalid Update Password | Error when getting user", func(t *testing.T) {
+		expectedErr := errors.New("failed to get user")
+		copyDomain := userDomain
+		copyDomain.OldPassword = userDomain.Password
+		copyDomain.NewPassword = "newpassword"
+
+		userRepository.On("GetByID", userDomain.Id).Return(users.Domain{}, expectedErr).Once()
+
+		actualUser, actualErr := userUseCase.UpdatePassword(&copyDomain)
+
+		assert.Equal(t, users.Domain{}, actualUser)
+		assert.Equal(t, expectedErr, actualErr)
+	})
+
+	t.Run("Test Case 3 | Invalid Update Password | Error when updating password", func(t *testing.T) {
+		expectedErr := errors.New("failed to update password")
+		copyDomain := userDomain
+		encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte(userDomain.Password), bcrypt.DefaultCost)
+		copyDomain.Password = string(encryptedPassword)
+		copyDomain.OldPassword = userDomain.Password
+		copyDomain.NewPassword = "newpassword"
+
+		userRepository.On("GetByID", userDomain.Id).Return(copyDomain, nil).Once()
+		userRepository.On("UpdatePassword", mock.Anything).Return(users.Domain{}, expectedErr).Once()
+
+		actualUser, actualErr := userUseCase.UpdatePassword(&copyDomain)
+
+		assert.Equal(t, users.Domain{}, actualUser)
+		assert.Equal(t, expectedErr, actualErr)
+	})
+
+	t.Run("Test Case 4 | Invalid Update Password | Wrong Password", func(t *testing.T) {
+		expectedErr := errors.New("wrong password")
+		copyDomain := userDomain
+		copyDomain.OldPassword = "wrong password"
+		userRepository.On("GetByID", copyDomain.Id).Return(copyDomain, nil).Once()
+
+		actualUser, actualErr := userUseCase.UpdatePassword(&copyDomain)
+
+		assert.Equal(t, users.Domain{}, actualUser)
+		assert.Equal(t, expectedErr, actualErr)
 	})
 }
 

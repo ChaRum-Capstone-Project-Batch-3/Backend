@@ -5,7 +5,7 @@ import (
 	"charum/business/users"
 	"charum/driver/cloudinary"
 	dtoComment "charum/dto/comments"
-	"charum/helper"
+	"charum/util"
 	"errors"
 	"mime/multipart"
 	"time"
@@ -48,7 +48,7 @@ func (cu *CommentUseCase) Create(domain *Domain, image *multipart.FileHeader) (D
 	}
 
 	if image != nil {
-		cloudinaryURL, err := cu.cloudinary.Upload("comment", image, helper.GenerateUUID())
+		cloudinaryURL, err := cu.cloudinary.Upload("comment", image, util.GenerateUUID())
 		if err != nil {
 			return Domain{}, errors.New("failed to upload image")
 		}
@@ -63,8 +63,8 @@ func (cu *CommentUseCase) Create(domain *Domain, image *multipart.FileHeader) (D
 	comment, err := cu.commentRepository.Create(domain)
 	if err != nil {
 		if domain.ImageURL != "" {
-			err := cu.cloudinary.Delete("comment", helper.GetFilenameWithoutExtension(domain.ImageURL))
-			if err != nil {
+			delErr := cu.cloudinary.Delete("comment", util.GetFilenameWithoutExtension(domain.ImageURL))
+			if delErr != nil {
 				return Domain{}, errors.New("failed to delete image")
 			}
 		}
@@ -163,13 +163,13 @@ func (cu *CommentUseCase) Update(domain *Domain, image *multipart.FileHeader) (D
 
 	if image != nil {
 		if comment.ImageURL != "" {
-			err := cu.cloudinary.Delete("comment", helper.GetFilenameWithoutExtension(comment.ImageURL))
-			if err != nil {
+			delErr := cu.cloudinary.Delete("comment", util.GetFilenameWithoutExtension(comment.ImageURL))
+			if delErr != nil {
 				return Domain{}, errors.New("failed to delete image")
 			}
 		}
 
-		cloudinaryURL, err := cu.cloudinary.Upload("comment", image, helper.GenerateUUID())
+		cloudinaryURL, err := cu.cloudinary.Upload("comment", image, util.GenerateUUID())
 		if err != nil {
 			return Domain{}, errors.New("failed to upload image")
 		}
@@ -208,7 +208,7 @@ func (cu *CommentUseCase) Delete(id primitive.ObjectID, userID primitive.ObjectI
 	}
 
 	if comment.ImageURL != "" {
-		err := cu.cloudinary.Delete("comment", helper.GetFilenameWithoutExtension(comment.ImageURL))
+		err := cu.cloudinary.Delete("comment", util.GetFilenameWithoutExtension(comment.ImageURL))
 		if err != nil {
 			return Domain{}, errors.New("failed to delete image")
 		}
@@ -230,7 +230,7 @@ func (cu *CommentUseCase) DeleteAllByUserID(userID primitive.ObjectID) error {
 
 	for _, comment := range comments {
 		if comment.ImageURL != "" {
-			err := cu.cloudinary.Delete("comment", helper.GetFilenameWithoutExtension(comment.ImageURL))
+			err := cu.cloudinary.Delete("comment", util.GetFilenameWithoutExtension(comment.ImageURL))
 			if err != nil {
 				return errors.New("failed to delete image")
 			}
@@ -253,7 +253,7 @@ func (cu *CommentUseCase) DeleteAllByThreadID(threadID primitive.ObjectID) error
 
 	for _, comment := range comments {
 		if comment.ImageURL != "" {
-			err := cu.cloudinary.Delete("comment", helper.GetFilenameWithoutExtension(comment.ImageURL))
+			err := cu.cloudinary.Delete("comment", util.GetFilenameWithoutExtension(comment.ImageURL))
 			if err != nil {
 				return errors.New("failed to delete image")
 			}

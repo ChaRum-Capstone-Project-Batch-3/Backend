@@ -7,7 +7,7 @@ import (
 	dtoPagination "charum/dto/pagination"
 	dtoQuery "charum/dto/query"
 	dtoThread "charum/dto/threads"
-	"charum/helper"
+	"charum/util"
 	"errors"
 	"math"
 	"mime/multipart"
@@ -43,7 +43,7 @@ func (tu *ThreadUseCase) Create(domain *Domain, image *multipart.FileHeader) (Do
 	}
 
 	if image != nil {
-		cloudinaryURL, err := tu.cloudinary.Upload("thread", image, helper.GenerateUUID())
+		cloudinaryURL, err := tu.cloudinary.Upload("thread", image, util.GenerateUUID())
 		if err != nil {
 			return Domain{}, errors.New("failed to upload image")
 		}
@@ -59,8 +59,8 @@ func (tu *ThreadUseCase) Create(domain *Domain, image *multipart.FileHeader) (Do
 	thread, err := tu.threadRepository.Create(domain)
 	if err != nil {
 		if domain.ImageURL != "" {
-			err := tu.cloudinary.Delete("thread", helper.GetFilenameWithoutExtension(domain.ImageURL))
-			if err != nil {
+			delErr := tu.cloudinary.Delete("thread", util.GetFilenameWithoutExtension(domain.ImageURL))
+			if delErr != nil {
 				return Domain{}, errors.New("failed to delete image")
 			}
 		}
@@ -234,13 +234,13 @@ func (tu *ThreadUseCase) UserUpdate(domain *Domain, image *multipart.FileHeader)
 
 	if image != nil {
 		if thread.ImageURL != "" {
-			err = tu.cloudinary.Delete("thread", helper.GetFilenameWithoutExtension(thread.ImageURL))
-			if err != nil {
+			delErr := tu.cloudinary.Delete("thread", util.GetFilenameWithoutExtension(thread.ImageURL))
+			if delErr != nil {
 				return Domain{}, errors.New("failed to delete image")
 			}
 		}
 
-		cloudinaryURL, err := tu.cloudinary.Upload("thread", image, helper.GenerateUUID())
+		cloudinaryURL, err := tu.cloudinary.Upload("thread", image, util.GenerateUUID())
 		if err != nil {
 			return Domain{}, err
 		}
@@ -274,13 +274,13 @@ func (tu *ThreadUseCase) AdminUpdate(domain *Domain, image *multipart.FileHeader
 
 	if image != nil {
 		if thread.ImageURL != "" {
-			err = tu.cloudinary.Delete("thread", helper.GetFilenameWithoutExtension(thread.ImageURL))
-			if err != nil {
+			delErr := tu.cloudinary.Delete("thread", util.GetFilenameWithoutExtension(thread.ImageURL))
+			if delErr != nil {
 				return Domain{}, errors.New("failed to delete image")
 			}
 		}
 
-		cloudinaryURL, err := tu.cloudinary.Upload("thread", image, helper.GenerateUUID())
+		cloudinaryURL, err := tu.cloudinary.Upload("thread", image, util.GenerateUUID())
 		if err != nil {
 			return Domain{}, err
 		}
@@ -378,8 +378,8 @@ func (tu *ThreadUseCase) Delete(userID primitive.ObjectID, threadID primitive.Ob
 	}
 
 	if thread.ImageURL != "" {
-		err = tu.cloudinary.Delete("thread", helper.GetFilenameWithoutExtension(thread.ImageURL))
-		if err != nil {
+		delErr := tu.cloudinary.Delete("thread", util.GetFilenameWithoutExtension(thread.ImageURL))
+		if delErr != nil {
 			return Domain{}, errors.New("failed to delete image")
 		}
 	}
@@ -400,8 +400,8 @@ func (tu *ThreadUseCase) DeleteAllByUserID(userID primitive.ObjectID) error {
 
 	for _, thread := range threads {
 		if thread.ImageURL != "" {
-			err = tu.cloudinary.Delete("thread", helper.GetFilenameWithoutExtension(thread.ImageURL))
-			if err != nil {
+			delErr := tu.cloudinary.Delete("thread", util.GetFilenameWithoutExtension(thread.ImageURL))
+			if delErr != nil {
 				return errors.New("failed to delete image")
 			}
 		}
@@ -422,8 +422,8 @@ func (tu *ThreadUseCase) DeleteByThreadID(threadID primitive.ObjectID) error {
 	}
 
 	if thread.ImageURL != "" {
-		err = tu.cloudinary.Delete("thread", helper.GetFilenameWithoutExtension(thread.ImageURL))
-		if err != nil {
+		delErr := tu.cloudinary.Delete("thread", util.GetFilenameWithoutExtension(thread.ImageURL))
+		if delErr != nil {
 			return errors.New("failed to delete image")
 		}
 	}
@@ -443,7 +443,7 @@ func (tu *ThreadUseCase) AdminDelete(threadID primitive.ObjectID) (Domain, error
 	}
 
 	if thread.ImageURL != "" {
-		err = tu.cloudinary.Delete("thread", helper.GetFilenameWithoutExtension(thread.ImageURL))
+		err = tu.cloudinary.Delete("thread", util.GetFilenameWithoutExtension(thread.ImageURL))
 		if err != nil {
 			return Domain{}, errors.New("failed to delete image")
 		}
