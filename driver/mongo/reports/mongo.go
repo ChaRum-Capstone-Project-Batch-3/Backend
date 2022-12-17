@@ -57,3 +57,38 @@ func (rr *reportRepository) GetByID(id primitive.ObjectID) (reports.Domain, erro
 
 	return result.ToDomain(), nil
 }
+
+func (rr *reportRepository) GetByReportedID(id primitive.ObjectID) ([]reports.Domain, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	var result []Model
+	cursor, err := rr.collection.Find(ctx, bson.M{
+		"reportedID": id,
+	})
+	if err != nil {
+		return []reports.Domain{}, err
+	}
+
+	if err = cursor.All(ctx, &result); err != nil {
+		return []reports.Domain{}, err
+	}
+
+	return ToDomainArray(result), nil
+}
+
+func (rr *reportRepository) CheckByUserID(UserID primitive.ObjectID, ReportedID primitive.ObjectID) (reports.Domain, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	var result Model
+	err := rr.collection.FindOne(ctx, bson.M{
+		"reportedId": ReportedID,
+		"userId":     UserID,
+	}).Decode(&result)
+	if err != nil {
+		return reports.Domain{}, err
+	}
+
+	return result.ToDomain(), nil
+}

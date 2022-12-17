@@ -7,6 +7,7 @@ import (
 	"charum/controller/comments"
 	followThreads "charum/controller/follow_threads"
 	"charum/controller/forgot_password"
+	"charum/controller/reports"
 	"charum/controller/threads"
 	"charum/controller/topics"
 	"charum/controller/users"
@@ -25,6 +26,7 @@ type ControllerList struct {
 	FollowThreadController   *followThreads.FollowThreadController
 	BookmarkController       *_bookmarkController.BookmarkController
 	ForgotPasswordController *forgot_password.ForgotPasswordController
+	ReportController         *reports.ReportController
 }
 
 func (cl *ControllerList) Init(e *echo.Echo) {
@@ -80,6 +82,9 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	threadBookmark.GET("", cl.BookmarkController.GetAllByToken, authMiddleware.Check)
 	threadBookmark.POST("/:thread-id", cl.BookmarkController.Create, authMiddleware.Check)
 	threadBookmark.DELETE("/:thread-id", cl.BookmarkController.Delete, authMiddleware.Check)
+
+	report := apiV1.Group("/report")
+	report.POST("/:id", cl.ReportController.Create, authMiddleware.Check)
 
 	// Admin
 	admin := apiV1.Group("/admin", adminMiddleware.Check)

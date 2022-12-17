@@ -34,6 +34,9 @@ import (
 	_forgotPasswordUseCase "charum/business/forgot_password"
 	_forgotPasswordController "charum/controller/forgot_password"
 
+	_reportUseCase "charum/business/reports"
+	_reportController "charum/controller/reports"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -52,6 +55,7 @@ func main() {
 	followThreadRepository := _driver.NewFollowThreadRepository(database)
 	bookmarkRepository := _driver.NewBookmarkRepository(database)
 	forgotPasswordRepository := _driver.NewForgotPasswordRepository(database)
+	reportRepository := _driver.NewReportRepository(database)
 
 	userUsecase := _userUseCase.NewUserUseCase(userRepository, cloudinary)
 	topicUsecase := _topicUseCase.NewTopicUseCase(topicRepository, cloudinary)
@@ -60,6 +64,7 @@ func main() {
 	followThreadUsecase := _followThreadUseCase.NewFollowThreadUseCase(followThreadRepository, userRepository, threadRepository, commentRepository, threadUsecase)
 	bookmarkUsecase := _bookmarkUseCase.NewBookmarkUseCase(bookmarkRepository, threadRepository, userRepository, topicRepository, threadUsecase)
 	forgotPasswordUseCase := _forgotPasswordUseCase.NewForgotPasswordUseCase(forgotPasswordRepository, userRepository, mailgun)
+	reportUseCase := _reportUseCase.NewReportUseCase(reportRepository, userRepository, threadRepository)
 
 	userController := _userController.NewUserController(userUsecase, threadUsecase, commentUsecase, followThreadUsecase, bookmarkUsecase)
 	topicController := _topicController.NewTopicController(topicUsecase, threadUsecase, commentUsecase, followThreadUsecase, bookmarkUsecase)
@@ -68,6 +73,7 @@ func main() {
 	forgotPasswordController := _forgotPasswordController.NewForgotPasswordController(forgotPasswordUseCase, userUsecase)
 	followThreadController := _followThreadController.NewFollowThreadController(followThreadUsecase, bookmarkUsecase)
 	bookmarkController := _bookmarkController.NewBookmarkController(bookmarkUsecase, followThreadUsecase, commentUsecase)
+	reportController := _reportController.NewReportController(reportUseCase, userUsecase, threadUsecase)
 
 	routeController := _route.ControllerList{
 		UserRepository:           userRepository,
@@ -78,6 +84,7 @@ func main() {
 		FollowThreadController:   followThreadController,
 		BookmarkController:       bookmarkController,
 		ForgotPasswordController: forgotPasswordController,
+		ReportController:         reportController,
 	}
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
