@@ -4,6 +4,7 @@ import (
 	"charum/business/bookmarks"
 	"charum/business/comments"
 	followThreads "charum/business/follow_threads"
+	"charum/business/reports"
 	"charum/business/threads"
 	"charum/business/users"
 	"charum/controller/threads/request"
@@ -26,15 +27,17 @@ type ThreadController struct {
 	followThreadUseCase followThreads.UseCase
 	userUseCase         users.UseCase
 	bookmarkUseCase     bookmarks.UseCase
+	reportUseCase       reports.UseCase
 }
 
-func NewThreadController(threadUC threads.UseCase, commentUC comments.UseCase, followThreadUC followThreads.UseCase, userUC users.UseCase, bookmarkUC bookmarks.UseCase) *ThreadController {
+func NewThreadController(threadUC threads.UseCase, commentUC comments.UseCase, followThreadUC followThreads.UseCase, userUC users.UseCase, bookmarkUC bookmarks.UseCase, reportUC reports.UseCase) *ThreadController {
 	return &ThreadController{
 		threadUseCase:       threadUC,
 		commentUseCase:      commentUC,
 		followThreadUseCase: followThreadUC,
 		userUseCase:         userUC,
 		bookmarkUseCase:     bookmarkUC,
+		reportUseCase:       reportUC,
 	}
 }
 
@@ -304,6 +307,16 @@ func (tc *ThreadController) GetManyWithPagination(c echo.Context) error {
 					Pagination: helper.Page{},
 				})
 			}
+
+			responseThreads[i].TotalReported, err = tc.reportUseCase.GetByReportedID(thread.Id)
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
+					Status:     http.StatusInternalServerError,
+					Message:    err.Error(),
+					Data:       nil,
+					Pagination: helper.Page{},
+				})
+			}
 		}
 	} else {
 		responseThreads, err := tc.threadUseCase.DomainsToResponseArray(threads, primitive.NilObjectID)
@@ -338,6 +351,16 @@ func (tc *ThreadController) GetManyWithPagination(c echo.Context) error {
 			}
 
 			responseThreads[i].TotalBookmark, err = tc.bookmarkUseCase.CountByThreadID(thread.Id)
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
+					Status:     http.StatusInternalServerError,
+					Message:    err.Error(),
+					Data:       nil,
+					Pagination: helper.Page{},
+				})
+			}
+
+			responseThreads[i].TotalReported, err = tc.reportUseCase.GetByReportedID(thread.Id)
 			if err != nil {
 				return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
 					Status:     http.StatusInternalServerError,
@@ -420,6 +443,15 @@ func (tc *ThreadController) GetManyByToken(c echo.Context) error {
 				Pagination: helper.Page{},
 			})
 		}
+		responseThreads[i].TotalReported, err = tc.reportUseCase.GetByReportedID(thread.Id)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
+				Status:     http.StatusInternalServerError,
+				Message:    err.Error(),
+				Data:       nil,
+				Pagination: helper.Page{},
+			})
+		}
 	}
 
 	return c.JSON(http.StatusOK, helper.BaseResponse{
@@ -469,6 +501,15 @@ func (tc *ThreadController) GetByID(c echo.Context) error {
 	}
 
 	totalBookmark, err := tc.bookmarkUseCase.CountByThreadID(threadID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	totalReported, err := tc.reportUseCase.GetByReportedID(threadID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,
@@ -538,6 +579,7 @@ func (tc *ThreadController) GetByID(c echo.Context) error {
 	responseThread.TotalComment = len(responseComment)
 	responseThread.TotalFollow = totalFollow
 	responseThread.TotalBookmark = totalBookmark
+	responseThread.TotalReported = totalReported
 
 	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
@@ -833,6 +875,16 @@ func (tc *ThreadController) GetLikedThreadByToken(c echo.Context) error {
 		}
 
 		responseThreads[i].TotalBookmark, err = tc.bookmarkUseCase.CountByThreadID(thread.Id)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
+				Status:     http.StatusInternalServerError,
+				Message:    err.Error(),
+				Data:       nil,
+				Pagination: helper.Page{},
+			})
+		}
+
+		responseThreads[i].TotalReported, err = tc.reportUseCase.GetByReportedID(thread.Id)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
 				Status:     http.StatusInternalServerError,

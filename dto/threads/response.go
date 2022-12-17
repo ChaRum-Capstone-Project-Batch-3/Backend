@@ -22,6 +22,7 @@ type Response struct {
 	TotalFollow   int                `json:"totalFollow"`
 	TotalComment  int                `json:"totalComment"`
 	TotalBookmark int                `json:"totalBookmark"`
+	TotalReported int                `json:"totalReported"`
 	SuspendStatus string             `json:"suspendStatus,omitempty"`
 	SuspendDetail string             `json:"suspendDetail,omitempty"`
 	CreatedAt     primitive.DateTime `json:"createdAt"`

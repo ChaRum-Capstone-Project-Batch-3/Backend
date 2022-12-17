@@ -68,7 +68,7 @@ func main() {
 
 	userController := _userController.NewUserController(userUsecase, threadUsecase, commentUsecase, followThreadUsecase, bookmarkUsecase)
 	topicController := _topicController.NewTopicController(topicUsecase, threadUsecase, commentUsecase, followThreadUsecase, bookmarkUsecase)
-	threadController := _threadController.NewThreadController(threadUsecase, commentUsecase, followThreadUsecase, userUsecase, bookmarkUsecase)
+	threadController := _threadController.NewThreadController(threadUsecase, commentUsecase, followThreadUsecase, userUsecase, bookmarkUsecase, reportUseCase)
 	commentController := _commentController.NewCommentController(commentUsecase, followThreadUsecase)
 	forgotPasswordController := _forgotPasswordController.NewForgotPasswordController(forgotPasswordUseCase, userUsecase)
 	followThreadController := _followThreadController.NewFollowThreadController(followThreadUsecase, bookmarkUsecase)
