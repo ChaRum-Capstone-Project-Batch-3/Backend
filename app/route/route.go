@@ -100,6 +100,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 
 	adminReport := admin.Group("/report")
 	adminReport.GET("/:id", cl.ReportController.GetReportedID)
+	adminReport.GET("", cl.ReportController.GetAll)
 
 	adminTopic := admin.Group("/topic")
 	adminTopic.POST("", cl.TopicController.Create)

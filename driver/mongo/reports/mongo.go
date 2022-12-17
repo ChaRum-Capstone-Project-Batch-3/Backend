@@ -93,3 +93,61 @@ func (rr *reportRepository) CheckByUserID(UserID primitive.ObjectID, ReportedID 
 
 	return result.ToDomain(), nil
 }
+
+func (rr *reportRepository) GetAll() ([]reports.Domain, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	cursor, err := rr.collection.Find(ctx, bson.M{})
+	if err != nil {
+		return []reports.Domain{}, err
+	}
+
+	var result []Model
+	if err = cursor.All(ctx, &result); err != nil {
+		return []reports.Domain{}, err
+	}
+
+	domains := ToDomainArray(result)
+	return domains, nil
+}
+
+func (rr *reportRepository) GetAllReportedUsers() ([]reports.Domain, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	cursor, err := rr.collection.Find(ctx, bson.M{
+		"reportedType": "user",
+	})
+	if err != nil {
+		return []reports.Domain{}, err
+	}
+
+	var result []Model
+	if err = cursor.All(ctx, &result); err != nil {
+		return []reports.Domain{}, err
+	}
+
+	domains := ToDomainArray(result)
+	return domains, nil
+}
+
+func (rr *reportRepository) GetAllReportedThreads() ([]reports.Domain, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	cursor, err := rr.collection.Find(ctx, bson.M{
+		"reportedType": "thread",
+	})
+	if err != nil {
+		return []reports.Domain{}, err
+	}
+
+	var result []Model
+	if err = cursor.All(ctx, &result); err != nil {
+		return []reports.Domain{}, err
+	}
+
+	domains := ToDomainArray(result)
+	return domains, nil
+}

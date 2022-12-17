@@ -28,7 +28,7 @@ Create
 
 func (ru *ReportUseCase) Create(domain *Domain) (Domain, error) {
 	// check ReportedID if exist in users or threads ID
-	reportType, err := ru.CheckID(domain.ReportedID)
+	reportedType, err := ru.CheckID(domain.ReportedID)
 	if err != nil {
 		return Domain{}, errors.New("ID not found")
 	}
@@ -38,7 +38,7 @@ func (ru *ReportUseCase) Create(domain *Domain) (Domain, error) {
 	}
 
 	domain.Id = primitive.NewObjectID()
-	domain.ReportType = reportType
+	domain.ReportedType = reportedType
 	domain.ReportDetail = "Inappropriate content or behavior"
 	domain.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
 	domain.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
@@ -72,6 +72,36 @@ func (ru *ReportUseCase) CheckID(id primitive.ObjectID) (string, error) {
 func (ru *ReportUseCase) GetByReportedID(id primitive.ObjectID) (int, error) {
 	// create get report by reported id
 	reports, err := ru.reportRepository.GetByReportedID(id)
+	if err != nil {
+		return 0, errors.New("failed to get reports")
+	}
+
+	totalReports := len(reports)
+	return totalReports, nil
+}
+
+func (ru *ReportUseCase) GetAll() (int, error) {
+	reports, err := ru.reportRepository.GetAll()
+	if err != nil {
+		return 0, errors.New("failed to get reports")
+	}
+
+	totalReports := len(reports)
+	return totalReports, nil
+}
+
+func (ru *ReportUseCase) GetAllReportedUsers() (int, error) {
+	reports, err := ru.reportRepository.GetAllReportedUsers()
+	if err != nil {
+		return 0, errors.New("failed to get reports")
+	}
+
+	totalReports := len(reports)
+	return totalReports, nil
+}
+
+func (ru *ReportUseCase) GetAllReportedThreads() (int, error) {
+	reports, err := ru.reportRepository.GetAllReportedThreads()
 	if err != nil {
 		return 0, errors.New("failed to get reports")
 	}

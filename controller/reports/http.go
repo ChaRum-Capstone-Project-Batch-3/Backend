@@ -99,3 +99,42 @@ func (ctrl *ReportController) GetReportedID(c echo.Context) error {
 		},
 	})
 }
+
+func (ctrl *ReportController) GetAll(c echo.Context) error {
+	report, err := ctrl.ReportUseCase.GetAll()
+	if err != nil {
+		return c.JSON(http.StatusNotFound, helper.BaseResponse{
+			Status:  http.StatusNotFound,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	reportedUsers, err := ctrl.ReportUseCase.GetAllReportedUsers()
+	if err != nil {
+		return c.JSON(http.StatusNotFound, helper.BaseResponse{
+			Status:  http.StatusNotFound,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	reportedThreads, err := ctrl.ReportUseCase.GetAllReportedThreads()
+	if err != nil {
+		return c.JSON(http.StatusNotFound, helper.BaseResponse{
+			Status:  http.StatusNotFound,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success get report",
+		Data: map[string]interface{}{
+			"total reports":          report,
+			"total reported users":   reportedUsers,
+			"total reported threads": reportedThreads,
+		},
+	})
+}
