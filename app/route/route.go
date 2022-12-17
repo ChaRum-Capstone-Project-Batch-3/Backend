@@ -98,6 +98,9 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	adminUserID.PUT("/:user-id", cl.UserController.AdminUpdate)
 	adminUserID.DELETE("/:user-id", cl.UserController.Delete)
 
+	adminReport := admin.Group("/report")
+	adminReport.GET("/:id", cl.ReportController.GetReportedID)
+
 	adminTopic := admin.Group("/topic")
 	adminTopic.POST("", cl.TopicController.Create)
 	adminTopic.GET("/:page", cl.TopicController.GetManyWithPagination)

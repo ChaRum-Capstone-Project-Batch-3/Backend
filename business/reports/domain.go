@@ -24,5 +24,5 @@ type UseCase interface {
 	// Create
 	Create(domain *Domain) (Domain, error)
 	// Read
-	GetByReportedID(id primitive.ObjectID) ([]Domain, error)
+	GetByReportedID(id primitive.ObjectID) (int, error)
 }

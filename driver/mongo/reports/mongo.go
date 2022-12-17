@@ -62,19 +62,20 @@ func (rr *reportRepository) GetByReportedID(id primitive.ObjectID) ([]reports.Do
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
-	var result []Model
 	cursor, err := rr.collection.Find(ctx, bson.M{
-		"reportedID": id,
+		"reportedId": id,
 	})
 	if err != nil {
 		return []reports.Domain{}, err
 	}
 
+	var result []Model
 	if err = cursor.All(ctx, &result); err != nil {
 		return []reports.Domain{}, err
 	}
 
-	return ToDomainArray(result), nil
+	domains := ToDomainArray(result)
+	return domains, nil
 }
 
 func (rr *reportRepository) CheckByUserID(UserID primitive.ObjectID, ReportedID primitive.ObjectID) (reports.Domain, error) {

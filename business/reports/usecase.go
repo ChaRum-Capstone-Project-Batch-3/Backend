@@ -69,11 +69,13 @@ func (ru *ReportUseCase) CheckID(id primitive.ObjectID) (string, error) {
 	}
 }
 
-func (ru *ReportUseCase) GetByReportedID(id primitive.ObjectID) ([]Domain, error) {
-	report, err := ru.reportRepository.GetByReportedID(id)
+func (ru *ReportUseCase) GetByReportedID(id primitive.ObjectID) (int, error) {
+	// create get report by reported id
+	reports, err := ru.reportRepository.GetByReportedID(id)
 	if err != nil {
-		return []Domain{}, err
+		return 0, errors.New("failed to get reports")
 	}
 
-	return report, nil
+	totalReports := len(reports)
+	return totalReports, nil
 }

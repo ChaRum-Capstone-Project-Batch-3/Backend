@@ -6,6 +6,7 @@ import (
 	"charum/business/users"
 	"charum/helper"
 	"charum/util"
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
@@ -66,5 +67,35 @@ func (ctrl *ReportController) Create(c echo.Context) error {
 		Status:  http.StatusCreated,
 		Message: "success create report",
 		Data:    report,
+	})
+}
+
+func (ctrl *ReportController) GetReportedID(c echo.Context) error {
+	ReportedID, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "invalid id",
+			Data:    nil,
+		})
+	}
+
+	report, err := ctrl.ReportUseCase.GetByReportedID(ReportedID)
+	fmt.Println("error: ", err)
+	fmt.Println("data", report)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, helper.BaseResponse{
+			Status:  http.StatusNotFound,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success get report",
+		Data: map[string]interface{}{
+			"total reports": report,
+		},
 	})
 }
