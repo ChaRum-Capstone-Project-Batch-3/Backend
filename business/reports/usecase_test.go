@@ -101,16 +101,49 @@ func TestMain(m *testing.M) {
 
 // get all report
 func TestCreate(t *testing.T) {
-	t.Run("Test Case 1 | Valid Create Report", func(t *testing.T) {
+	t.Run("Test Case 1 | Invalid Create Report", func(t *testing.T) {
+		expectedErr := errors.New("already reported")
 		// check if the id is user id or thread id, if user then return "user", and if thread then return "thread"
-		ThreadRepository.On("Create", &threadDomain).Return(threadDomain, nil).Once()
-		UserRepository.On("Create", &userDomain).Return(userDomain, nil).Once()
-		UserRepository.On("GetByID", mock.Anything).Return(userDomain, nil).Once()
 		ReportRepository.On("Create", &reportDomain).Return(reportDomain, nil).Once()
+		ReportRepository.On("GetByID", reportDomain.Id).Return(reportDomain, nil).Once()
+		ReportRepository.On("GetByReportedID", reportDomain.ReportedID).Return(reportDomain, nil).Once()
+		ThreadRepository.On("GetByID", mock.Anything).Return(threadDomain, nil).Once()
+		UserRepository.On("GetByID", mock.Anything).Return(userDomain, nil).Once()
+		ReportRepository.On("CheckByUserID", mock.Anything, mock.Anything).Return(reportDomain, nil).Once()
+
+		_, err := ReportUseCase.Create(&reportDomain)
+
+		assert.Equal(t, expectedErr, err)
+	})
+
+	// report thread
+	t.Run("Test Case 2 | Valid Create Report Thread", func(t *testing.T) {
+		reportDomain.ReportedType = "thread"
+		ReportRepository.On("Create", &reportDomain).Return(reportDomain, nil).Once()
+		ReportRepository.On("GetByID", reportDomain.Id).Return(reportDomain, nil).Once()
+		ReportRepository.On("GetByReportedID", reportDomain.ReportedID).Return(reportDomain, nil).Once()
+		ThreadRepository.On("GetByID", mock.Anything).Return(threadDomain, nil).Once()
+		UserRepository.On("GetByID", mock.Anything).Return(userDomain, nil).Once()
+		ReportRepository.On("CheckByUserID", mock.Anything, mock.Anything).Return(reports.Domain{}, errors.New("not reported")).Once()
+
 		_, err := ReportUseCase.Create(&reportDomain)
 
 		assert.Nil(t, err)
+	})
 
+	// create report user, by copy domain and change reported type
+	t.Run("Test Case 3 | Valid Create Report User", func(t *testing.T) {
+		reportDomain.ReportedType = "user"
+		ReportRepository.On("Create", &reportDomain).Return(reportDomain, nil).Once()
+		ReportRepository.On("GetByID", reportDomain.Id).Return(reportDomain, nil).Once()
+		ReportRepository.On("GetByReportedID", reportDomain.ReportedID).Return(reportDomain, nil).Once()
+		ThreadRepository.On("GetByID", mock.Anything).Return(threadDomain, nil).Once()
+		UserRepository.On("GetByID", mock.Anything).Return(userDomain, nil).Once()
+		ReportRepository.On("CheckByUserID", mock.Anything, mock.Anything).Return(reports.Domain{}, errors.New("not reported")).Once()
+
+		_, err := ReportUseCase.Create(&reportDomain)
+
+		assert.Nil(t, err)
 	})
 }
 func TestGetAll(t *testing.T) {
@@ -163,6 +196,27 @@ func TestGetAllReportedUsers(t *testing.T) {
 		res, err := ReportUseCase.GetAllReportedUsers()
 
 		assert.Equal(t, 0, res)
+		assert.Equal(t, err, expectedErr)
+	})
+}
+
+// by get reported id
+func TestGetByReportedID(t *testing.T) {
+	t.Run("Test Case 1 | Valid Get By Reported ID", func(t *testing.T) {
+		domains := []reports.Domain{reportDomain}
+		ReportRepository.On("GetByReportedID", mock.Anything).Return(domains, nil).Once()
+		_, err := ReportUseCase.GetByReportedID(reportDomain.ReportedID)
+
+		assert.Nil(t, err)
+	})
+
+	t.Run("Test Case 2 | Invalid Get By Reported ID", func(t *testing.T) {
+		expectedErr := errors.New("failed to get reports")
+		domains := []reports.Domain{reportDomain}
+		ReportRepository.On("GetByReportedID", mock.Anything).Return(domains, expectedErr).Once()
+		res, err := ReportUseCase.GetByReportedID(reportDomain.ReportedID)
+
+		assert.Equal(t, res, 0)
 		assert.Equal(t, err, expectedErr)
 	})
 }
