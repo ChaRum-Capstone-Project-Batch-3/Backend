@@ -12,7 +12,6 @@ import (
 	"charum/helper"
 	"charum/util"
 	"errors"
-	"fmt"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -323,7 +322,6 @@ func (userCtrl *UserController) AdminUpdate(c echo.Context) error {
 	profilePicture, _ := c.FormFile("profilePicture")
 	if profilePicture != nil {
 		profilePictureExt := filepath.Ext(profilePicture.Filename)
-		fmt.Println(profilePictureExt)
 		availableExt := []string{".jpg", ".jpeg", ".png"}
 
 		flagExt := false

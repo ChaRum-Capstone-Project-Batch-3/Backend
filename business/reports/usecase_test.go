@@ -23,8 +23,6 @@ var (
 	ReportRepository _ReportMock.Repository
 	ThreadRepository _threadMock.Repository
 	UserRepository   _userMock.Repository
-	threadUseCase    _threadMock.UseCase
-	userUseCase      _userMock.UseCase
 	userDomain       users.Domain
 	threadDomain     threads.Domain
 	reportDomain     reports.Domain
@@ -197,27 +195,6 @@ func TestGetAllReportedUsers(t *testing.T) {
 		res, err := ReportUseCase.GetAllReportedUsers()
 
 		assert.Equal(t, 0, res)
-		assert.Equal(t, err, expectedErr)
-	})
-}
-
-// by get reported id
-func TestGetByReportedID(t *testing.T) {
-	t.Run("Test Case 1 | Valid Get By Reported ID", func(t *testing.T) {
-		domains := []reports.Domain{reportDomain}
-		ReportRepository.On("GetByReportedID", mock.Anything).Return(domains, nil).Once()
-		_, err := ReportUseCase.GetByReportedID(reportDomain.ReportedID)
-
-		assert.Nil(t, err)
-	})
-
-	t.Run("Test Case 2 | Invalid Get By Reported ID", func(t *testing.T) {
-		expectedErr := errors.New("failed to get reports")
-		domains := []reports.Domain{reportDomain}
-		ReportRepository.On("GetByReportedID", mock.Anything).Return(domains, expectedErr).Once()
-		res, err := ReportUseCase.GetByReportedID(reportDomain.ReportedID)
-
-		assert.Equal(t, res, 0)
 		assert.Equal(t, err, expectedErr)
 	})
 }
