@@ -6,7 +6,6 @@ import (
 	"charum/business/users"
 	"charum/helper"
 	"charum/util"
-	"fmt"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
@@ -70,8 +69,8 @@ func (ctrl *ReportController) Create(c echo.Context) error {
 	})
 }
 
-func (ctrl *ReportController) GetReportedID(c echo.Context) error {
-	ReportedID, err := primitive.ObjectIDFromHex(c.Param("id"))
+func (ctrl *ReportController) GetUserReportedID(c echo.Context) error {
+	ReportedID, err := primitive.ObjectIDFromHex(c.Param("user-id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
@@ -80,9 +79,7 @@ func (ctrl *ReportController) GetReportedID(c echo.Context) error {
 		})
 	}
 
-	report, err := ctrl.ReportUseCase.GetByReportedID(ReportedID)
-	fmt.Println("error: ", err)
-	fmt.Println("data", report)
+	reportData, err := ctrl.ReportUseCase.GetByReportedID(ReportedID)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, helper.BaseResponse{
 			Status:  http.StatusNotFound,
@@ -95,11 +92,37 @@ func (ctrl *ReportController) GetReportedID(c echo.Context) error {
 		Status:  http.StatusOK,
 		Message: "success get report",
 		Data: map[string]interface{}{
-			"total reports": report,
+			"total reports": reportData,
 		},
 	})
 }
+func (ctrl *ReportController) GetThreadReportedID(c echo.Context) error {
+	ReportedID, err := primitive.ObjectIDFromHex(c.Param("thread-id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "invalid id",
+			Data:    nil,
+		})
+	}
 
+	reportData, err := ctrl.ReportUseCase.GetByReportedID(ReportedID)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, helper.BaseResponse{
+			Status:  http.StatusNotFound,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success get report",
+		Data: map[string]interface{}{
+			"total reports": reportData,
+		},
+	})
+}
 func (ctrl *ReportController) GetAll(c echo.Context) error {
 	report, err := ctrl.ReportUseCase.GetAll()
 	if err != nil {
@@ -135,6 +158,44 @@ func (ctrl *ReportController) GetAll(c echo.Context) error {
 			"total reports":          report,
 			"total reported users":   reportedUsers,
 			"total reported threads": reportedThreads,
+		},
+	})
+}
+
+func (ctrl *ReportController) GetAllReportedUsers(c echo.Context) error {
+	reportData, err := ctrl.ReportUseCase.GetAllReportedUsers()
+	if err != nil {
+		return c.JSON(http.StatusNotFound, helper.BaseResponse{
+			Status:  http.StatusNotFound,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success get report",
+		Data: map[string]interface{}{
+			"total reported users": reportData,
+		},
+	})
+}
+
+func (ctrl *ReportController) GetAllReportedThreads(c echo.Context) error {
+	reportData, err := ctrl.ReportUseCase.GetAllReportedThreads()
+	if err != nil {
+		return c.JSON(http.StatusNotFound, helper.BaseResponse{
+			Status:  http.StatusNotFound,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success get report",
+		Data: map[string]interface{}{
+			"total reported threads": reportData,
 		},
 	})
 }

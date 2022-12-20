@@ -93,13 +93,14 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	adminUser.GET("/:page", cl.UserController.GetManyWithPagination)
 	adminUser.PUT("/suspend/:user-id", cl.UserController.Suspend)
 	adminUser.PUT("/unsuspend/:user-id", cl.UserController.Unsuspend)
+	adminUser.GET("/report", cl.ReportController.GetAllReportedUsers)
 	adminUserID := adminUser.Group("/id")
 	adminUserID.GET("/:user-id", cl.UserController.GetByID)
+	adminUserID.GET("/report/:user-id", cl.ReportController.GetUserReportedID)
 	adminUserID.PUT("/:user-id", cl.UserController.AdminUpdate)
 	adminUserID.DELETE("/:user-id", cl.UserController.Delete)
 
 	adminReport := admin.Group("/report")
-	adminReport.GET("/:id", cl.ReportController.GetReportedID)
 	adminReport.GET("", cl.ReportController.GetAll)
 
 	adminTopic := admin.Group("/topic")
@@ -111,6 +112,8 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 
 	adminThread := admin.Group("/thread")
 	adminThread.GET("/:page", cl.ThreadController.GetManyWithPagination)
+	adminThread.GET("/report", cl.ReportController.GetAllReportedThreads)
+	adminThread.GET("/report/:thread-id", cl.ReportController.GetThreadReportedID)
 	adminThread.GET("/id/:thread-id", cl.ThreadController.GetByID)
 	adminThread.PUT("/id/:thread-id", cl.ThreadController.AdminUpdate)
 	adminThread.DELETE("/id/:thread-id", cl.ThreadController.AdminDelete)
