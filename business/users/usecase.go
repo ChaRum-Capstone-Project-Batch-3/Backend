@@ -1,9 +1,9 @@
 package users
 
 import (
-	"charum/driver/cloudinary"
 	dtoPagination "charum/dto/pagination"
 	dtoQuery "charum/dto/query"
+	"charum/helper/cloudinary"
 	"charum/util"
 	"errors"
 	"math"

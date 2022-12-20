@@ -7,7 +7,7 @@ import (
 	_threadMock "charum/business/threads/mocks"
 	"charum/business/users"
 	_userMock "charum/business/users/mocks"
-	_cloudinaryMock "charum/driver/cloudinary/mocks"
+	_cloudinaryMock "charum/helper/cloudinary/mocks"
 	"errors"
 	"mime/multipart"
 	"testing"

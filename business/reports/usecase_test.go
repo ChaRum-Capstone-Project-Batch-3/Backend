@@ -10,11 +10,12 @@ import (
 	_userMock "charum/business/users/mocks"
 	dtoThread "charum/dto/threads"
 	"errors"
+	"testing"
+	"time"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"testing"
-	"time"
 )
 
 var (

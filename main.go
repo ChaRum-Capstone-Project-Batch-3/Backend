@@ -8,8 +8,8 @@ import (
 
 	_route "charum/app/route"
 	_driver "charum/driver"
-	_cloudinary "charum/driver/cloudinary"
 	_mongo "charum/driver/mongo"
+	_cloudinary "charum/helper/cloudinary"
 	_mailgun "charum/helper/mailgun"
 	_util "charum/util"
 

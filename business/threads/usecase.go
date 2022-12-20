@@ -3,10 +3,10 @@ package threads
 import (
 	"charum/business/topics"
 	"charum/business/users"
-	"charum/driver/cloudinary"
 	dtoPagination "charum/dto/pagination"
 	dtoQuery "charum/dto/query"
 	dtoThread "charum/dto/threads"
+	"charum/helper/cloudinary"
 	"charum/util"
 	"errors"
 	"math"
