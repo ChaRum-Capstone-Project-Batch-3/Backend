@@ -47,6 +47,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	user.POST("/login", cl.UserController.Login)
 	user.GET("/profile", cl.UserController.GetProfile, authMiddleware.Check)
 	user.PUT("/profile", cl.UserController.UserUpdate, authMiddleware.Check)
+	user.POST("/report/:user-id", cl.ReportController.ReportUser, authMiddleware.Check)
 	user.PUT("/change-password", cl.UserController.UpdatePassword, authMiddleware.Check)
 	user.POST("/forgot-password", cl.ForgotPasswordController.Generate)
 	user.GET("/forgot-password/:token", cl.ForgotPasswordController.ValidateToken)
@@ -82,9 +83,8 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	threadBookmark.GET("", cl.BookmarkController.GetAllByToken, authMiddleware.Check)
 	threadBookmark.POST("/:thread-id", cl.BookmarkController.Create, authMiddleware.Check)
 	threadBookmark.DELETE("/:thread-id", cl.BookmarkController.Delete, authMiddleware.Check)
-
-	report := apiV1.Group("/report")
-	report.POST("/:id", cl.ReportController.Create, authMiddleware.Check)
+	threadReport := thread.Group("/report")
+	threadReport.POST("/:thread-id", cl.ReportController.ReportThread, authMiddleware.Check)
 
 	// Admin
 	admin := apiV1.Group("/admin", adminMiddleware.Check)
@@ -94,9 +94,9 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	adminUser.PUT("/suspend/:user-id", cl.UserController.Suspend)
 	adminUser.PUT("/unsuspend/:user-id", cl.UserController.Unsuspend)
 	adminUser.GET("/report", cl.ReportController.GetAllReportedUsers)
+	adminUser.GET("/report/:user-id", cl.ReportController.GetUserReportedID)
 	adminUserID := adminUser.Group("/id")
 	adminUserID.GET("/:user-id", cl.UserController.GetByID)
-	adminUserID.GET("/report/:user-id", cl.ReportController.GetUserReportedID)
 	adminUserID.PUT("/:user-id", cl.UserController.AdminUpdate)
 	adminUserID.DELETE("/:user-id", cl.UserController.Delete)
 
