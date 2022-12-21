@@ -77,7 +77,7 @@ func (fpu *ForgotPasswordUseCase) GetByID(id primitive.ObjectID) (Domain, error)
 func (fpu *ForgotPasswordUseCase) GetByToken(token string) (Domain, error) {
 	forgotPassword, err := fpu.forgotPassword.GetByToken(token)
 	if err != nil {
-		return Domain{}, err
+		return Domain{}, errors.New("failed to get token")
 	}
 
 	return forgotPassword, nil
