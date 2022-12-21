@@ -182,6 +182,23 @@ func (tr *threadRepository) CheckLikedByUserID(userID primitive.ObjectID, thread
 	return nil
 }
 
+func (tr *threadRepository) GetAll() ([]threads.Domain, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	var result []Model
+	cursor, err := tr.collection.Find(ctx, bson.M{})
+	if err != nil {
+		return []threads.Domain{}, err
+	}
+
+	if err = cursor.All(ctx, &result); err != nil {
+		return []threads.Domain{}, err
+	}
+
+	return ToArrayDomain(result), nil
+}
+
 /*
 Update
 */

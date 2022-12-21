@@ -12,7 +12,6 @@ import (
 	"charum/helper"
 	"charum/util"
 	"errors"
-	"fmt"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -323,7 +322,6 @@ func (userCtrl *UserController) AdminUpdate(c echo.Context) error {
 	profilePicture, _ := c.FormFile("profilePicture")
 	if profilePicture != nil {
 		profilePictureExt := filepath.Ext(profilePicture.Filename)
-		fmt.Println(profilePictureExt)
 		availableExt := []string{".jpg", ".jpeg", ".png"}
 
 		flagExt := false
@@ -730,6 +728,25 @@ func (userCtrl *UserController) Delete(c echo.Context) error {
 		Message: "success to delete user",
 		Data: map[string]interface{}{
 			"user": response.FromDomain(deletedUser),
+		},
+	})
+}
+
+func (userCtrl *UserController) CountAll(c echo.Context) error {
+	count, err := userCtrl.userUseCase.GetAll()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success to get all users",
+		Data: map[string]interface{}{
+			"total users": count,
 		},
 	})
 }

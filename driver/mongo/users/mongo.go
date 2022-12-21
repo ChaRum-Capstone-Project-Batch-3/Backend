@@ -130,6 +130,23 @@ func (ur *userRepository) GetManyWithPagination(query dtoQuery.Request, domain *
 	return ToArrayDomain(result), int(totalData), nil
 }
 
+func (ur *userRepository) GetAll() ([]users.Domain, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	var result []Model
+	cursor, err := ur.collection.Find(ctx, bson.M{})
+	if err != nil {
+		return []users.Domain{}, err
+	}
+
+	if err = cursor.All(ctx, &result); err != nil {
+		return []users.Domain{}, err
+	}
+
+	return ToArrayDomain(result), nil
+}
+
 /*
 Update
 */

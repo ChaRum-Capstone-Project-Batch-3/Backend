@@ -3,9 +3,9 @@ package users_test
 import (
 	"charum/business/users"
 	_userMock "charum/business/users/mocks"
-	_cloudinaryMock "charum/driver/cloudinary/mocks"
 	dtoPagination "charum/dto/pagination"
 	dtoQuery "charum/dto/query"
+	_cloudinaryMock "charum/helper/cloudinary/mocks"
 	"errors"
 	"mime/multipart"
 	"testing"

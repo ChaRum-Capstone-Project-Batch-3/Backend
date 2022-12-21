@@ -36,6 +36,7 @@ type Repository interface {
 	GetByID(id primitive.ObjectID) (Domain, error)
 	GetAllByTopicID(topicID primitive.ObjectID) ([]Domain, error)
 	GetAllByUserID(userID primitive.ObjectID) ([]Domain, error)
+	GetAll() ([]Domain, error)
 	GetLikedByUserID(userID primitive.ObjectID) ([]Domain, error)
 	CheckLikedByUserID(userID primitive.ObjectID, threadID primitive.ObjectID) error
 	// Update
@@ -57,6 +58,7 @@ type UseCase interface {
 	GetByID(id primitive.ObjectID) (Domain, error)
 	GetAllByTopicID(topicID primitive.ObjectID) ([]Domain, error)
 	GetAllByUserID(userID primitive.ObjectID) ([]Domain, error)
+	GetAll() (int, error)
 	GetLikedByUserID(userID primitive.ObjectID) ([]Domain, error)
 	DomainToResponse(domain Domain, userID primitive.ObjectID) (dtoThread.Response, error)
 	DomainsToResponseArray(domains []Domain, userID primitive.ObjectID) ([]dtoThread.Response, error)

@@ -5,13 +5,16 @@ import (
 	commentDomain "charum/business/comments"
 	followThreadDomain "charum/business/follow_threads"
 	forgotPasswordDomain "charum/business/forgot_password"
+	reportDomain "charum/business/reports"
 	threadDomain "charum/business/threads"
 	topicDomain "charum/business/topics"
 	userDomain "charum/business/users"
+
 	bookmarkDB "charum/driver/mongo/bookmarks"
 	commentDB "charum/driver/mongo/comments"
 	followThreadDB "charum/driver/mongo/follow_threads"
 	forgotPasswordDB "charum/driver/mongo/forgot_password"
+	reportDB "charum/driver/mongo/reports"
 	threadDB "charum/driver/mongo/threads"
 	topicDB "charum/driver/mongo/topics"
 	userDB "charum/driver/mongo/users"
@@ -45,4 +48,8 @@ func NewBookmarkRepository(db *mongo.Database) bookmarkDomain.Repository {
 
 func NewForgotPasswordRepository(db *mongo.Database) forgotPasswordDomain.Repository {
 	return forgotPasswordDB.NewMongoRepository(db)
+}
+
+func NewReportRepository(db *mongo.Database) reportDomain.Repository {
+	return reportDB.NewMongoRepository(db)
 }
