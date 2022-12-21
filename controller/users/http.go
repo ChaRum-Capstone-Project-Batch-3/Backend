@@ -731,3 +731,22 @@ func (userCtrl *UserController) Delete(c echo.Context) error {
 		},
 	})
 }
+
+func (userCtrl *UserController) CountAll(c echo.Context) error {
+	count, err := userCtrl.userUseCase.GetAll()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success to get all users",
+		Data: map[string]interface{}{
+			"total users": count,
+		},
+	})
+}
