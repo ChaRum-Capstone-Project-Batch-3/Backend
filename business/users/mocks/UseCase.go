@@ -40,6 +40,27 @@ func (_m *UseCase) Delete(id primitive.ObjectID) (users.Domain, error) {
 	return r0, r1
 }
 
+// GetAll provides a mock function with given fields:
+func (_m *UseCase) GetAll() (int, error) {
+	ret := _m.Called()
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func() int); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetByID provides a mock function with given fields: id
 func (_m *UseCase) GetByID(id primitive.ObjectID) (users.Domain, error) {
 	ret := _m.Called(id)
@@ -98,27 +119,27 @@ func (_m *UseCase) GetManyWithPagination(_a0 pagination.Request, domain *users.D
 	return r0, r1, r2, r3
 }
 
-// Login provides a mock function with given fields: domain
-func (_m *UseCase) Login(domain *users.Domain) (users.Domain, string, error) {
-	ret := _m.Called(domain)
+// Login provides a mock function with given fields: key, password
+func (_m *UseCase) Login(key string, password string) (users.Domain, string, error) {
+	ret := _m.Called(key, password)
 
 	var r0 users.Domain
-	if rf, ok := ret.Get(0).(func(*users.Domain) users.Domain); ok {
-		r0 = rf(domain)
+	if rf, ok := ret.Get(0).(func(string, string) users.Domain); ok {
+		r0 = rf(key, password)
 	} else {
 		r0 = ret.Get(0).(users.Domain)
 	}
 
 	var r1 string
-	if rf, ok := ret.Get(1).(func(*users.Domain) string); ok {
-		r1 = rf(domain)
+	if rf, ok := ret.Get(1).(func(string, string) string); ok {
+		r1 = rf(key, password)
 	} else {
 		r1 = ret.Get(1).(string)
 	}
 
 	var r2 error
-	if rf, ok := ret.Get(2).(func(*users.Domain) error); ok {
-		r2 = rf(domain)
+	if rf, ok := ret.Get(2).(func(string, string) error); ok {
+		r2 = rf(key, password)
 	} else {
 		r2 = ret.Error(2)
 	}

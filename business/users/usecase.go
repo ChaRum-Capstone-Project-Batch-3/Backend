@@ -143,7 +143,7 @@ func (uu *UserUseCase) GetByID(id primitive.ObjectID) (Domain, error) {
 func (uu *UserUseCase) GetAll() (int, error) {
 	users, err := uu.userRepository.GetAll()
 	if err != nil {
-		return 0, errors.New("failed to get users")
+		return 0, errors.New("failed to get all users")
 	}
 
 	return len(users), nil
