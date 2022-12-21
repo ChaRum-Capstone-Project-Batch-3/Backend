@@ -11,10 +11,12 @@ tags:
     description: Operations about user
   - name: Forgot Password
     description: Operations about forgot password
+  - name: Report
+    description: Operation about report
   - name: Topic
     description: Operations about topic
   - name: Thread
-    description: Operation about thread
+    description: Operation about
   - name: Follow Thread
     description: Operation about follow thread
   - name: Comment
@@ -766,6 +768,160 @@ paths:
               example:
                 status: 400
                 message: token invalid/not found
+                data: null
+  /thread/report/{thread-id}:
+    post:
+      tags:
+        - Report
+      summary: Report Thread
+      requestBody:
+        content: { }
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: thread-id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 639df35efd1cd9847a8fc4df
+      responses:
+        '201':
+          description: Created
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json; charset=UTF-8
+            Vary:
+              schema:
+                type: string
+                example: Origin
+            Date:
+              schema:
+                type: string
+                example: Wed, 21 Dec 2022 07:51:01 GMT
+            Content-Length:
+              schema:
+                type: integer
+                example: '329'
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                status: 201
+                message: success create report
+                data:
+                  id: 63a2bae54ee02b6b1caa9f89
+                  userId: 63936adb18ffb83065c34453
+                  reportedID: 639df35efd1cd9847a8fc4df
+                  reportedType: thread
+                  reportDetail: Inappropriate content or behavior
+                  createdAt: '2022-12-21T14:51:01.267+07:00'
+                  updatedAt: '2022-12-21T14:51:01.267+07:00'
+        '409':
+          description: Conflict
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json; charset=UTF-8
+            Vary:
+              schema:
+                type: string
+                example: Origin
+            Date:
+              schema:
+                type: string
+                example: Wed, 21 Dec 2022 07:24:25 GMT
+            Content-Length:
+              schema:
+                type: integer
+                example: '56'
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                status: 409
+                message: already reported
+                data: null
+  /user/report/{user-id}:
+    post:
+      tags:
+        - Report
+      summary: Report User
+      requestBody:
+        content: { }
+      parameters:
+        - name: user-id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 63934f785b1979ce0e7a15a0
+      responses:
+        '201':
+          description: Created
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json; charset=UTF-8
+            Vary:
+              schema:
+                type: string
+                example: Origin
+            Date:
+              schema:
+                type: string
+                example: Wed, 21 Dec 2022 07:51:01 GMT
+            Content-Length:
+              schema:
+                type: integer
+                example: '329'
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                status: 201
+                message: success create report
+                data:
+                  id: 63a2bc6d4ee02b6b1caa9f8a
+                  userId: 63936adb18ffb83065c34453
+                  reportedID: 63934f785b1979ce0e7a15a0
+                  reportedType: user
+                  reportDetail: Inappropriate content or behavior
+                  createdAt: '2022-12-21T14:57:33.887+07:00'
+                  updatedAt: '2022-12-21T14:57:33.887+07:00'
+        '409':
+          description: Conflict
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json; charset=UTF-8
+            Vary:
+              schema:
+                type: string
+                example: Origin
+            Date:
+              schema:
+                type: string
+                example: Wed, 21 Dec 2022 07:24:25 GMT
+            Content-Length:
+              schema:
+                type: integer
+                example: '56'
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                status: 409
+                message: already reported
                 data: null
   /topic/{page}:
     get:
@@ -5853,3 +6009,372 @@ paths:
                   totalData: 0
                   totalPage: 0
                   currentPage: 0
+  /admin/report:
+    get:
+      tags:
+        - Admin
+      summary: Get All Report
+      responses:
+        '200':
+          description: OK
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json; charset=UTF-8
+            Vary:
+              schema:
+                type: string
+                example: Origin
+            Date:
+              schema:
+                type: string
+                example: Wed, 21 Dec 2022 08:01:51 GMT
+            Content-Length:
+              schema:
+                type: integer
+                example: '125'
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                status: 200
+                message: success get report
+                data:
+                  total reported threads: 3
+                  total reported users: 5
+                  total reports: 8
+        '400':
+          description: Bad Request
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json; charset=UTF-8
+            Vary:
+              schema:
+                type: string
+                example: Origin
+            Date:
+              schema:
+                type: string
+                example: Wed, 21 Dec 2022 08:02:10 GMT
+            Content-Length:
+              schema:
+                type: integer
+                example: '53'
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                status: 400
+                message: invalid token
+                data: null
+  /admin/user/report:
+    get:
+      tags:
+        - Admin
+      summary: Get All Report for Users
+      responses:
+        '200':
+          description: OK
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json; charset=UTF-8
+            Vary:
+              schema:
+                type: string
+                example: Origin
+            Date:
+              schema:
+                type: string
+                example: Wed, 21 Dec 2022 08:03:42 GMT
+            Content-Length:
+              schema:
+                type: integer
+                example: '80'
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                status: 200
+                message: success get report
+                data:
+                  total reported users: 5
+  /admin/thread/report:
+    get:
+      tags:
+        - Admin
+      summary: Get All Report for Thread
+      responses:
+        '200':
+          description: OK
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json; charset=UTF-8
+            Vary:
+              schema:
+                type: string
+                example: Origin
+            Date:
+              schema:
+                type: string
+                example: Wed, 21 Dec 2022 08:04:11 GMT
+            Content-Length:
+              schema:
+                type: integer
+                example: '82'
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                status: 200
+                message: success get report
+                data:
+                  total reported threads: 3
+  /admin/thread/report/{thread-id}:
+    get:
+      tags:
+        - Admin
+      summary: Get All Report for Thread by id
+      parameters:
+        - name: thread-id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 639c6e31fd1cd9847a8fc4d21
+      responses:
+        '200':
+          description: OK
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json; charset=UTF-8
+            Vary:
+              schema:
+                type: string
+                example: Origin
+            Date:
+              schema:
+                type: string
+                example: Wed, 21 Dec 2022 08:06:13 GMT
+            Content-Length:
+              schema:
+                type: integer
+                example: '73'
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                status: 200
+                message: success get report
+                data:
+                  total reports: 1
+        '400':
+          description: Bad Request
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json; charset=UTF-8
+            Vary:
+              schema:
+                type: string
+                example: Origin
+            Date:
+              schema:
+                type: string
+                example: Wed, 21 Dec 2022 08:06:25 GMT
+            Content-Length:
+              schema:
+                type: integer
+                example: '50'
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                status: 400
+                message: invalid id
+                data: null
+  /admin/user/report/{user-id}:
+    get:
+      tags:
+        - Admin
+      summary: Get All Report for User by id
+      parameters:
+        - name: user-id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 63934f785b1979ce0e7a15a0
+      responses:
+        '200':
+          description: OK
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json; charset=UTF-8
+            Vary:
+              schema:
+                type: string
+                example: Origin
+            Date:
+              schema:
+                type: string
+                example: Wed, 21 Dec 2022 08:10:16 GMT
+            Content-Length:
+              schema:
+                type: integer
+                example: '73'
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                status: 200
+                message: success get report
+                data:
+                  total reports: 1
+        '400':
+          description: Bad Request
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json; charset=UTF-8
+            Vary:
+              schema:
+                type: string
+                example: Origin
+            Date:
+              schema:
+                type: string
+                example: Wed, 21 Dec 2022 08:06:25 GMT
+            Content-Length:
+              schema:
+                type: integer
+                example: '50'
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                status: 400
+                message: invalid id
+                data: null
+  /admin/statistics/user:
+    get:
+      tags:
+        - Admin
+      summary: Statistics User
+      responses:
+        '200':
+          description: OK
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json; charset=UTF-8
+            Vary:
+              schema:
+                type: string
+                example: Origin
+            Date:
+              schema:
+                type: string
+                example: Wed, 21 Dec 2022 08:28:39 GMT
+            Content-Length:
+              schema:
+                type: integer
+                example: '78'
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                status: 200
+                message: success to get all users
+                data:
+                  total users: 24
+  /admin/statistics/thread:
+    get:
+      tags:
+        - Admin
+      summary: Statistics Thread
+      responses:
+        '200':
+          description: OK
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json; charset=UTF-8
+            Vary:
+              schema:
+                type: string
+                example: Origin
+            Date:
+              schema:
+                type: string
+                example: Wed, 21 Dec 2022 08:29:21 GMT
+            Content-Length:
+              schema:
+                type: integer
+                example: '82'
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                status: 200
+                message: success to get all threads
+                data:
+                  total threads: 15
+  /admin/statistics/report:
+    get:
+      tags:
+        - Admin
+      summary: Statistics Report
+      responses:
+        '200':
+          description: OK
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json; charset=UTF-8
+            Vary:
+              schema:
+                type: string
+                example: Origin
+            Date:
+              schema:
+                type: string
+                example: Wed, 21 Dec 2022 08:29:49 GMT
+            Content-Length:
+              schema:
+                type: integer
+                example: '77'
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                status: 200
+                message: success get all report
+                data:
+                  total reports: 8

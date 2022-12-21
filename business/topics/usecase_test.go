@@ -3,8 +3,8 @@ package topics_test
 import (
 	"charum/business/topics"
 	_topicMock "charum/business/topics/mocks"
-	_cloudinaryMock "charum/driver/cloudinary/mocks"
 	dtoPagination "charum/dto/pagination"
+	_cloudinaryMock "charum/helper/cloudinary/mocks"
 	"errors"
 	"mime/multipart"
 	"testing"

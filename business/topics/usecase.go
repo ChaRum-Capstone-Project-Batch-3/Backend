@@ -1,9 +1,9 @@
 package topics
 
 import (
-	_cloudinary "charum/driver/cloudinary"
 	dtoPagination "charum/dto/pagination"
 	dtoQuery "charum/dto/query"
+	_cloudinary "charum/helper/cloudinary"
 	"charum/util"
 	"errors"
 	"math"

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -45,7 +46,7 @@ func TestGenerate(t *testing.T) {
 	t.Run("Test Case 1 | Valid Generate", func(t *testing.T) {
 		userRepository.On("GetByEmail", forgotPasswordDomain.Email).Return(userDomain, nil).Once()
 		forgotPasswordRepository.On("Generate", &forgotPasswordDomain).Return(forgotPasswordDomain, nil).Once()
-		mailgun.On("SendMail", forgotPasswordDomain.Email, forgotPasswordDomain.Token).Return(nil).Once()
+		mailgun.On("SendMail", mock.Anything, mock.Anything).Return("", nil).Once()
 		_, err := forgotPasswordUseCase.Generate(&forgotPasswordDomain)
 
 		assert.Nil(t, err)

@@ -220,7 +220,7 @@ func TestDomainToResponse(t *testing.T) {
 		threadRepository.On("GetByID", bookmarkDomain.ThreadID).Return(threadDomain, errors.New("not found")).Once()
 
 		_, err := BookmarkUseCase.DomainToResponse(bookmarkDomain, userDomain.Id)
-		assert.Nil(t, err)
+		assert.NotNil(t, err)
 	})
 
 	t.Run("Test Case 3 | Invalid Domain To Response | Repository Error", func(t *testing.T) {

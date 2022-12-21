@@ -7,6 +7,7 @@ import (
 	"charum/controller/comments"
 	followThreads "charum/controller/follow_threads"
 	"charum/controller/forgot_password"
+	"charum/controller/reports"
 	"charum/controller/threads"
 	"charum/controller/topics"
 	"charum/controller/users"
@@ -25,6 +26,7 @@ type ControllerList struct {
 	FollowThreadController   *followThreads.FollowThreadController
 	BookmarkController       *_bookmarkController.BookmarkController
 	ForgotPasswordController *forgot_password.ForgotPasswordController
+	ReportController         *reports.ReportController
 }
 
 func (cl *ControllerList) Init(e *echo.Echo) {
@@ -45,6 +47,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	user.POST("/login", cl.UserController.Login)
 	user.GET("/profile", cl.UserController.GetProfile, authMiddleware.Check)
 	user.PUT("/profile", cl.UserController.UserUpdate, authMiddleware.Check)
+	user.POST("/report/:user-id", cl.ReportController.ReportUser, authMiddleware.Check)
 	user.PUT("/change-password", cl.UserController.UpdatePassword, authMiddleware.Check)
 	user.POST("/forgot-password", cl.ForgotPasswordController.Generate)
 	user.GET("/forgot-password/:token", cl.ForgotPasswordController.ValidateToken)
@@ -80,6 +83,8 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	threadBookmark.GET("", cl.BookmarkController.GetAllByToken, authMiddleware.Check)
 	threadBookmark.POST("/:thread-id", cl.BookmarkController.Create, authMiddleware.Check)
 	threadBookmark.DELETE("/:thread-id", cl.BookmarkController.Delete, authMiddleware.Check)
+	threadReport := thread.Group("/report")
+	threadReport.POST("/:thread-id", cl.ReportController.ReportThread, authMiddleware.Check)
 
 	// Admin
 	admin := apiV1.Group("/admin", adminMiddleware.Check)
@@ -88,10 +93,15 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	adminUser.GET("/:page", cl.UserController.GetManyWithPagination)
 	adminUser.PUT("/suspend/:user-id", cl.UserController.Suspend)
 	adminUser.PUT("/unsuspend/:user-id", cl.UserController.Unsuspend)
+	adminUser.GET("/report", cl.ReportController.GetAllReportedUsers)
+	adminUser.GET("/report/:user-id", cl.ReportController.GetUserReportedID)
 	adminUserID := adminUser.Group("/id")
 	adminUserID.GET("/:user-id", cl.UserController.GetByID)
 	adminUserID.PUT("/:user-id", cl.UserController.AdminUpdate)
 	adminUserID.DELETE("/:user-id", cl.UserController.Delete)
+
+	adminReport := admin.Group("/report")
+	adminReport.GET("", cl.ReportController.GetAll)
 
 	adminTopic := admin.Group("/topic")
 	adminTopic.POST("", cl.TopicController.Create)
@@ -102,7 +112,15 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 
 	adminThread := admin.Group("/thread")
 	adminThread.GET("/:page", cl.ThreadController.GetManyWithPagination)
+	adminThread.GET("/report", cl.ReportController.GetAllReportedThreads)
+	adminThread.GET("/report/:thread-id", cl.ReportController.GetThreadReportedID)
 	adminThread.GET("/id/:thread-id", cl.ThreadController.GetByID)
 	adminThread.PUT("/id/:thread-id", cl.ThreadController.AdminUpdate)
 	adminThread.DELETE("/id/:thread-id", cl.ThreadController.AdminDelete)
+
+	adminStats := admin.Group("/statistics")
+	adminStats.GET("/user", cl.UserController.CountAll)
+	adminStats.GET("/thread", cl.ThreadController.CountAll)
+	adminStats.GET("/report", cl.ReportController.CountAll)
+
 }

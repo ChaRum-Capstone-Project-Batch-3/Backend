@@ -3,8 +3,8 @@ package comments
 import (
 	"charum/business/threads"
 	"charum/business/users"
-	"charum/driver/cloudinary"
 	dtoComment "charum/dto/comments"
+	"charum/helper/cloudinary"
 	"charum/util"
 	"errors"
 	"mime/multipart"
