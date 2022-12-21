@@ -117,4 +117,10 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	adminThread.GET("/id/:thread-id", cl.ThreadController.GetByID)
 	adminThread.PUT("/id/:thread-id", cl.ThreadController.AdminUpdate)
 	adminThread.DELETE("/id/:thread-id", cl.ThreadController.AdminDelete)
+
+	adminStats := admin.Group("/statistics")
+	adminStats.GET("/user", cl.UserController.CountAll)
+	adminStats.GET("/thread", cl.ThreadController.CountAll)
+	adminStats.GET("/report", cl.ReportController.CountAll)
+
 }
