@@ -145,6 +145,16 @@ func (tu *ThreadUseCase) GetLikedByUserID(userID primitive.ObjectID) ([]Domain, 
 	return threads, nil
 }
 
+// get all
+func (tu *ThreadUseCase) GetAll() (int, error) {
+	threads, err := tu.threadRepository.GetAll()
+	if err != nil {
+		return 0, errors.New("failed to get threads")
+	}
+
+	return len(threads), nil
+}
+
 func (tu *ThreadUseCase) DomainToResponse(domain Domain, userID primitive.ObjectID) (dtoThread.Response, error) {
 	creator, err := tu.userRepository.GetByID(domain.CreatorID)
 	if err != nil {

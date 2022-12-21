@@ -33,6 +33,7 @@ type Repository interface {
 	GetByEmail(email string) (Domain, error)
 	GetByUsername(username string) (Domain, error)
 	GetManyWithPagination(query dtoQuery.Request, domain *Domain) ([]Domain, int, error)
+	GetAll() ([]Domain, error)
 	// Update
 	Update(domain *Domain) (Domain, error)
 	UpdatePassword(domain *Domain) (Domain, error)
@@ -47,6 +48,7 @@ type UseCase interface {
 	Login(key string, password string) (Domain, string, error)
 	GetManyWithPagination(pagination dtoPagination.Request, domain *Domain) ([]Domain, int, int, error)
 	GetByID(id primitive.ObjectID) (Domain, error)
+	GetAll() (int, error)
 	// Update
 	UpdatePassword(domain *Domain) (Domain, error)
 	Update(domain *Domain, profilePicture *multipart.FileHeader) (Domain, error)
