@@ -555,3 +555,24 @@ func TestUnsuspend(t *testing.T) {
 		assert.Equal(t, expectedErr, actualErr)
 	})
 }
+
+func TestGetAll(t *testing.T) {
+	t.Run("Test Case 1 | Valid GetAll", func(t *testing.T) {
+		userRepository.On("GetAll").Return([]users.Domain{userDomain}, nil).Once()
+
+		actualUser, actualErr := userUseCase.GetAll()
+
+		assert.NotNil(t, actualUser)
+		assert.Nil(t, actualErr)
+	})
+
+	t.Run("Test Case 2 | Invalid GetAll | Error when getting all users", func(t *testing.T) {
+		expectedErr := errors.New("failed to get all users")
+		userRepository.On("GetAll").Return([]users.Domain{}, expectedErr).Once()
+
+		actualUser, actualErr := userUseCase.GetAll()
+
+		assert.Equal(t, 0, actualUser)
+		assert.Equal(t, expectedErr, actualErr)
+	})
+}
