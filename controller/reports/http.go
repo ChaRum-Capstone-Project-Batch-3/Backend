@@ -26,8 +26,52 @@ func NewReportController(rUC reports.UseCase, userUC users.UseCase, threadUC thr
 	}
 }
 
-func (ctrl *ReportController) Create(c echo.Context) error {
-	ReportedID, err := primitive.ObjectIDFromHex(c.Param("id"))
+func (ctrl *ReportController) ReportUser(c echo.Context) error {
+	ReportedID, err := primitive.ObjectIDFromHex(c.Param("user-id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "invalid id",
+			Data:    nil,
+		})
+	}
+
+	user, err := util.GetUIDFromToken(c)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, helper.BaseResponse{
+			Status:  http.StatusUnauthorized,
+			Message: "unauthorized",
+			Data:    nil,
+		})
+	}
+
+	domain := reports.Domain{
+		ReportedID: ReportedID,
+		UserID:     user,
+	}
+
+	report, err := ctrl.ReportUseCase.Create(&domain)
+	if err != nil {
+		statusCode := http.StatusNotFound
+		if err.Error() == "already reported" {
+			statusCode = http.StatusConflict
+		}
+		return c.JSON(statusCode, helper.BaseResponse{
+			Status:  statusCode,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusCreated, helper.BaseResponse{
+		Status:  http.StatusCreated,
+		Message: "success create report",
+		Data:    report,
+	})
+}
+
+func (ctrl *ReportController) ReportThread(c echo.Context) error {
+	ReportedID, err := primitive.ObjectIDFromHex(c.Param("thread-id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:  http.StatusBadRequest,
@@ -197,6 +241,25 @@ func (ctrl *ReportController) GetAllReportedThreads(c echo.Context) error {
 		Message: "success get report",
 		Data: map[string]interface{}{
 			"total reported threads": reportData,
+		},
+	})
+}
+
+func (ctrl *ReportController) CountAll(c echo.Context) error {
+	reportData, err := ctrl.ReportUseCase.GetAll()
+	if err != nil {
+		return c.JSON(http.StatusNotFound, helper.BaseResponse{
+			Status:  http.StatusNotFound,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success get all report",
+		Data: map[string]interface{}{
+			"total reports": reportData,
 		},
 	})
 }
