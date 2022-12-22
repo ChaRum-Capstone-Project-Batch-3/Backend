@@ -233,6 +233,10 @@ func (uu *UserUseCase) Suspend(id primitive.ObjectID) (Domain, error) {
 		return Domain{}, errors.New("failed to get user")
 	}
 
+	if user.Role == "admin" {
+		return Domain{}, errors.New("admin cannot be suspended")
+	}
+
 	if !user.IsActive {
 		return Domain{}, errors.New("user is already suspended")
 	}
