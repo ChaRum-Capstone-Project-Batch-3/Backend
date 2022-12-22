@@ -279,6 +279,10 @@ func (uu *UserUseCase) Delete(id primitive.ObjectID) (Domain, error) {
 		return Domain{}, errors.New("failed to get user")
 	}
 
+	if deletedUser.Role == "admin" {
+		return Domain{}, errors.New("admin cannot be deleted")
+	}
+
 	if deletedUser.ProfilePictureURL != "" {
 		err = uu.cloudinary.Delete("profilePicture", util.GetFilenameWithoutExtension(deletedUser.ProfilePictureURL))
 		if err != nil {
