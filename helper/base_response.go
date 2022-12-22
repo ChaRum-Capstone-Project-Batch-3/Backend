@@ -1,16 +1,10 @@
 package helper
 
 type BaseResponse struct {
-	Status  int         `json:"status"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data"`
-}
-
-type BaseResponseWithPagination struct {
 	Status     int         `json:"status"`
 	Message    string      `json:"message"`
 	Data       interface{} `json:"data"`
-	Pagination Page        `json:"pagination"`
+	Pagination interface{} `json:"pagination,omitempty"`
 }
 
 type Page struct {
