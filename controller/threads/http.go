@@ -463,26 +463,6 @@ func (tc *ThreadController) GetManyByToken(c echo.Context) error {
 	})
 }
 
-// get all
-func (tc *ThreadController) CountAll(c echo.Context) error {
-	totalData, err := tc.threadUseCase.GetAll()
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
-			Status:  http.StatusInternalServerError,
-			Message: err.Error(),
-			Data:    nil,
-		})
-	}
-
-	return c.JSON(http.StatusOK, helper.BaseResponse{
-		Status:  http.StatusOK,
-		Message: "success to get all threads",
-		Data: map[string]interface{}{
-			"total threads": totalData,
-		},
-	})
-}
-
 func (tc *ThreadController) GetByID(c echo.Context) error {
 	threadID, err := primitive.ObjectIDFromHex(c.Param("thread-id"))
 	if err != nil {
