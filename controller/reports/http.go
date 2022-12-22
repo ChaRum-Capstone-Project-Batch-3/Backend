@@ -137,7 +137,7 @@ func (ctrl *ReportController) GetUserReportedID(c echo.Context) error {
 		Status:  http.StatusOK,
 		Message: "success get report",
 		Data: map[string]interface{}{
-			"total reports": reportData,
+			"total_reports": reportData,
 		},
 	})
 }
@@ -164,7 +164,7 @@ func (ctrl *ReportController) GetThreadReportedID(c echo.Context) error {
 		Status:  http.StatusOK,
 		Message: "success get report",
 		Data: map[string]interface{}{
-			"total reports": reportData,
+			"total_reports": reportData,
 		},
 	})
 }
@@ -200,9 +200,9 @@ func (ctrl *ReportController) GetAll(c echo.Context) error {
 		Status:  http.StatusOK,
 		Message: "success get report",
 		Data: map[string]interface{}{
-			"total reports":          report,
-			"total reported users":   reportedUsers,
-			"total reported threads": reportedThreads,
+			"total_reports":          report,
+			"total_reported_users":   reportedUsers,
+			"total_reported_threads": reportedThreads,
 		},
 	})
 }
@@ -221,7 +221,7 @@ func (ctrl *ReportController) GetAllReportedUsers(c echo.Context) error {
 		Status:  http.StatusOK,
 		Message: "success get report",
 		Data: map[string]interface{}{
-			"total reported users": reportData,
+			"total_reported_users": reportData,
 		},
 	})
 }
@@ -240,7 +240,7 @@ func (ctrl *ReportController) GetAllReportedThreads(c echo.Context) error {
 		Status:  http.StatusOK,
 		Message: "success get report",
 		Data: map[string]interface{}{
-			"total reported threads": reportData,
+			"total_reported_threads": reportData,
 		},
 	})
 }
@@ -259,7 +259,46 @@ func (ctrl *ReportController) CountAll(c echo.Context) error {
 		Status:  http.StatusOK,
 		Message: "success get all report",
 		Data: map[string]interface{}{
-			"total reports": reportData,
+			"total_reports": reportData,
+		},
+	})
+}
+
+func (ctrl *ReportController) CountAllData(c echo.Context) error {
+	usersData, err := ctrl.userUseCase.GetAll()
+	if err != nil {
+		return c.JSON(http.StatusNotFound, helper.BaseResponse{
+			Status:  http.StatusNotFound,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	threadsData, err := ctrl.threadUseCase.GetAll()
+	if err != nil {
+		return c.JSON(http.StatusNotFound, helper.BaseResponse{
+			Status:  http.StatusNotFound,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	reportsData, err := ctrl.ReportUseCase.GetAll()
+	if err != nil {
+		return c.JSON(http.StatusNotFound, helper.BaseResponse{
+			Status:  http.StatusNotFound,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, helper.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success get all statistics",
+		Data: map[string]interface{}{
+			"total_users":   usersData,
+			"total_threads": threadsData,
+			"total_reports": reportsData,
 		},
 	})
 }
