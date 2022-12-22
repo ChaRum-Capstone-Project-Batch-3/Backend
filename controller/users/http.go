@@ -136,7 +136,7 @@ func (userCtrl *UserController) Login(c echo.Context) error {
 		})
 	}
 
-	user, token, err := userCtrl.userUseCase.Login(userInput.Key, userInput.Password)
+	_, token, err := userCtrl.userUseCase.Login(userInput.Key, userInput.Password)
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, helper.BaseResponse{
 			Status:  http.StatusUnauthorized,
@@ -150,7 +150,6 @@ func (userCtrl *UserController) Login(c echo.Context) error {
 		Message: "success to login",
 		Data: map[string]interface{}{
 			"token": token,
-			"user":  response.FromDomain(user),
 		},
 	})
 }

@@ -88,6 +88,7 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 
 	// Admin
 	admin := apiV1.Group("/admin", adminMiddleware.Check)
+	admin.GET("/statistics", cl.ReportController.CountAllData)
 
 	adminUser := admin.Group("/user")
 	adminUser.GET("/:page", cl.UserController.GetManyWithPagination)
@@ -102,8 +103,6 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 
 	adminReport := admin.Group("/report")
 	adminReport.GET("", cl.ReportController.GetAll)
-
-	admin.GET("/statistics", cl.ReportController.CountAllData)
 
 	adminTopic := admin.Group("/topic")
 	adminTopic.POST("", cl.TopicController.Create)
