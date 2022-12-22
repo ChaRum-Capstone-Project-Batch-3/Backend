@@ -834,3 +834,23 @@ func TestAdminDelete(t *testing.T) {
 		assert.Equal(t, expectedErr, err)
 	})
 }
+
+func TestGetAll(t *testing.T) {
+	t.Run("Test case 1 | Valid admin get all threads", func(t *testing.T) {
+		threadRepository.On("GetAll").Return([]threads.Domain{threadDomain}, nil).Once()
+
+		thread, err := threadUseCase.GetAll()
+
+		assert.Nil(t, err)
+		assert.Equal(t, 1, thread)
+	})
+
+	t.Run("Test case 2 | Invalid admin get all threads | Error when getting all threads", func(t *testing.T) {
+		expectedErr := errors.New("failed to get threads")
+		threadRepository.On("GetAll").Return([]threads.Domain{}, expectedErr).Once()
+
+		_, err := threadUseCase.GetAll()
+
+		assert.Equal(t, expectedErr, err)
+	})
+}

@@ -126,16 +126,14 @@ func (_m *Repository) GetAllReportedUsers() ([]reports.Domain, error) {
 }
 
 // GetByReportedID provides a mock function with given fields: id
-func (_m *Repository) GetByReportedID(id primitive.ObjectID) ([]reports.Domain, error) {
+func (_m *Repository) GetByReportedID(id primitive.ObjectID) (int, error) {
 	ret := _m.Called(id)
 
-	var r0 []reports.Domain
-	if rf, ok := ret.Get(0).(func(primitive.ObjectID) []reports.Domain); ok {
+	var r0 int
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID) int); ok {
 		r0 = rf(id)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]reports.Domain)
-		}
+		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error

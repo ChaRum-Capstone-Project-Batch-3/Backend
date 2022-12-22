@@ -45,7 +45,7 @@ func (ru *ReportUseCase) Create(domain *Domain) (Domain, error) {
 
 	report, err := ru.reportRepository.Create(domain)
 	if err != nil {
-		return Domain{}, err
+		return Domain{}, errors.New("failed to create report")
 	}
 
 	return report, nil
@@ -76,8 +76,7 @@ func (ru *ReportUseCase) GetByReportedID(id primitive.ObjectID) (int, error) {
 		return 0, errors.New("failed to get reports")
 	}
 
-	totalReports := len(reports)
-	return totalReports, nil
+	return reports, nil
 }
 
 func (ru *ReportUseCase) GetAll() (int, error) {

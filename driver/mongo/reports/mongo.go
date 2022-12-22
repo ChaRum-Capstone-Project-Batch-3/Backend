@@ -58,7 +58,7 @@ func (rr *reportRepository) GetByID(id primitive.ObjectID) (reports.Domain, erro
 	return result.ToDomain(), nil
 }
 
-func (rr *reportRepository) GetByReportedID(id primitive.ObjectID) ([]reports.Domain, error) {
+func (rr *reportRepository) GetByReportedID(id primitive.ObjectID) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
@@ -66,15 +66,15 @@ func (rr *reportRepository) GetByReportedID(id primitive.ObjectID) ([]reports.Do
 		"reportedId": id,
 	})
 	if err != nil {
-		return []reports.Domain{}, err
+		return 0, err
 	}
 
 	var result []Model
 	if err = cursor.All(ctx, &result); err != nil {
-		return []reports.Domain{}, err
+		return 0, err
 	}
 
-	domains := ToDomainArray(result)
+	domains := len(result)
 	return domains, nil
 }
 

@@ -29,6 +29,7 @@ type UseCase interface {
 	// Create
 	Generate(domain *Domain) (Domain, error)
 	// Read
+	GetByID(id primitive.ObjectID) (Domain, error)
 	GetByToken(token string) (Domain, error)
 	ValidateToken(token string) (Domain, error)
 	// Update

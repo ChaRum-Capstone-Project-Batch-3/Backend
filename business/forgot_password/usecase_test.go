@@ -6,6 +6,7 @@ import (
 	"charum/business/users"
 	_userMock "charum/business/users/mocks"
 	_mailgunMock "charum/helper/mailgun/mocks"
+	"errors"
 	"testing"
 	"time"
 
@@ -51,6 +52,26 @@ func TestGenerate(t *testing.T) {
 
 		assert.Nil(t, err)
 	})
+
+	// create test that email is not found
+	t.Run("Test Case 2 | Email Not Found", func(t *testing.T) {
+		expectedError := errors.New("email is not registered")
+
+		userRepository.On("GetByEmail", forgotPasswordDomain.Email).Return(users.Domain{}, expectedError).Once()
+		_, err := forgotPasswordUseCase.Generate(&forgotPasswordDomain)
+
+		assert.NotNil(t, err)
+	})
+
+	t.Run("Test Case 2 | Failed to Reset Password", func(t *testing.T) {
+		expectedError := errors.New("failed to reset password")
+
+		userRepository.On("GetByEmail", forgotPasswordDomain.Email).Return(userDomain, nil).Once()
+		forgotPasswordRepository.On("Generate", &forgotPasswordDomain).Return(forgot_password.Domain{}, expectedError).Once()
+		_, err := forgotPasswordUseCase.Generate(&forgotPasswordDomain)
+
+		assert.NotNil(t, err)
+	})
 }
 
 func TestValidate(t *testing.T) {
@@ -72,32 +93,75 @@ func TestValidate(t *testing.T) {
 	})
 
 	// create test that token is not valid
-	t.Run("Test Case 2 | Token Used ", func(t *testing.T) {
+	t.Run("Test Case 2 | Failed to Get Token", func(t *testing.T) {
+		expectedError := errors.New("failed to get token")
+		userRepository.On("GetByEmail", forgotPasswordDomain.Email).Return(users.Domain{}, nil).Once()
+		forgotPasswordRepository.On("Generate", &forgotPasswordDomain).Return(forgot_password.Domain{}, nil).Once()
+		forgotPasswordRepository.On("GetByToken", forgotPasswordDomain.Token).Return(forgot_password.Domain{}, expectedError).Once()
+		forgotPasswordDomain.IsUsed = true
+		_, err := forgotPasswordUseCase.ValidateToken(forgotPasswordDomain.Token)
+		assert.Equal(t, expectedError, err)
+	})
+
+	// create test that token is expired
+	t.Run("Test Case 3 | Token Expired ", func(t *testing.T) {
+		expectedError := errors.New("token has expired")
 		userRepository.On("GetByEmail", forgotPasswordDomain.Email).Return(users.Domain{}, nil).Once()
 		forgotPasswordRepository.On("Generate", &forgotPasswordDomain).Return(forgot_password.Domain{}, nil).Once()
 		forgotPasswordRepository.On("GetByToken", forgotPasswordDomain.Token).Return(forgot_password.Domain{}, nil).Once()
 		forgotPasswordDomain.IsUsed = true
 		_, err := forgotPasswordUseCase.ValidateToken(forgotPasswordDomain.Token)
-		assert.NotNil(t, err)
+		assert.Equal(t, expectedError, err)
 	})
 
-	// create test that token is expired
-	t.Run("Test Case 3 | Token Expired ", func(t *testing.T) {
+	// create test that token has been used
+	t.Run("Test Case 4 | Token Has Been Used", func(t *testing.T) {
+		expectedError := errors.New("token has been used")
 		userRepository.On("GetByEmail", forgotPasswordDomain.Email).Return(users.Domain{}, nil).Once()
 		forgotPasswordRepository.On("Generate", &forgotPasswordDomain).Return(forgot_password.Domain{}, nil).Once()
 		forgotPasswordRepository.On("GetByToken", forgotPasswordDomain.Token).Return(forgot_password.Domain{}, nil).Once()
-		forgotPasswordDomain.ExpiredAt = primitive.NewDateTimeFromTime(time.Now().Add(time.Minute * -50))
+		forgotPasswordDomain.IsUsed = true
 		_, err := forgotPasswordUseCase.ValidateToken(forgotPasswordDomain.Token)
-		assert.NotNil(t, err)
+		assert.NotNil(t, expectedError, err)
+	})
+
+}
+
+// get by token
+func TestGetByToken(t *testing.T) {
+	t.Run("Test Case 1 | Valid Get By Token", func(t *testing.T) {
+		forgotPasswordRepository.On("GetByToken", forgotPasswordDomain.Token).Return(forgotPasswordDomain, nil).Once()
+		_, err := forgotPasswordUseCase.GetByToken(forgotPasswordDomain.Token)
+
+		assert.Nil(t, err)
 	})
 
 	// create test that token is not found
-	t.Run("Test Case 4 | Token Not Found ", func(t *testing.T) {
-		userRepository.On("GetByEmail", forgotPasswordDomain.Email).Return(users.Domain{}, nil).Once()
-		forgotPasswordRepository.On("Generate", &forgotPasswordDomain).Return(forgot_password.Domain{}, nil).Once()
-		forgotPasswordRepository.On("GetByToken", forgotPasswordDomain.Token).Return(forgot_password.Domain{}, nil).Once()
-		forgotPasswordDomain.Token = ""
-		_, err := forgotPasswordUseCase.ValidateToken(forgotPasswordDomain.Token)
-		assert.NotNil(t, err)
+	t.Run("Test Case 2 | Token Not Found", func(t *testing.T) {
+		expectedError := errors.New("failed to get token")
+		forgotPasswordRepository.On("GetByToken", forgotPasswordDomain.Token).Return(forgot_password.Domain{}, expectedError).Once()
+		_, err := forgotPasswordUseCase.GetByToken(forgotPasswordDomain.Token)
+
+		assert.Equal(t, expectedError, err)
+	})
+}
+
+// get by id
+func TestGetById(t *testing.T) {
+	t.Run("Test Case 1 | Valid Get By Id", func(t *testing.T) {
+		forgotPasswordRepository.On("GetByID", forgotPasswordDomain.Id).Return(forgotPasswordDomain, nil).Once()
+
+		_, err := forgotPasswordUseCase.GetByID(forgotPasswordDomain.Id)
+
+		assert.Nil(t, err)
+	})
+	// create test that id is not found
+	t.Run("Test Case 2 | Id Not Found", func(t *testing.T) {
+		expectedError := errors.New("failed to get id")
+		forgotPasswordRepository.On("GetByID", forgotPasswordDomain.Id).Return(forgot_password.Domain{}, expectedError).Once()
+
+		_, err := forgotPasswordUseCase.GetByID(forgotPasswordDomain.Id)
+
+		assert.Equal(t, expectedError, err)
 	})
 }
