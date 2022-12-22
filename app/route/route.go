@@ -32,23 +32,21 @@ type ControllerList struct {
 func (cl *ControllerList) Init(e *echo.Echo) {
 	_middleware.InitLogger(e)
 
-	adminMiddleware := _middleware.RoleMiddleware{Role: []string{"admin"}, UserRepository: cl.UserRepository}
-	authMiddleware := _middleware.RoleMiddleware{Role: []string{"user", "admin"}, UserRepository: cl.UserRepository}
-
-	apiV1 := e.Group("/api/v1")
-	apiV1.GET("", func(c echo.Context) error {
+	e.GET("", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]interface{}{
 			"message": "Welcome to Charum!",
 		})
 	})
 
+	apiV1 := e.Group("/api/v1")
+
 	user := apiV1.Group("/user")
 	user.POST("/register", cl.UserController.Register)
 	user.POST("/login", cl.UserController.Login)
-	user.GET("/profile", cl.UserController.GetProfile, authMiddleware.Check)
-	user.PUT("/profile", cl.UserController.UserUpdate, authMiddleware.Check)
-	user.POST("/report/:user-id", cl.ReportController.ReportUser, authMiddleware.Check)
-	user.PUT("/change-password", cl.UserController.UpdatePassword, authMiddleware.Check)
+	user.GET("/profile", cl.UserController.GetProfile, _middleware.Check([]string{"user", "admin"}, cl.UserRepository))
+	user.PUT("/profile", cl.UserController.UserUpdate, _middleware.Check([]string{"user", "admin"}, cl.UserRepository))
+	user.POST("/report/:user-id", cl.ReportController.ReportUser, _middleware.Check([]string{"user", "admin"}, cl.UserRepository))
+	user.PUT("/change-password", cl.UserController.UpdatePassword, _middleware.Check([]string{"user", "admin"}, cl.UserRepository))
 	user.POST("/forgot-password", cl.ForgotPasswordController.Generate)
 	user.GET("/forgot-password/:token", cl.ForgotPasswordController.ValidateToken)
 	user.POST("/forgot-password/:token", cl.ForgotPasswordController.Update)
@@ -58,36 +56,36 @@ func (cl *ControllerList) Init(e *echo.Echo) {
 	topic.GET("/id/:topic-id", cl.TopicController.GetByID)
 
 	thread := apiV1.Group("/thread")
-	thread.GET("", cl.ThreadController.GetManyByToken, authMiddleware.Check)
-	thread.POST("", cl.ThreadController.Create, authMiddleware.Check)
+	thread.GET("", cl.ThreadController.GetManyByToken, _middleware.Check([]string{"user", "admin"}, cl.UserRepository))
+	thread.POST("", cl.ThreadController.Create, _middleware.Check([]string{"user", "admin"}, cl.UserRepository))
 	thread.GET("/:page", cl.ThreadController.GetManyWithPagination)
 	threadID := thread.Group("/id")
 	threadID.GET("/:thread-id", cl.ThreadController.GetByID)
-	threadID.PUT("/:thread-id", cl.ThreadController.UserUpdate, authMiddleware.Check)
-	threadID.DELETE("/:thread-id", cl.ThreadController.UserDelete, authMiddleware.Check)
+	threadID.PUT("/:thread-id", cl.ThreadController.UserUpdate, _middleware.Check([]string{"user", "admin"}, cl.UserRepository))
+	threadID.DELETE("/:thread-id", cl.ThreadController.UserDelete, _middleware.Check([]string{"user", "admin"}, cl.UserRepository))
 	threadFollow := thread.Group("/follow")
-	threadFollow.GET("", cl.FollowThreadController.GetFollowedThreadByToken, authMiddleware.Check)
+	threadFollow.GET("", cl.FollowThreadController.GetFollowedThreadByToken, _middleware.Check([]string{"user", "admin"}, cl.UserRepository))
 	threadFollow.GET("/:user-id", cl.FollowThreadController.GetFollowedThreadByUserID)
-	threadFollow.POST("/:thread-id", cl.FollowThreadController.Create, authMiddleware.Check)
-	threadFollow.DELETE("/:thread-id", cl.FollowThreadController.Delete, authMiddleware.Check)
+	threadFollow.POST("/:thread-id", cl.FollowThreadController.Create, _middleware.Check([]string{"user", "admin"}, cl.UserRepository))
+	threadFollow.DELETE("/:thread-id", cl.FollowThreadController.Delete, _middleware.Check([]string{"user", "admin"}, cl.UserRepository))
 	threadComment := thread.Group("/comment")
-	threadComment.POST("/:thread-id", cl.CommentController.Create, authMiddleware.Check)
-	threadComment.PUT("/:comment-id", cl.CommentController.Update, authMiddleware.Check)
-	threadComment.DELETE("/:comment-id", cl.CommentController.Delete, authMiddleware.Check)
+	threadComment.POST("/:thread-id", cl.CommentController.Create, _middleware.Check([]string{"user", "admin"}, cl.UserRepository))
+	threadComment.PUT("/:comment-id", cl.CommentController.Update, _middleware.Check([]string{"user", "admin"}, cl.UserRepository))
+	threadComment.DELETE("/:comment-id", cl.CommentController.Delete, _middleware.Check([]string{"user", "admin"}, cl.UserRepository))
 	threadLike := thread.Group("/like")
-	threadLike.GET("", cl.ThreadController.GetLikedThreadByToken, authMiddleware.Check)
+	threadLike.GET("", cl.ThreadController.GetLikedThreadByToken, _middleware.Check([]string{"user", "admin"}, cl.UserRepository))
 	threadLike.GET("/:user-id", cl.ThreadController.GetLikedThreadByUserID)
-	threadLike.POST("/id/:thread-id", cl.ThreadController.Like, authMiddleware.Check)
-	threadLike.DELETE("/id/:thread-id", cl.ThreadController.Unlike, authMiddleware.Check)
+	threadLike.POST("/id/:thread-id", cl.ThreadController.Like, _middleware.Check([]string{"user", "admin"}, cl.UserRepository))
+	threadLike.DELETE("/id/:thread-id", cl.ThreadController.Unlike, _middleware.Check([]string{"user", "admin"}, cl.UserRepository))
 	threadBookmark := thread.Group("/bookmark")
-	threadBookmark.GET("", cl.BookmarkController.GetAllByToken, authMiddleware.Check)
-	threadBookmark.POST("/:thread-id", cl.BookmarkController.Create, authMiddleware.Check)
-	threadBookmark.DELETE("/:thread-id", cl.BookmarkController.Delete, authMiddleware.Check)
+	threadBookmark.GET("", cl.BookmarkController.GetAllByToken, _middleware.Check([]string{"user", "admin"}, cl.UserRepository))
+	threadBookmark.POST("/:thread-id", cl.BookmarkController.Create, _middleware.Check([]string{"user", "admin"}, cl.UserRepository))
+	threadBookmark.DELETE("/:thread-id", cl.BookmarkController.Delete, _middleware.Check([]string{"user", "admin"}, cl.UserRepository))
 	threadReport := thread.Group("/report")
-	threadReport.POST("/:thread-id", cl.ReportController.ReportThread, authMiddleware.Check)
+	threadReport.POST("/:thread-id", cl.ReportController.ReportThread, _middleware.Check([]string{"user", "admin"}, cl.UserRepository))
 
 	// Admin
-	admin := apiV1.Group("/admin", adminMiddleware.Check)
+	admin := apiV1.Group("/admin", _middleware.Check([]string{"admin"}, cl.UserRepository))
 	admin.GET("/statistics", cl.ReportController.CountAllData)
 
 	adminUser := admin.Group("/user")

@@ -136,14 +136,14 @@ func (topicCtrl *TopicController) GetByID(c echo.Context) error {
 func (topicCtrl *TopicController) GetManyWithPagination(c echo.Context) error {
 	page, err := strconv.Atoi(c.Param("page"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponseWithPagination{
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:     http.StatusBadRequest,
 			Message:    "page must be a number",
 			Data:       nil,
 			Pagination: helper.Page{},
 		})
 	} else if page < 1 {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponseWithPagination{
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:     http.StatusBadRequest,
 			Message:    "page must be greater than 0",
 			Data:       nil,
@@ -157,7 +157,7 @@ func (topicCtrl *TopicController) GetManyWithPagination(c echo.Context) error {
 	}
 	limitNumber, err := strconv.Atoi(limit)
 	if err != nil || limitNumber < 1 {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponseWithPagination{
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:     http.StatusBadRequest,
 			Message:    "limit must be a number and greater than 0",
 			Data:       nil,
@@ -169,7 +169,7 @@ func (topicCtrl *TopicController) GetManyWithPagination(c echo.Context) error {
 	if sort == "" {
 		sort = "createdAt"
 	} else if !(sort == "_id" || sort == "topic" || sort == "createdAt" || sort == "updatedAt") {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponseWithPagination{
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:     http.StatusBadRequest,
 			Message:    "sort must be _id, topic, createdAt, or updatedAt",
 			Data:       nil,
@@ -181,7 +181,7 @@ func (topicCtrl *TopicController) GetManyWithPagination(c echo.Context) error {
 	if order == "" {
 		order = "desc"
 	} else if !(order == "asc" || order == "desc") {
-		return c.JSON(http.StatusBadRequest, helper.BaseResponseWithPagination{
+		return c.JSON(http.StatusBadRequest, helper.BaseResponse{
 			Status:     http.StatusBadRequest,
 			Message:    "order must be asc or desc",
 			Data:       nil,
@@ -202,14 +202,14 @@ func (topicCtrl *TopicController) GetManyWithPagination(c echo.Context) error {
 
 	users, totalPage, totalData, err := topicCtrl.TopicUseCase.GetManyWithPagination(pagination, &userInputDomain)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.BaseResponseWithPagination{
+		return c.JSON(http.StatusInternalServerError, helper.BaseResponse{
 			Status:  http.StatusInternalServerError,
 			Message: err.Error(),
 			Data:    nil,
 		})
 	}
 
-	return c.JSON(http.StatusOK, helper.BaseResponseWithPagination{
+	return c.JSON(http.StatusOK, helper.BaseResponse{
 		Status:  http.StatusOK,
 		Message: "success to get topics",
 		Data: map[string]interface{}{
